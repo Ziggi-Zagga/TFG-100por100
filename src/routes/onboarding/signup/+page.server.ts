@@ -2,7 +2,6 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import * as authService from '$lib/server/service/auth.service';
 import { ServiceError } from '$lib/utils/errors/ServiceError';
-import { basicErrorHandler } from '$lib/utils/errors/errors';
 
 export const load: PageServerLoad = async (event: any) => {
 	if (event.locals.user) {

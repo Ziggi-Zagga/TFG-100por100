@@ -40,6 +40,7 @@
 			{type}
 			{disabled}
 			id={name}
+			name={name}
 			bind:value
 			placeholder={placeholder}
 			class={cn(

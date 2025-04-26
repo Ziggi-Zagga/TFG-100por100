@@ -2,6 +2,7 @@ import { createUser as repoCreateUser, createSession as repoCreateSession, findS
 import { encodeBase64url } from '@oslojs/encoding';
 import { ERROR_TYPES, ServiceError } from '$lib/utils/errors/ServiceError';
 import crypto from 'crypto';
+import argon2 from 'argon2';
 
 export interface AuthUser {
   id: number;
@@ -69,7 +70,7 @@ export async function login(email: string, password: string): Promise<{ user: Au
     if (!user) {
       throw new ServiceError('Email does not exist', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
     }
-    const validPassword = verify(password, user.password_hash, HASH_CONFIG);
+    const validPassword = await verify(password, user.password_hash);
     if (!validPassword) {
       throw new ServiceError('Invalid password', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
     }
@@ -101,12 +102,10 @@ export async function signup(email: string, username: string, password: string, 
     if (password !== confirmPassword) {
       throw new ServiceError('Passwords do not match', ERROR_TYPES.VALIDATION, 400, { field: 'confirmPassword' });
     }
-    const salt = crypto.getRandomValues(new Uint8Array(16)).join('');
-    const password_hash = await hash(password, { ...HASH_CONFIG, salt });
+    const password_hash = await hash(password);
     const user = await repoCreateUser({
       username,
       password_hash,
-      salt,
       email,
       full_name: username,
       created_at: new Date().toISOString(),
@@ -126,12 +125,17 @@ export async function signup(email: string, username: string, password: string, 
   }
 }
 
-export function hash(data: string, config: any): string {
-  return crypto.createHash('sha256').update(data).digest('hex');
+export async function hash(password: string): Promise<string> {
+  return await argon2.hash(password, {
+    type: argon2.argon2id,
+    memoryCost: 2 ** 16,   // Puedes ajustar estos parámetros
+    timeCost: 3,
+    parallelism: 1,
+  });
 }
 
-export function verify(data: string, expectedHash: string, config: any): boolean {
-  return hash(data, config) === expectedHash;
+export async function verify(password: string, hash: string): Promise<boolean> {
+  return await argon2.verify(hash, password);
 }
 
 function generateSessionToken(): string {

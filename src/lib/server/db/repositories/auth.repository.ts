@@ -16,7 +16,6 @@ export async function findUserByEmail(email: string) {
 export async function createUser({
   username,
   password_hash,
-  salt,
   email,
   full_name,
   active = true,
@@ -25,7 +24,6 @@ export async function createUser({
 }: {
   username: string,
   password_hash: string,
-  salt: string,
   email: string,
   full_name: string,
   active?: boolean,
@@ -35,7 +33,6 @@ export async function createUser({
   const [user] = await db.insert(users).values({
     username,
     password_hash,
-    salt,
     email,
     full_name,
     active,
