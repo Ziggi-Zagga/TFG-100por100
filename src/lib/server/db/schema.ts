@@ -1,12 +1,12 @@
-// import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey, real, foreignKey } from 'drizzle-orm/sqlite-core';
 
-// export const users = sqliteTable('users', {
-//   id: text('id').primaryKey(),
-//   email: text('email').notNull().unique(),
-//   password: text('password').notNull(),
-// });
-
-import { sqliteTable, text, integer, primaryKey, real } from 'drizzle-orm/sqlite-core';
+// ROLES
+export const roles = sqliteTable('roles', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name', { length: 100 }).notNull(),
+  description: text('description'),
+  permissions: text('permissions', { length: 1000 }),
+});
 
 // USERS
 export const users = sqliteTable('users', {
@@ -32,22 +32,6 @@ export const userSessions = sqliteTable('user_sessions', {
   ip_address: text('ip_address'),
   user_agent: text('user_agent'),
 });
-
-// ROLES
-export const roles = sqliteTable('roles', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name', { length: 100 }).notNull(),
-  description: text('description'),
-  permissions: text('permissions', { length: 1000 }),
-});
-
-// USER_ROLES
-export const userRoles = sqliteTable('user_roles', {
-  user_id: integer('user_id').notNull(),
-  role_id: integer('role_id').notNull(),
-}, (table) => ({
-  pk: primaryKey({ columns: [table.user_id, table.role_id] }),
-}));
 
 // SUPPLIERS
 export const suppliers = sqliteTable('suppliers', {
@@ -220,4 +204,3 @@ export const incidentHistory = sqliteTable('incident_history', {
   status_from: text('status_from'),
   status_to: text('status_to'),
 });
-

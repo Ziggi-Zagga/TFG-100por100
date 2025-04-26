@@ -1,5 +1,5 @@
 import { findUserById, createUser as repoCreateUser, createSession as repoCreateSession, findSessionByToken, updateSessionExpiry, deleteSession, updateLastLogin } from '../db/repositories/login.repository';
-import { hash, verify } from '@node-rs/argon2';
+
 import { encodeBase64url } from '@oslojs/encoding';
 import { ERROR_TYPES, ServiceError } from '$lib/utils/errors/ServiceError';
 
