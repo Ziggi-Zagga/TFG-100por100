@@ -102,18 +102,21 @@
   let mobileMenuOpen = false;
   
   // Corregir el uso de variables reactivas
-  let sidebarCollapsed = false;
-  let darkModeValue = false;
-  darkMode.subscribe(value => (darkModeValue = value));
-  sidebarCollapsed.subscribe(value => (sidebarCollapsed = value));
+  let sidebarCollapsedValue = false;
+
+  sidebarCollapsed.subscribe(value => {
+    sidebarCollapsedValue = value;
+  });
   
   // Toggle sidebar
   function toggleSidebar() {
-    sidebarCollapsed = !sidebarCollapsed;
-    sidebarCollapsed.set(sidebarCollapsed);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('sidebarCollapsed', sidebarCollapsed.toString());
-    }
+    sidebarCollapsed.update(value => {
+      const newValue = !value;
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('sidebarCollapsed', newValue.toString());
+      }
+      return newValue;
+    });
   }
   
   // Toggle menu dropdowns
@@ -172,8 +175,7 @@
     if (typeof localStorage !== 'undefined') {
       const savedSidebarState = localStorage.getItem('sidebarCollapsed');
       if (savedSidebarState) {
-        sidebarCollapsed = savedSidebarState === 'true';
-        sidebarCollapsed.set(sidebarCollapsed);
+        sidebarCollapsed.set(savedSidebarState === 'true');
       }
       
       const savedTheme = localStorage.getItem('darkMode');
@@ -444,7 +446,7 @@
     
     <!-- Sidebar -->
     <aside 
-      class="{sidebarCollapsed ? 'w-16' : 'w-64'} hidden md:block bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out"
+      class="{sidebarCollapsedValue ? 'w-16' : 'w-64'} hidden md:block bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out"
     >
       <!-- Toggle sidebar button -->
       <button 
@@ -456,7 +458,7 @@
             stroke-linecap="round" 
             stroke-linejoin="round" 
             stroke-width="2" 
-            d={sidebarCollapsed ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7M19 19l-7-7 7-7"} 
+            d={sidebarCollapsedValue ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7M19 19l-7-7 7-7"} 
           />
         </svg>
       </button>
