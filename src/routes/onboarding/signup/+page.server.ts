@@ -1,26 +1,30 @@
-import {  redirect } from '@sveltejs/kit';
+import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import * as authService from '$lib/server/service/auth.service';
 import { ServiceError } from '$lib/utils/errors/ServiceError';
 import { basicErrorHandler } from '$lib/utils/errors/errors';
 
-export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) { 
+export const load: PageServerLoad = async (event: any) => {
+	if (event.locals.user) {
 		throw redirect(302, '/dashboard');
 	}
 	return {};
 };
 
 export const actions: Actions = {
-	default: async (event) => {
+	default: async (event: any) => {
 		try {
 			const formData = await event.request.formData();
 			const email = formData.get('email') as string;
+			const username = formData.get('username') as string;
 			const password = formData.get('password') as string;
-			const result = await authService.login(email, password);
+			const confirmPassword = formData.get('confirmPassword') as string;
 
+			const result = await authService.signup(email, username, password, confirmPassword);
+			console.log('FormData:', [...formData.entries()]);
+			
 			if (!result) {
-				throw new ServiceError('Invalid credentials', 'AUTHENTICATION_ERROR', 400);
+				throw new ServiceError('Error creating user', 'VALIDATION', 400);
 			}
 
 			const { session, token } = result;
@@ -31,15 +35,12 @@ export const actions: Actions = {
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax'
 			});
+			console.log('Session created:', session);
+			return { success: true };
+		} catch (error: any) {
+			console.error('Signup error:', error); // 
 
-			throw redirect(302, '/dashboard');
-		} catch (error: unknown) {
-			
-			if (error && typeof error === 'object' && 'status' in error && error['status'] === 302 && 'location' in error) {
-				throw error;
-			}
-			console.error('LOGIN ERROR:', error); 
-			return basicErrorHandler(error as Error);
+			return fail(400, { message: error.message || 'Internal server error' });
 		}
 	}
 };

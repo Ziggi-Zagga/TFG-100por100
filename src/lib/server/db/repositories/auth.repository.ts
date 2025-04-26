@@ -72,7 +72,7 @@ export async function createSession({
   ip_address?: string | null,
   user_agent?: string | null
 }) {
-  const [id] = await db.insert(userSessions).values({
+  const result = await db.insert(userSessions).values({
     user_id,
     session_token,
     created_at,
