@@ -36,8 +36,10 @@
 	"dependencies": {
 		"@oslojs/encoding": "^1.1.0",
 		"better-sqlite3": "^11.8.0",
+		"clsx": "^2.1.1",
 		"drizzle-orm": "^0.40.0",
-		"node-rsa": "^1.1.1"
+		"node-rsa": "^1.1.1",
+		"tailwind-merge": "^3.2.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
