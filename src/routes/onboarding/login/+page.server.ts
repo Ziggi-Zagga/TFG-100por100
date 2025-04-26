@@ -1,31 +1,40 @@
-import { fail, redirect } from '@sveltejs/kit';
-import { sha256 } from '$lib/utils/crypto/hash';
-import { validateUser } from '$lib/server/service/login.service';
+import {  redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import * as authService from '$lib/server/service/login.service';
+import { ServiceError } from '$lib/utils/errors/ServiceError';
+import { basicErrorHandler } from '$lib/utils/errors/errors';
 
-export const load: PageServerLoad = async () => {
-  return {};
+export const load: PageServerLoad = async (event) => {
+	if (event.locals.user) {
+		throw redirect(302, '/dashboard');
+	}
+	return {};
 };
 
 export const actions: Actions = {
-  default: async ({ request }) => {
-    const form = await request.formData();
-    const email = form.get('email') as string;
-    const password = form.get('password') as string;
+	default: async (event) => {
+		try {
+			const formData = await event.request.formData();
+			const email = formData.get('email') as string;
+			const password = formData.get('password') as string;
+			const result = await authService.login(email, password);
 
-    if (!email || !password) {
-      return fail(400, { message: 'Email and password required' });
-    }
+			if (!result) {
+				throw new ServiceError('Invalid credentials', 'AUTHENTICATION_ERROR', 400);
+			}
 
-    const hashedPassword = await sha256(password);
+			const { session, token } = result;
+			event.cookies.set('auth-session', token, {
+				path: '/',
+				expires: new Date(session.expires_at),
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax'
+			});
 
-    const user = await validateUser(email, hashedPassword);
-
-    if (!user || user.password !== hashedPassword) {
-      return fail(401, { message: 'Invalid credentials' });
-    }
-
-    // TODO: Auth session/cookie
-    throw redirect(303, '/dashboard');
-  }
+			throw redirect(302, '/dashboard');
+		} catch (error: unknown) {
+			return basicErrorHandler(error as Error);
+		}
+	}
 };

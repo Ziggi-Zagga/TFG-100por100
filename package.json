@@ -34,6 +34,7 @@
 		"vite": "^6.2.5"
 	},
 	"dependencies": {
+		"@oslojs/encoding": "^1.1.0",
 		"better-sqlite3": "^11.8.0",
 		"drizzle-orm": "^0.40.0"
 	},

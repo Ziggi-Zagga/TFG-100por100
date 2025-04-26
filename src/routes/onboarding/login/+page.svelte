@@ -6,7 +6,7 @@
   let showModal = false;
 
   onMount(() => {
-    // Esto fuerza el montaje tras el primer tick, disparando la animación
+
     showModal = true;
   });
 </script>
@@ -53,7 +53,7 @@
           class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
           aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           tabindex="-1"
-          on:click={() => (showPassword = !showPassword)}
+          onclick={() => (showPassword = !showPassword)}
         >
           {#if showPassword}
           <img src="../icons/visible.png" alt= "visible" class="h-4.5 w-5.5" >

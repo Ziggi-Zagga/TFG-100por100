@@ -1,11 +1,3 @@
-// import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
-
-// export const users = sqliteTable('users', {
-//   id: text('id').primaryKey(),
-//   email: text('email').notNull().unique(),
-//   password: text('password').notNull(),
-// });
-
 import { sqliteTable, text, integer, primaryKey, real } from 'drizzle-orm/sqlite-core';
 
 // USERS
@@ -40,13 +32,6 @@ export const roles = sqliteTable('roles', {
   permissions: text('permissions', { length: 1000 }),
 });
 
-// USER_ROLES
-export const userRoles = sqliteTable('user_roles', {
-  user_id: integer('user_id').notNull(),
-  role_id: integer('role_id').notNull(),
-}, (table) => ({
-  pk: primaryKey({ columns: [table.user_id, table.role_id] }),
-}));
 
 // SUPPLIERS
 export const suppliers = sqliteTable('suppliers', {
