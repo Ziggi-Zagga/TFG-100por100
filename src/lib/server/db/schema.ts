@@ -1,3 +1,11 @@
+// import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
+// export const users = sqliteTable('users', {
+//   id: text('id').primaryKey(),
+//   email: text('email').notNull().unique(),
+//   password: text('password').notNull(),
+// });
+
 import { sqliteTable, text, integer, primaryKey, real } from 'drizzle-orm/sqlite-core';
 
 // USERS
@@ -11,12 +19,13 @@ export const users = sqliteTable('users', {
   active: integer('active', { mode: 'boolean' }).notNull(),
   created_at: text('created_at').notNull(),
   last_login: text('last_login'),
+  rol: integer("roles_id").references(() => roles.id),
 });
 
 // USER_SESSIONS
 export const userSessions = sqliteTable('user_sessions', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  user_id: integer('user_id').notNull(),
+  session_id: integer('id').primaryKey({ autoIncrement: true }),
+  user_id: integer('user_id').notNull().references(() => users.id),
   session_token: text('session_token', { length: 128 }).notNull().unique(),
   created_at: text('created_at').notNull(),
   expires_at: text('expires_at').notNull(),
@@ -32,6 +41,13 @@ export const roles = sqliteTable('roles', {
   permissions: text('permissions', { length: 1000 }),
 });
 
+// USER_ROLES
+export const userRoles = sqliteTable('user_roles', {
+  user_id: integer('user_id').notNull(),
+  role_id: integer('role_id').notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.user_id, table.role_id] }),
+}));
 
 // SUPPLIERS
 export const suppliers = sqliteTable('suppliers', {
@@ -57,7 +73,12 @@ export const categories = sqliteTable('categories', {
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
   parent_id: integer('parent_id'),
-});
+}, (table) => ({
+  parentCategoryFk: foreignKey({
+    columns: [table.parent_id],
+    foreignColumns: [table.id],
+  }),
+}));
 
 // PRODUCTS
 export const products = sqliteTable('products', {
@@ -65,9 +86,9 @@ export const products = sqliteTable('products', {
   code: text('code', { length: 50 }).notNull().unique(),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
-  supplier_id: integer('supplier_id'),
-  manufacturer_id: integer('manufacturer_id'),
-  category_id: integer('category_id'),
+  supplier_id: integer('supplier_id').references(() => suppliers.id),
+  manufacturer_id: integer('manufacturer_id').references(() => manufacturers.id),
+  category_id: integer('category_id').references(() => categories.id),
   price: real('price'),
   unit: text('unit', { length: 20 }),
   dimensions: text('dimensions'),
@@ -79,8 +100,8 @@ export const products = sqliteTable('products', {
 // INVENTORY
 export const inventory = sqliteTable('inventory', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  product_id: integer('product_id').notNull(),
-  location_id: integer('location_id').notNull(),
+  product_id: integer('product_id').notNull().references(() =>products.id),
+  location_id: integer('location_id').notNull().references(() => inventoryLocations.id),
   quantity: real('quantity').notNull(),
   min_quantity: real('min_quantity'),
   reorder_quantity: real('reorder_quantity'),
@@ -100,7 +121,7 @@ export const inventoryMovements = sqliteTable('inventory_movements', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   type: text('type', { length: 50 }).notNull(),
   date: text('date').notNull(),
-  user_id: integer('user_id'),
+  user_id: integer('user_id').references(() => users.id),
   reference: text('reference'),
   notes: text('notes'),
 });
@@ -108,8 +129,8 @@ export const inventoryMovements = sqliteTable('inventory_movements', {
 // MOVEMENT_ITEMS
 export const movementItems = sqliteTable('movement_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  movement_id: integer('movement_id').notNull(),
-  inventory_id: integer('inventory_id').notNull(),
+  movement_id: integer('movement_id').notNull().references(() => inventoryMovements.id),
+  inventory_id: integer('inventory_id').notNull().references(() => inventory.id),
   quantity: real('quantity').notNull(),
 });
 
@@ -117,8 +138,8 @@ export const movementItems = sqliteTable('movement_items', {
 export const orders = sqliteTable('orders', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order_number: text('order_number', { length: 50 }).notNull().unique(),
-  supplier_id: integer('supplier_id').notNull(),
-  user_id: integer('user_id').notNull(),
+  supplier_id: integer('supplier_id').notNull().references(() => suppliers.id),
+  user_id: integer('user_id').notNull().references(() => users.id),
   order_date: text('order_date').notNull(),
   status: text('status', { length: 50 }).notNull(),
   expected_arrival: text('expected_arrival'),
@@ -128,8 +149,8 @@ export const orders = sqliteTable('orders', {
 // ORDER_ITEMS
 export const orderItems = sqliteTable('order_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  order_id: integer('order_id').notNull(),
-  product_id: integer('product_id').notNull(),
+  order_id: integer('order_id').notNull().references(() => orders.id),
+  product_id: integer('product_id').notNull().references(() => products.id),
   quantity: real('quantity').notNull(),
   price: real('price').notNull(),
   status: text('status'),
@@ -138,7 +159,7 @@ export const orderItems = sqliteTable('order_items', {
 // ORDER_TRACKING
 export const orderTracking = sqliteTable('order_tracking', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  order_id: integer('order_id').notNull(),
+  order_id: integer('order_id').notNull().references(() => orders.id),
   tracking_number: text('tracking_number'),
   carrier: text('carrier'),
   status: text('status'),
@@ -158,7 +179,7 @@ export const machinery = sqliteTable('machinery', {
   code: text('code', { length: 50 }).notNull().unique(),
   name: text('name', { length: 100 }).notNull(),
   model: text('model'),
-  zone_id: integer('zone_id'),
+  zone_id: integer('zone_id').references(() => zones.id),
   installation_date: text('installation_date'),
   status: text('status', { length: 50 }),
 });
@@ -169,9 +190,9 @@ export const incidents = sqliteTable('incidents', {
   code: text('code', { length: 50 }).notNull().unique(),
   title: text('title', { length: 100 }).notNull(),
   description: text('description'),
-  machine_id: integer('machine_id'),
-  reported_by: integer('reported_by'),
-  assigned_to: integer('assigned_to'),
+  machine_id: integer('machine_id').references(() => machinery.id),
+  reported_by: integer('reported_by').references(() => users.id),
+  assigned_to: integer('assigned_to').references(() => users.id),
   created_at: text('created_at'),
   due_date: text('due_date'),
   priority: text('priority'),
@@ -183,16 +204,16 @@ export const incidents = sqliteTable('incidents', {
 // INCIDENT_ITEMS
 export const incidentItems = sqliteTable('incident_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  incident_id: integer('incident_id').notNull(),
-  inventory_id: integer('inventory_id').notNull(),
+  incident_id: integer('incident_id').notNull().references(() => incidents.id),
+  inventory_id: integer('inventory_id').notNull().references(() => inventory.id),
   quantity: real('quantity').notNull(),
 });
 
 // INCIDENT_HISTORY
 export const incidentHistory = sqliteTable('incident_history', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  incident_id: integer('incident_id').notNull(),
-  user_id: integer('user_id').notNull(),
+  incident_id: integer('incident_id').notNull().references(() => incidents.id),
+  user_id: integer('user_id').notNull().references(() => users.id),
   timestamp: text('timestamp').notNull(),
   action: text('action'),
   comments: text('comments'),
