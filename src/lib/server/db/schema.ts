@@ -13,7 +13,6 @@ export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   username: text('username', { length: 50 }).notNull().unique(),
   password_hash: text('password_hash', { length: 128 }).notNull(),
-  salt: text('salt', { length: 128 }).notNull(),
   email: text('email', { length: 255 }).notNull().unique(),
   full_name: text('full_name', { length: 100 }).notNull(),
   active: integer('active', { mode: 'boolean' }).notNull(),
