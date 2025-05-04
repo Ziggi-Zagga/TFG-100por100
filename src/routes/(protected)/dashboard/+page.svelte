@@ -1,4 +1,15 @@
 <script lang="ts">
+  import MetricCard from "$lib/components/dashboard/MetricCard.svelte";
+  import TopProductsTable from "$lib/components/dashboard/TopProductsTable.svelte";
+  import WelcomeHeader from "$lib/components/dashboard/WelcomeCard.svelte";
+
+  // TODOS LOS DATOS ESTAN HARDCODEADOS
+  // pero son facilmente sustituibles no worries
+
+    const userName = "User";
+    const unreadAlerts = 3;
+    const today = new Date().toLocaleDateString("en-GB");
+
     const metrics = [
       { title: "Total Incidents", value: 1204, change: "5.2%", color: "bg-blue-200" },
       { title: "Resolved Incidents", value: 984, change: "4.7%", color: "bg-indigo-200" },
@@ -30,34 +41,15 @@
     const maxFinanceValue = Math.max(...financeByMonth.map(m => Math.max(m.revenue, m.expenses)));
 </script>
 
-<main class="p-6 space-y-6">
+<main class="p-6 space-y-6" style="min-height: 100vh; background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+  
   <!-- Cabecera tipo bienvenida -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-sky-100 p-6 rounded-2xl shadow-sm">
-      <div>
-      <h2 class="text-2xl font-semibold">Welcome User</h2>
-      <p class="text-sm text-gray-600">
-          Have a productive Day! You have 
-          <a href="#" class="text-indigo-600 underline">3 unread alerts</a>!
-      </p>
-      </div>
-      <div class="mt-4 md:mt-0">
-      <button class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow text-sm font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M6 2a1 1 0 012 0v1h4V2a1 1 0 112 0v1h1a2 2 0 012 2v1H3V5a2 2 0 012-2h1V2zM3 8h14v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 100 2h4a1 1 0 100-2H8z"/>
-          </svg>
-          Today (04/05/2025)
-      </button>
-      </div>
-  </div>
+  <WelcomeHeader userName={userName} unreadAlerts={unreadAlerts} date={today} />
 
   <!-- Métricas principales -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     {#each metrics as metric}
-      <div class={`p-4 rounded-2xl shadow ${metric.color}`}>
-        <h2 class="text-sm text-gray-700">{metric.title}</h2>
-        <p class="text-2xl font-bold">{metric.value}</p>
-        <p class="text-xs text-gray-600">Change: {metric.change}</p>
-      </div>
+      <MetricCard {...metric} />
     {/each}
   </div>
 
@@ -84,53 +76,7 @@
     </div>
 
     <!-- Tabla de productos más vendidos -->
-    <div class="bg-white rounded-2xl shadow p-6">
-      <h2 class="text-lg font-semibold mb-4">Top Selling Products</h2>
-      <table class="w-full table-auto text-sm">
-        <thead>
-          <tr class="text-left text-gray-500 border-b">
-            <th class="pb-2">Product</th>
-            <th class="pb-2">SKU</th>
-            <th class="pb-2">Units Sold</th>
-            <th class="pb-2">Stock Left</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each topProducts as product, i}
-            <tr class={`border-b hover:bg-gray-50 ${i % 2 === 0 ? 'bg-gray-50' : ''}`}>
-              <td class="py-2">{product.name}</td>
-              <td>{product.sku}</td>
-              <td>{product.sold}</td>
-              <td class={product.stock === 0 ? 'text-red-500' : ''}>{product.stock}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+    <TopProductsTable products={topProducts} />
+
   </div>  
-
-  <!-- Gráfico de stock/incidencias -->
-  <div class="bg-white rounded-2xl shadow p-6">
-    <h2 class="text-lg font-semibold mb-4">Monthly Stock vs Incidents</h2>
-    <div class="grid grid-cols-5 gap-4 text-sm text-center">
-      {#each stockChart as item}
-        <div>
-          <div class="mb-2 text-gray-500">{item.month}</div>
-          <div class="h-20 bg-blue-400 rounded" style={`height: ${item.stock / 5}px`} title={`Stock: ${item.stock}`}></div>
-          <div class="h-20 bg-red-400 rounded mt-1" style={`height: ${item.incidents * 2}px`} title={`Incidents: ${item.incidents}`}></div>
-        </div>
-      {/each}
-    </div>
-    <div class="mt-4 flex justify-center gap-6 text-sm text-gray-600">
-      <div class="flex items-center gap-1"><span class="w-4 h-2 bg-blue-400 inline-block rounded"></span> Stock</div>
-      <div class="flex items-center gap-1"><span class="w-4 h-2 bg-red-400 inline-block rounded"></span> Incidents</div>
-    </div>
-  </div>
 </main>
-
-<style>
-  main {
-    min-height: 100vh;
-    background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);
-  }
-</style>
