@@ -84,7 +84,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
     </div>
 
     <!-- Logout -->
-    <a href="../icons/png/salida-de-emergencia.png" class="mt-2 px-4 py-2 flex items-center text-white bg-blue-500 hover:bg-blue-600 transition">
+    <a href="../icons/png/salida-de-emergencia.png" class="mt-2 px-4 py-2 flex items-center text-black bg-indigo-200 hover:bg-indigo-300 transition">
       <img src="../icons/png/salida-de-emergencia.png" class="w-8 h-8" alt="Logo" />
       {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
     </a>
