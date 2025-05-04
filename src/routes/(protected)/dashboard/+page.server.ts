@@ -1,7 +1,4 @@
 //FAKE DATA cambiar cuando se tengan las tablas
-
-
-
 export const load = async () => {
     const userName = "User";
     const unreadAlerts = 3;
@@ -35,12 +32,24 @@ export const load = async () => {
         { month: "May", revenue: 3200, expenses: 1700 },
     ];
 
+    const lastOrders = [
+        { id: "#1001", product: "USB-C Cable", quantity: 2, total: 19.98, status: "Shipped" },
+        { id: "#1002", product: "Laptop Sleeve", quantity: 1, total: 29.99, status: "Pending" },
+        { id: "#1003", product: "Mouse Pad", quantity: 1, total: 7.49, status: "Cancelled" },
+        { id: "#1004", product: "Keyboard", quantity: 1, total: 45.00, status: "Shipped" },
+        { id: "#1005", product: "HDMI Cable", quantity: 3, total: 24.99, status: "Pending" },
+        { id: "#1006", product: "Monitor Stand", quantity: 1, total: 39.95, status: "Shipped" },
+        { id: "#1007", product: "Webcam", quantity: 1, total: 59.99, status: "Cancelled" },
+        { id: "#1008", product: "External SSD", quantity: 1, total: 109.99, status: "Shipped" },
+    ];  
+
     return {
         userName,
         unreadAlerts,
         today,
         metrics,
         topProducts,
-        financeByMonth
+        financeByMonth,
+        lastOrders
     };
 }

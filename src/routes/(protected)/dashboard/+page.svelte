@@ -2,12 +2,13 @@
   import MetricCard from "$lib/components/dashboard/MetricCard.svelte";
   import TopProductsTable from "$lib/components/dashboard/TopProductsTable.svelte";
   import WelcomeHeader from "$lib/components/dashboard/WelcomeCard.svelte";
+  import LastOrders from "$lib/components/dashboard/LastOrders.svelte";
 
   //DATOS 
   // TODOS LOS DATOS ESTAN HARDCODEADOS
   // pero son facilmente sustituibles no worries
   export let data;
-  const { userName, unreadAlerts, today, metrics, topProducts, financeByMonth } = data;
+  const { userName, unreadAlerts, today, metrics, topProducts, financeByMonth, lastOrders } = data;
   
   //Para medir la altura del grafico
   const maxFinanceValue = Math.max(...financeByMonth.map(m => Math.max(m.revenue, m.expenses)));
@@ -16,8 +17,11 @@
 
 <main class="p-6 space-y-6" style="min-height: 100vh; background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
   
-  <!-- Cabecera tipo bienvenida -->
+  <!-- Cabecera bienvenida -->
   <WelcomeHeader userName={userName} unreadAlerts={unreadAlerts} date={today} />
+
+  <!-- Last Orders -->
+  <LastOrders orders={lastOrders} />
 
   <!-- Métricas principales -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
