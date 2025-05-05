@@ -27,7 +27,7 @@
   }
 </script>
 
-<section class="p-8 bg-white w-full min-h-screen">
+<section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
   <InventoryHeader />
   <InventorySearchBar {openDrawer} />
   <InventoryTable items={data.items} {goToDetails} />
