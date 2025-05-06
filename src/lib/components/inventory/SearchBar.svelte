@@ -33,12 +33,7 @@
         on:click={openDrawer}
         class="font-semibold text-sm py-2 px-5 rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
         style="
-          color: white;
-          text-shadow:
-            -1px -1px 0 #B967DE,
-            1px -1px 0 #B967DE,
-            -1px 1px 0 #B967DE,
-            1px 1px 0 #B967DE;
+          color: black;
           background-image: linear-gradient(to right, #BFDBFE, #C7D2FE, #DDD6FE, #E9D5FF);
         "
       >
