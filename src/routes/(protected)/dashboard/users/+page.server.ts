@@ -10,10 +10,10 @@ export async function load() {
       fullName: users.full_name,
       email: users.email,
       lastLogin: users.last_login,
-      Role: users.rol,
+      role: users.rol,
     })
     .from(users)
     .where(eq(users.active, true));
 
-  return { items: result };
+  return { users: result };
 }

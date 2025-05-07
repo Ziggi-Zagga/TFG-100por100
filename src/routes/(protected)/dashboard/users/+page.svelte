@@ -4,6 +4,8 @@
 
 	let showDrawer = false;
 
+	let wrongPassword = false;
+
 	function goToDetails(id: number) {
 		goto(`/dashboard/inventory/${id}`);
 	}
@@ -16,13 +18,24 @@
 		showDrawer = false;
 	}
 
-	function createProduct() {
-		alert('Product created (fake action for now).');
+	function createUser() {
+		alert('User created (fake action for now).');
 		closeDrawer();
+	}
+
+	function checkPassword() {
+		const password = document.getElementById('password') as HTMLInputElement;
+		const passwordRepeat = document.getElementById('password-repeat') as HTMLInputElement;
+
+		if (password.value !== passwordRepeat.value) {
+			wrongPassword = true;
+			return false;
+		}
+		return true;
 	}
 </script>
 
-<section class="min-h-screen w-full bg-white p-8">
+<section class="min-h-screen w-full p-8" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 	<!-- HEADER & ACTIONS -->
 	<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 		<!-- Title -->
@@ -49,12 +62,6 @@
 			>
 				+ Add User
 			</button>
-            <button
-				class="rounded-md bg-red-500 px-4 py-2 font-semibold text-white hover:bg-red-600"
-				on:click={openDrawer}
-			>
-				- Delete User
-			</button>
 		</div>
 	</div>
 
@@ -73,21 +80,17 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each data.items as item}
+				{#each data.users as user}
 					<tr
 						class="cursor-pointer border-t hover:bg-gray-50"
-						on:click={() => goToDetails(item.id)}
+						on:click={() => goToDetails(user.id)}
 					>
-						<td class="p-3 whitespace-nowrap">{item.code}</td>
-						<td class="p-3 whitespace-nowrap">{item.name}</td>
-						<td class="p-3 whitespace-nowrap">{item.category}</td>
-						<td class="p-3 whitespace-nowrap">
-							<span class={item.quantity < 25 ? 'font-bold text-red-500' : ''}>
-								{item.quantity} units
-							</span>
-						</td>
-						<td class="p-3 whitespace-nowrap">{item.supplier}</td>
-						<td class="p-3 whitespace-nowrap">{item.location}</td>
+						<td class="p-3 whitespace-nowrap">{user.id}</td>
+						<td class="p-3 whitespace-nowrap">{user.username}</td>
+						<td class="p-3 whitespace-nowrap">{user.fullName}</td>
+						<td class="p-3 whitespace-nowrap">{user.email}</td>
+						<td class="p-3 whitespace-nowrap">{user.lastLogin}</td>
+						<td class="p-3 whitespace-nowrap">{user.role}</td>
 						<td class="flex justify-center gap-3 p-3" on:click|stopPropagation>
 							<button class="text-blue-600 hover:text-blue-800">✏️</button>
 							<button class="text-red-600 hover:text-red-800">🗑️</button>
@@ -104,80 +107,67 @@
 		<div
 			class="fixed top-0 right-0 z-50 flex h-full w-full max-w-md flex-col gap-6 overflow-y-auto bg-white p-8 shadow-2xl"
 		>
-			<h2 class="mb-4 text-2xl font-bold">Create New Item</h2>
+			<h2 class="mb-4 text-2xl font-bold">Add New User</h2>
 
-			<form class="flex flex-col gap-4" on:submit|preventDefault={createProduct}>
+			<form class="flex flex-col gap-4" on:submit|preventDefault={
+				(e) => {
+					if (checkPassword()) {
+						createUser();
+					}
+				}
+			}>
 				<div>
-					<label class="font-semibold">Product Name</label>
+					<label class="font-semibold">Username</label>
 					<input
 						type="text"
-						placeholder="Enter product name"
+						placeholder="New user username"
 						class="w-full rounded-md border border-gray-300 p-2"
 					/>
 				</div>
 
 				<div>
-					<label class="font-semibold">SKU (Code)</label>
+					<label class="font-semibold">Full Name</label>
 					<input
 						type="text"
-						placeholder="Enter SKU code"
+						placeholder="New user full name"
 						class="w-full rounded-md border border-gray-300 p-2"
 					/>
 				</div>
 
 				<div>
-					<label class="font-semibold">Category</label>
-					<select class="w-full rounded-md border border-gray-300 p-2">
-						<option>Raw Material</option>
-						<option>Machinery</option>
-						<option>Consumables</option>
-					</select>
-				</div>
-
-				<div class="flex gap-4">
-					<div class="w-1/2">
-						<label class="font-semibold">Stock</label>
-						<input
-							type="number"
-							placeholder="Stock quantity"
-							class="w-full rounded-md border border-gray-300 p-2"
-						/>
-					</div>
-					<div class="w-1/2">
-						<label class="font-semibold">Price (€)</label>
-						<input
-							type="number"
-							placeholder="Price"
-							class="w-full rounded-md border border-gray-300 p-2"
-						/>
-					</div>
-				</div>
-
-				<div>
-					<label class="font-semibold">Supplier</label>
+					<label class="font-semibold">Email</label>
 					<input
 						type="text"
-						placeholder="Supplier name"
+						placeholder="New user email"
 						class="w-full rounded-md border border-gray-300 p-2"
 					/>
 				</div>
 
+				<!-- Añadir ocultar contraseña -->
 				<div>
-					<label class="font-semibold">Location</label>
+					<label class="font-semibold">Password <span class="text-indigo-500 underline underline-offset-1">User will change it on login</span></label>
 					<input
 						type="text"
-						placeholder="Warehouse location"
-						class="w-full rounded-md border border-gray-300 p-2"
+						placeholder="New user password"
+						class={wrongPassword 
+							? "w-full rounded-md border border-red-300 border-3 p-2" 
+							: "w-full rounded-md border border-gray-300 p-2"}
+						id="password"
 					/>
 				</div>
 
 				<div>
-					<label class="font-semibold">Description</label>
-					<textarea
-						placeholder="Product description..."
-						class="w-full rounded-md border border-gray-300 p-2"
-					></textarea>
+					<label class="font-semibold">Repeat Password</label>
+					<input
+						type="text"
+						placeholder="Repeat new user password"
+						class={wrongPassword 
+							? "w-full rounded-md border border-red-300 border-3 p-2" 
+							: "w-full rounded-md border border-gray-300 p-2"}
+						id="password-repeat"
+					/>
 				</div>
+				
 
 				<div class="mt-4 flex justify-end gap-4">
 					<button
