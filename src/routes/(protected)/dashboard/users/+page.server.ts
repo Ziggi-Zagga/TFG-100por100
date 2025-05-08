@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
+import { roles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function load() {
@@ -10,9 +11,10 @@ export async function load() {
       fullName: users.full_name,
       email: users.email,
       lastLogin: users.last_login,
-      role: users.rol,
+      role: roles.name,
     })
     .from(users)
+    .innerJoin(roles, eq(users.rol, roles.id))
     .where(eq(users.active, true));
 
   return { users: result };
