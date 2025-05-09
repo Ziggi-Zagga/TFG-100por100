@@ -37,6 +37,7 @@
           bind:value={email}
           extraStyles=""
         />
+        
         <div class="relative">
           <TextInput
             type={showPassword ? 'text' : 'password'}
@@ -46,6 +47,7 @@
             bind:value={password}
             extraStyles="pr-10"
           />
+         
           <button
             type="button"
             class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
@@ -53,6 +55,7 @@
             tabindex="-1"
             onclick={() => (showPassword = !showPassword)}
           >
+
             {#if showPassword}
               <img src="../icons/visible.png" alt="visible" class="h-4.5 w-5.5" />
             {:else}

@@ -18,7 +18,7 @@ export const users = sqliteTable('users', {
   active: integer('active', { mode: 'boolean' }).notNull(),
   created_at: text('created_at').notNull(),
   last_login: text('last_login'),
-  rol: integer("roles_id").references(() => roles.id),
+  //rol: integer("roles_id").references(() => roles.id),
 });
 
 // USER_SESSIONS
@@ -79,6 +79,13 @@ export const products = sqliteTable('products', {
   specifications: text('specifications'),
   active: integer('active', { mode: 'boolean' }).notNull(),
 });
+// INVENTORY_LOCATIONS
+export const inventoryLocations = sqliteTable('inventory_locations', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name', { length: 100 }).notNull(),
+  description: text('description'),
+  zone: text('zone'),
+});
 
 // INVENTORY
 export const inventory = sqliteTable('inventory', {
@@ -91,13 +98,7 @@ export const inventory = sqliteTable('inventory', {
   last_count: text('last_count'),
 });
 
-// INVENTORY_LOCATIONS
-export const inventoryLocations = sqliteTable('inventory_locations', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name', { length: 100 }).notNull(),
-  description: text('description'),
-  zone: text('zone'),
-});
+
 
 // INVENTORY_MOVEMENTS
 export const inventoryMovements = sqliteTable('inventory_movements', {
