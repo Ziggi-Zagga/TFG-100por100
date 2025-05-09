@@ -1,4 +1,4 @@
-import { createUser as repoCreateUser, createSession as repoCreateSession, findSessionByToken, updateSessionExpiry, deleteSession, updateLastLogin, findUserById } from '../db/repositories/auth.repository';
+import { createUser as repoCreateUser, createSession as repoCreateSession, findSessionByToken, updateSessionExpiry, deleteSession, updateLastLogin, findUserById, findroleByName } from '../db/repositories/auth.repository';
 import { encodeBase64url } from '@oslojs/encoding';
 import { ERROR_TYPES, ServiceError } from '$lib/utils/errors/ServiceError';
 import crypto from 'crypto';
@@ -29,7 +29,7 @@ export async function validateSession(token: string): Promise<{ session: any | n
     return { session: null, user: null };
   }
 
-  // Renew session if expires in less than 15 days
+ 
   const renewSession = Date.now() >= new Date(session.expires_at).getTime() - 15 * 24 * 60 * 60 * 1000;
   if (renewSession) {
     const newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -37,7 +37,7 @@ export async function validateSession(token: string): Promise<{ session: any | n
     session.expires_at = newExpiry.toISOString();
   }
   
-  // Fetch user info using user_id from session
+  
   const user = await findUserById(session.user_id);
 
   return { session, user: user ? { id: user.id, username: user.username, email: user.email } : null };
@@ -65,7 +65,7 @@ export async function login(email: string, password: string): Promise<{ user: Au
     if (!password) {
       throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
     }
-    // Find user by email
+    
     const user = await findUserByEmail(email);
     if (!user) {
       throw new ServiceError('Email does not exist', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
@@ -96,24 +96,38 @@ export async function signup(email: string, username: string, password: string, 
     if (!username) {
       throw new ServiceError('Username is required', ERROR_TYPES.VALIDATION, 400, { field: 'username' });
     }
+   /* if (!role) {
+      throw new ServiceError('Role is required', ERROR_TYPES.VALIDATION, 400, { field: 'role' });
+    }*/
     if (!password) {
       throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
     }
     if (password !== confirmPassword) {
       throw new ServiceError('Passwords do not match', ERROR_TYPES.VALIDATION, 400, { field: 'confirmPassword' });
     }
+
     const password_hash = await hash(password);
+
+    // Fetch role ID from the repository
+    /*const roleRecord = await findroleByName(role);
+    if (!roleRecord) {
+      throw new ServiceError(`Role '${role}' not found`, ERROR_TYPES.VALIDATION, 400, { field: 'role' });
+    }*/
+
     const user = await repoCreateUser({
       username,
       password_hash,
       email,
+     // role: String(roleRecord.id), 
       full_name: username,
       created_at: new Date().toISOString(),
       active: true
     });
+
     const token = generateSessionToken();
     const session = await createSession(token, user.id, user.username);
     await updateLastLogin(user.id, new Date().toISOString());
+
     return {
       user: { id: user.id, username: user.username, email: user.email },
       session,

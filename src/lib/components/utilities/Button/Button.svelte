@@ -22,8 +22,6 @@
     extraStyles?: string;
   } & HTMLButtonAttributes = $props();
 
-  // DEBUG: Mostrar las clases generadas
-  console.log('Button variant:', variant, 'classes:', classes[variant], 'sizes:', sizes[size]);
 </script>
 
 <div class={extraStyles}>

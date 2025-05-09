@@ -16,6 +16,7 @@ export const actions: Actions = {
 			const formData = await event.request.formData();
 			const email = formData.get('email') as string;
 			const username = formData.get('username') as string;
+			//const role = formData.get('role') as string;
 			const password = formData.get('password') as string;
 			const confirmPassword = formData.get('confirmPassword') as string;
 
@@ -35,9 +36,11 @@ export const actions: Actions = {
 				sameSite: 'lax'
 			});
 			console.log('Session created:', session);
-			return { success: true };
+		  
+			
+			throw redirect(302, '/onboarding/login');
 		} catch (error: any) {
-			console.error('Signup error:', error); // 
+			console.error('Signup error:', error);
 
 			return fail(400, { message: error.message || 'Internal server error' });
 		}
