@@ -1,6 +1,5 @@
-import { sqliteTable, text, integer, primaryKey, real, foreignKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, foreignKey } from 'drizzle-orm/sqlite-core';
 
-// ROLES
 export const roles = sqliteTable('roles', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name', { length: 100 }).notNull(),
@@ -8,7 +7,6 @@ export const roles = sqliteTable('roles', {
   permissions: text('permissions', { length: 1000 }),
 });
 
-// USERS
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   username: text('username', { length: 50 }).notNull().unique(),
@@ -19,10 +17,9 @@ export const users = sqliteTable('users', {
   active: integer('active', { mode: 'boolean' }).notNull(),
   created_at: text('created_at').notNull(),
   last_login: text('last_login'),
-  rol: integer("roles_id").references(() => roles.id),
+  rol: integer('roles_id').references(() => roles.id),
 });
 
-// USER_SESSIONS
 export const userSessions = sqliteTable('user_sessions', {
   session_id: integer('id').primaryKey({ autoIncrement: true }),
   user_id: integer('user_id').notNull().references(() => users.id),
@@ -33,7 +30,6 @@ export const userSessions = sqliteTable('user_sessions', {
   user_agent: text('user_agent'),
 });
 
-// SUPPLIERS
 export const suppliers = sqliteTable('suppliers', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name', { length: 100 }).notNull(),
@@ -44,14 +40,12 @@ export const suppliers = sqliteTable('suppliers', {
   notes: text('notes'),
 });
 
-// MANUFACTURERS
 export const manufacturers = sqliteTable('manufacturers', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
 });
 
-// CATEGORIES
 export const categories = sqliteTable('categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name', { length: 100 }).notNull(),
@@ -64,7 +58,6 @@ export const categories = sqliteTable('categories', {
   }),
 }));
 
-// PRODUCTS
 export const products = sqliteTable('products', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   code: text('code', { length: 50 }).notNull().unique(),
@@ -81,26 +74,44 @@ export const products = sqliteTable('products', {
   active: integer('active', { mode: 'boolean' }).notNull(),
 });
 
-// INVENTORY
+export const stores = sqliteTable('stores', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name', { length: 100 }).notNull(),
+  location: text('location', { length: 150 }),
+  description: text('description'),
+});
+
+export const sections = sqliteTable('sections', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  store_id: integer('store_id').references(() => stores.id).notNull(),
+  name: text('name', { length: 100 }).notNull(),
+  description: text('description'),
+});
+
+export const storeRows = sqliteTable('store_rows', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  section_id: integer('section_id').references(() => sections.id).notNull(),
+  name: text('name', { length: 100 }).notNull(),
+});
+
+export const storeGaps = sqliteTable('store_gaps', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  row_id: integer('row_id').references(() => storeRows.id).notNull(),
+  name: text('name', { length: 100 }).notNull(),
+  capacity: real('capacity'),
+  notes: text('notes'),
+});
+
 export const inventory = sqliteTable('inventory', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  product_id: integer('product_id').notNull().references(() =>products.id),
-  location_id: integer('location_id').notNull().references(() => inventoryLocations.id),
+  product_id: integer('product_id').notNull().references(() => products.id),
+  store_gap_id: integer('store_gap_id').notNull().references(() => storeGaps.id),
   quantity: real('quantity').notNull(),
   min_quantity: real('min_quantity'),
   reorder_quantity: real('reorder_quantity'),
   last_count: text('last_count'),
 });
 
-// INVENTORY_LOCATIONS
-export const inventoryLocations = sqliteTable('inventory_locations', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name', { length: 100 }).notNull(),
-  description: text('description'),
-  zone: text('zone'),
-});
-
-// INVENTORY_MOVEMENTS
 export const inventoryMovements = sqliteTable('inventory_movements', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   type: text('type', { length: 50 }).notNull(),
@@ -110,7 +121,6 @@ export const inventoryMovements = sqliteTable('inventory_movements', {
   notes: text('notes'),
 });
 
-// MOVEMENT_ITEMS
 export const movementItems = sqliteTable('movement_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   movement_id: integer('movement_id').notNull().references(() => inventoryMovements.id),
@@ -118,7 +128,6 @@ export const movementItems = sqliteTable('movement_items', {
   quantity: real('quantity').notNull(),
 });
 
-// ORDERS
 export const orders = sqliteTable('orders', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order_number: text('order_number', { length: 50 }).notNull().unique(),
@@ -130,7 +139,6 @@ export const orders = sqliteTable('orders', {
   notes: text('notes'),
 });
 
-// ORDER_ITEMS
 export const orderItems = sqliteTable('order_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order_id: integer('order_id').notNull().references(() => orders.id),
@@ -140,7 +148,6 @@ export const orderItems = sqliteTable('order_items', {
   status: text('status'),
 });
 
-// ORDER_TRACKING
 export const orderTracking = sqliteTable('order_tracking', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order_id: integer('order_id').notNull().references(() => orders.id),
@@ -150,14 +157,12 @@ export const orderTracking = sqliteTable('order_tracking', {
   updated_at: text('updated_at'),
 });
 
-// ZONES
 export const zones = sqliteTable('zones', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
 });
 
-// MACHINERY
 export const machinery = sqliteTable('machinery', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   code: text('code', { length: 50 }).notNull().unique(),
@@ -168,7 +173,6 @@ export const machinery = sqliteTable('machinery', {
   status: text('status', { length: 50 }),
 });
 
-// INCIDENTS
 export const incidents = sqliteTable('incidents', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   code: text('code', { length: 50 }).notNull().unique(),
@@ -185,7 +189,6 @@ export const incidents = sqliteTable('incidents', {
   actual_hours: real('actual_hours'),
 });
 
-// INCIDENT_ITEMS
 export const incidentItems = sqliteTable('incident_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   incident_id: integer('incident_id').notNull().references(() => incidents.id),
@@ -193,7 +196,6 @@ export const incidentItems = sqliteTable('incident_items', {
   quantity: real('quantity').notNull(),
 });
 
-// INCIDENT_HISTORY
 export const incidentHistory = sqliteTable('incident_history', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   incident_id: integer('incident_id').notNull().references(() => incidents.id),
