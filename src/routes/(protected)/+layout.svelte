@@ -58,8 +58,9 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
     <div class="mt-6">
       <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Settings</div>
       <nav class="mt-2 flex flex-col gap-1">
-        <a href="#" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="../icons/png/output.png" class="w-8 h-8" alt="Logo" />
+        <a href="/dashboard/users" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
+          <!-- AÑADIR AUDITORIA DE IMAGEN users.png A www.freepik.es -->
+          <img src="../icons/png/users.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Users</span>{/if}
         </a>
         <a href="#" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
