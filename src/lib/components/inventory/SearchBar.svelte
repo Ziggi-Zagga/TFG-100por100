@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Button from '$lib/components/utilities/Button/Button.svelte';
   export let openDrawer: () => void;
 </script>
 
@@ -20,25 +21,28 @@
     <!-- Botones -->
     <div class="flex gap-2 flex-shrink-0">
       <!-- Filter Icon Button -->
-      <button class="flex items-center justify-center w-9 h-9 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition" aria-label="filter-btn">
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
           <rect x="3" y="5" width="18" height="2" rx="1" />
           <rect x="5" y="11" width="14" height="2" rx="1" />
           <rect x="7" y="17" width="10" height="2" rx="1" />
         </svg>
-      </button>
+      </Button>
 
       <!-- Add Product Button -->
-      <button
-        on:click={openDrawer}
-        class="font-semibold text-sm py-2 px-5 rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
-        style="
-          color: black;
-          background-image: linear-gradient(to right, #BFDBFE, #C7D2FE, #DDD6FE, #E9D5FF);
-        "
+      <Button
+        type="button"
+        variant="primary"
+        size="md"
+        extraStyles="font-semibold text-sm py-2 px-5 rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
+        onclick={openDrawer}
       >
         + Add Product
-      </button>
+      </Button>
     </div>
   </div>
 </div>

@@ -66,7 +66,7 @@
 			</button>
 			<button
 				class="rounded-md bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
-				on:click={openDrawer}
+				onclick={openDrawer}
 			>
 				+ Add User
 			</button>
@@ -91,7 +91,7 @@
 				{#each data.users as user}
 					<tr
 						class="cursor-pointer border-t hover:bg-gray-50"
-						on:click={() => goToDetails(user.id)}
+						onclick={() => goToDetails(user.id)}
 					>
 						<td class="p-3 whitespace-nowrap">{user.id}</td>
 						<td class="p-3 whitespace-nowrap">{user.username}</td>
@@ -111,7 +111,7 @@
 
 	<!-- DRAWER -->
 	{#if showDrawer}
-		<div class="fixed inset-0 z-40 bg-black/30" on:click={closeDrawer}></div>
+		<div class="fixed inset-0 z-40 bg-black/30" onclick={closeDrawer}></div>
 		<div
 			class="fixed top-0 right-0 z-50 flex h-full w-full max-w-md flex-col gap-6 overflow-y-auto bg-white p-8 shadow-2xl"
 		>
