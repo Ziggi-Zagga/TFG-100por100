@@ -18,7 +18,7 @@ export const users = sqliteTable('users', {
   active: integer('active', { mode: 'boolean' }).notNull(),
   created_at: text('created_at').notNull(),
   last_login: text('last_login'),
-  //rol: integer("roles_id").references(() => roles.id),
+  rol: integer("roles_id").references(() => roles.id),
 });
 
 // USER_SESSIONS
