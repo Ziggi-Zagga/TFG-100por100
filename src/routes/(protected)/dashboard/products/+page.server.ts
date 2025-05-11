@@ -7,5 +7,6 @@ export const load = async () => {
 
   return {
     products: allProducts,
+    totalProducts: allProducts.length
   };
 };

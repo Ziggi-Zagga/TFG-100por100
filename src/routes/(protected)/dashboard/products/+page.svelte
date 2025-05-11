@@ -6,10 +6,10 @@
     import Table from '$lib/components/utilities/table/Table.svelte';
   
     const columns = ['code', 'name', 'price', 'unit', 'active'];
-    export let totalProducts: number = 0;
+    const totalProducts = data.totalProducts;
 
     function handleRowClick(id: number) {
-        goto(`/products/${id}`);
+        goto(`./products/${id}`);
     }
 </script>
   
