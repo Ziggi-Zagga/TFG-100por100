@@ -51,6 +51,11 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
           <img src="../icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Inventory</span>{/if}
         </a>
+
+        <a href="/dashboard/products" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
+          <img src="../icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
+          {#if !collapsed}<span class="ml-3 text-sm font-medium">Products</span>{/if}
+        </a>
       </nav>
     </div>
 
