@@ -1,9 +1,9 @@
-// src/routes/(protected)/dashboard/inventory/[id]/+page.server.ts
 import { db } from '$lib/server/db';
 import { products } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async ({ params }) => {
   const id = Number(params.id);
 
   const product = await db.query.products.findFirst({
@@ -20,4 +20,4 @@ export async function load({ params }) {
   return {
     product
   };
-}
+};
