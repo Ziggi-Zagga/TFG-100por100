@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-
   export let data;
 
   import InventoryHeader from '$lib/components/utilities/Header/Header.svelte';
@@ -9,11 +7,7 @@
   import Table from '$lib/components/utilities/table/Table.svelte';
 
   let showDrawer = false;
-  let totalProducts = 10;
-
-  function goToDetails(id: number) {
-    goto(`/dashboard/inventory/${id}`);
-  }
+  const totalProducts = data.totalProducts;
 
   function openDrawer() {
     showDrawer = true;
@@ -55,7 +49,6 @@
   <Table
     columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
     items={data.items}
-    onRowClick={goToDetails}
     on:delete={async (e) => {
       const product = e.detail;
       const confirmed = confirm(`Do you want to delete the product "${product.name}" from the inventory?`);

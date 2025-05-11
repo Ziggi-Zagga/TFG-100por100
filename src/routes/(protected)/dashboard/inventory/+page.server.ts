@@ -7,6 +7,7 @@ import {
   categories
 } from '$lib/server/db/schema';
 import { and, eq, notExists } from 'drizzle-orm';
+import { totalProducts } from './+page.svelte';
 
 export async function load() {
   // Productos que ya están en inventory
@@ -73,6 +74,7 @@ export async function load() {
   return {
     items: result,
     safeAvailableProducts,
-    locations
+    locations,
+    totalProducts: result.length
   };
 }
