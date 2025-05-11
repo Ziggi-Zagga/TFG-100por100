@@ -1,7 +1,14 @@
 <script lang="ts">
+    import { createEventDispatcher } from 'svelte';
+  
     export let columns: string[] = [];
     export let items: any[] = [];
-    export let onRowClick: (id: number) => void = () => {};
+    export let onRowClick: ((id: number) => void) | undefined = undefined;
+  
+    const dispatch = createEventDispatcher<{
+      delete: any;
+      edit: any;
+    }>();
   
     function formatHeader(header: string) {
       return header.charAt(0).toUpperCase() + header.slice(1);
@@ -23,8 +30,8 @@
           <tbody class="bg-white divide-y divide-gray-200">
             {#each items as item}
               <tr
-                class="group hover:bg-gray-50 transition cursor-pointer"
-                on:click={() => onRowClick(item.id)}
+                class="hover:bg-gray-50 transition {onRowClick ? 'cursor-pointer' : ''}"
+                on:click={() => onRowClick && onRowClick(item.id)}
               >
                 {#each columns as col}
                   <td class="px-4 py-3 whitespace-nowrap {col === 'quantity' ? 'font-semibold' : ''}">
@@ -38,13 +45,26 @@
                   </td>
                 {/each}
                 <td class="px-4 py-3 whitespace-nowrap">
-                  <div class="flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150" role="group" aria-label="Row actions">
-                    <button class="text-gray-500 hover:text-blue-600 transition" title="Edit" aria-label="Edit" type="button" on:click|stopPropagation>
+                  <div class="flex justify-center gap-3 transition-opacity duration-150" role="group" aria-label="Row actions">
+                    <button
+                      class="text-gray-500 hover:text-blue-600 transition"
+                      title="Edit"
+                      aria-label="Edit"
+                      type="button"
+                      on:click|stopPropagation={() => dispatch('edit', item)}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m2 0h.01M7 5h.01M3 21h18M12 17v-5m0 0l-2-2m2 2l2-2" />
                       </svg>
                     </button>
-                    <button class="text-gray-500 hover:text-red-600 transition" title="Delete" aria-label="Delete" type="button" on:click|stopPropagation>
+  
+                    <button
+                      class="text-gray-500 hover:text-red-600 transition"
+                      title="Delete"
+                      aria-label="Delete"
+                      type="button"
+                      on:click|stopPropagation={() => dispatch('delete', item)}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>

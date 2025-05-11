@@ -62,8 +62,8 @@
 <!-- fondo -->
 <div
   class="fixed inset-0 bg-black/30 z-40"
-  on:click={closeDrawer}
-  on:keydown={handleKeyClose}
+  onclick={closeDrawer}
+  onkeydown={handleKeyClose}
   role="button"
   tabindex="0"
   aria-label="Close drawer"
@@ -76,12 +76,12 @@
 >
   <h2 class="text-3xl font-bold text-blue-800 mb-8">➕ Add new Product</h2>
 
-  <form on:submit={handleSubmit} class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <form onsubmit={handleSubmit} class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
     <!-- Producto -->
     <div class="md:col-span-2">
       <label for="product_id" class="block text-sm font-semibold text-gray-600 mb-1">Select Product</label>
-      <select name="product_id" id="product_id" on:change={updateInfo}
+      <select name="product_id" id="product_id" onchange={updateInfo}
         class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm bg-white">
         <option disabled selected>Choose a product...</option>
         {#each availableProducts as product}
@@ -123,7 +123,7 @@
     <div class="md:col-span-2 flex justify-end gap-4 mt-6">
       <button
         type="button"
-        on:click={closeDrawer}
+        onclick={closeDrawer}
         class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-xl shadow-sm transition"
       >
         Cancel

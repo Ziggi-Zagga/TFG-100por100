@@ -1,7 +1,9 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
+import { eq } from 'drizzle-orm';
 import { inventory } from '$lib/server/db/schema';
 
+// Crear inventario
 export async function POST({ request }: RequestEvent) {
   const { action, data } = await request.json();
 
@@ -25,4 +27,21 @@ export async function POST({ request }: RequestEvent) {
   }
 
   return json({ success: false, message: 'Invalid action' }, { status: 400 });
+}
+
+// Eliminar producto de inventario
+export async function DELETE({ request }: RequestEvent) {
+  const { id } = await request.json();
+
+  if (!id || isNaN(id)) {
+    return json({ success: false, message: 'Invalid or missing ID' }, { status: 400 });
+  }
+
+  try {
+    await db.delete(inventory).where(eq(inventory.id, id));
+    return json({ success: true });
+  } catch (error) {
+    console.error('Error deleting inventory:', error);
+    return json({ success: false, message: 'Failed to delete inventory' }, { status: 500 });
+  }
 }

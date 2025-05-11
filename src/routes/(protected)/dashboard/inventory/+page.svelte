@@ -53,10 +53,37 @@
   
   <InventorySearchBar {openDrawer} />
   <Table
-  columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
-  items={data.items}
-  onRowClick={goToDetails}
-/>
+    columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
+    items={data.items}
+    onRowClick={goToDetails}
+    on:delete={async (e) => {
+      const product = e.detail;
+      const confirmed = confirm(`Do you want to delete the product "${product.name}" from the inventory?`);
+    
+      if (!confirmed) return;
+    
+      try {
+        const res = await fetch('./inventory', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: product.id })
+        });
+
+        await res.json();
+    
+        if (!res.ok) throw new Error('Error al eliminar');
+        console.log(`Producto ${product.name} eliminado`);
+        location.reload();
+
+      } catch (err) {
+        alert('Hubo un problema al eliminar el producto.');
+        console.error(err);
+      }
+    }}
+  />
+
 
   {#if showDrawer}
     <ProductDrawer
