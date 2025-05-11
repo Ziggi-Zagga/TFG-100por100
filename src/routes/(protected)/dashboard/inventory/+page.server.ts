@@ -62,9 +62,17 @@ export async function load() {
     })
     .from(inventoryLocations);
 
+  // Que no hayan nulls, que si no da un error de ts
+  const safeAvailableProducts = availableProducts.map((p) => ({
+      ...p,
+      category: p.category ?? undefined,
+      supplier: p.supplier ?? undefined
+    }));
+    
+
   return {
     items: result,
-    availableProducts,
+    safeAvailableProducts,
     locations
   };
 }
