@@ -13,6 +13,7 @@
         repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0 4px, transparent 4px 24px);
       background-blend-mode: overlay;
     "
+<<<<<<< HEAD
 >
 	<div>
 		<h1 class="text-2xl font-semibold text-gray-800">{title}</h1>
@@ -24,3 +25,18 @@
 		<slot />
 	</div>
 </div>
+=======
+  >
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-800">{title}</h1>
+      {#if subtitle}
+        <p class="text-sm text-gray-700 mt-1">{subtitle}</p>
+      {/if}
+    </div>
+  
+    <!-- Aquí va el contenido extra que pase cada página -->
+    <div class="flex items-center justify-center">
+      <slot />
+    </div>
+  </div>
+>>>>>>> 36dd482fbb5c53c966ccbd33f435cff8a17e7a2f
