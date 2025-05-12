@@ -1,63 +1,61 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
-  export let closeDrawer: () => void;
-  export let availableProducts: {
-    id: number;
-    name: string;
-    code: string;
-    category?: string;
-    supplier?: string;
-  }[];
-  export let locations: { id: number; name: string }[];
+	export let closeDrawer: () => void;
+	export let availableProducts: {
+		id: string;
+		name: string;
+		code: string;
+		category?: string;
+		supplier?: string;
+	}[];
+	export let locations: { id: string; name: string }[];
 
-  let selectedProductId: number;
-  let selectedCategory = '';
-  let selectedSupplier = '';
+	let selectedProductId: string = '';
+	let selectedCategory = '';
+	let selectedSupplier = '';
 
-  function handleKeyClose(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      closeDrawer();
-    }
-  }
+	function handleKeyClose(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			closeDrawer();
+		}
+	}
 
-  function updateInfo(event: Event) {
-    const id = Number((event.target as HTMLSelectElement).value);
-    selectedProductId = id;
-    const selected = availableProducts.find(p => p.id === id);
-    selectedCategory = selected?.category ?? '';
-    selectedSupplier = selected?.supplier ?? '';
-  }
+	function updateInfo(event: Event) {
+		const id = (event.target as HTMLSelectElement).value;
+		selectedProductId = id;
+		const selected = availableProducts.find(p => p.id === id);
+		selectedCategory = selected?.category ?? '';
+		selectedSupplier = selected?.supplier ?? '';
+	}
 
-  async function handleSubmit(event: Event) {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
+	async function handleSubmit(event: Event) {
+		event.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
 
-    const payload = {
-      action: 'create',
-      data: {
-        product_id: Number(formData.get('product_id')),
-        location_id: Number(formData.get('location_id')),
-        stock: Number(formData.get('stock'))
-      }
-    };
+		const payload = {
+			product_id: formData.get('product_id'),
+			location_id: formData.get('location_id'),
+			stock: Number(formData.get('stock'))
+		};
 
-    const res = await fetch('/dashboard/inventory', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+		const res = await fetch('/dashboard/inventory/create', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload)
+		});
 
-    const result = await res.json();
-    if (result.success) {
-      closeDrawer();
-      window.location.reload();
-    } else {
-      alert('Error creating inventory item');
-    }
-  }
+		const result = await res.json();
+		if (result.success) {
+			closeDrawer();
+			window.location.reload();
+		} else {
+			alert('Error creating inventory item');
+		}
+	}
 </script>
+
 
 <!-- fondo -->
 <div

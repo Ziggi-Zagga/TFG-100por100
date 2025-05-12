@@ -1,79 +1,45 @@
-import { db } from '$lib/server/db';
+import { error, json } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 import {
-  products,
-  inventory,
-  inventoryLocations,
-  suppliers,
-  categories
-} from '$lib/server/db/schema';
-import { and, eq, notExists } from 'drizzle-orm';
+	getInventoryData,
+	createInventoryEntry,
+	deleteInventoryEntry
+} from '$lib/server/services/inventory.service';
+import { basicErrorHandler } from '$lib/utils/errors/errors';
 
-export async function load() {
-  // Productos que ya están en inventory
-  const result = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      code: products.code,
-      price: products.price,
-      unit: products.unit,
-      quantity: inventory.quantity,
-      last_count: inventory.last_count,
-      location: inventoryLocations.name,
-      supplier: suppliers.name,
-      category: categories.name
-    })
-    .from(products)
-    .innerJoin(inventory, eq(products.id, inventory.product_id))
-    .innerJoin(inventoryLocations, eq(inventory.location_id, inventoryLocations.id))
-    .leftJoin(suppliers, eq(products.supplier_id, suppliers.id))
-    .leftJoin(categories, eq(products.category_id, categories.id))
-    .where(eq(products.active, true));
+export const load: PageServerLoad = async () => {
+	try {
+		const data = await getInventoryData();
+		return data;
+	} catch (err) {
+		console.error('Inventory load error:', err);
+		throw error(500, 'Failed to load inventory');
+	}
+};
 
-  // Productos activos que NO están en inventory
-  const availableProducts = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      code: products.code,
-      category: categories.name,
-      supplier: suppliers.name
-    })
-    .from(products)
-    .leftJoin(categories, eq(products.category_id, categories.id))
-    .leftJoin(suppliers, eq(products.supplier_id, suppliers.id))
-    .where(
-      and(
-        eq(products.active, true),
-        notExists(
-          db
-            .select()
-            .from(inventory)
-            .where(eq(inventory.product_id, products.id))
-        )
-      )
-    );
+export const actions: Actions = {
+	create: async ({ request }) => {
+		try {
+			const { product_id, location_id, stock } = await request.json();
 
-  // Todas las ubicaciones disponibles
-  const locations = await db
-    .select({
-      id: inventoryLocations.id,
-      name: inventoryLocations.name
-    })
-    .from(inventoryLocations);
+			await createInventoryEntry({ product_id, location_id, stock });
 
-  // Que no hayan nulls, que si no da un error de ts
-  const safeAvailableProducts = availableProducts.map((p) => ({
-      ...p,
-      category: p.category ?? undefined,
-      supplier: p.supplier ?? undefined
-    }));
-    
+			return json({ success: true });
+		} catch (err) {
+			console.error('Inventory create error:', err);
+			return basicErrorHandler(err as Error);
+		}
+	},
+	delete: async ({ request }) => {
+		try {
+			const { id } = await request.json();
 
-  return {
-    items: result,
-    safeAvailableProducts,
-    locations,
-    totalProducts: result.length
-  };
-}
+			await deleteInventoryEntry(id);
+
+			return json({ success: true });
+		} catch (err) {
+			console.error('Inventory delete error:', err);
+			return basicErrorHandler(err as Error);
+		}
+	}
+};

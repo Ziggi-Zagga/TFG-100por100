@@ -1,25 +1,36 @@
-import { getStoreWithSections, createSection } from '$lib/server/services/stores.service';
 import type { PageServerLoad, Actions } from './$types';
-import { fail } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
+import { getStoreWithSections, createSection } from '$lib/server/services/stores.service';
+import { basicErrorHandler } from '$lib/utils/errors/errors';
 
 export const load: PageServerLoad = async ({ params }) => {
-  const storeId = Number(params.storeId);
-  const { store, sections } = await getStoreWithSections(storeId);
-  return { store, sections };
+	const storeId = params.id;
+
+	if (!storeId) throw error(400, 'Missing store ID');
+
+	const { store, sections } = await getStoreWithSections(storeId);
+
+	if (!store) throw error(404, 'Store not found');
+
+	return { store, sections };
 };
 
 export const actions: Actions = {
-  createSection: async ({ request, params }) => {
-    const storeId = Number(params.storeId);
-    const formData = await request.formData();
-    const name = formData.get('name')?.toString().trim();
-    const description = formData.get('description')?.toString().trim();
+	create: async ({ request }) => {
+		try {
+			const formData = await request.formData();
+			const storeId = formData.get('storeId')?.toString();
+			const name = formData.get('name')?.toString();
+			const description = formData.get('description')?.toString() ?? '';
 
-    if (!name) {
-      return fail(400, { error: 'Name is required.' });
-    }
+			if (!storeId || !name) {
+				return json({ success: false, message: 'Missing fields' }, { status: 400 });
+			}
 
-    await createSection({ storeId, name, description });
-    return { success: true };
-  }
+			const { id } = await createSection({ storeId, name, description });
+			return json({ success: true, id, name, description });
+		} catch (err) {
+			return basicErrorHandler(err as Error);
+		}
+	}
 };

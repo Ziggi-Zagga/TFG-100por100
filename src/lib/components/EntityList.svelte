@@ -48,7 +48,7 @@
         {#each filteredItems() as item}
           <tr
             class="hover:bg-gray-50 cursor-pointer border-t"
-            on:click={() => onRowClick(item.id)}
+            onclick={() => onRowClick(item.id)}
           >
             {#each columns as col}
               <td class="p-3 whitespace-nowrap">{item[col.toLowerCase()]}</td>
@@ -60,7 +60,7 @@
   </div>
 
   {#if showDrawer}
-    <div class="fixed inset-0 bg-black/30 z-40" on:click={closeDrawer}></div>
+    <div class="fixed inset-0 bg-black/30 z-40" onclick={closeDrawer}></div>
     <div class="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto z-50">
       <slot name="drawerContent" {closeDrawer}></slot>
     </div>
