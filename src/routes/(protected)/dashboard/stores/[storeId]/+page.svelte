@@ -8,13 +8,13 @@
       goto(`/dashboard/stores/${data.store.id}/${sectionId}`);
     }
   </script>
-  
-  <section class="p-8 bg-white w-full min-h-screen space-y-6">
+   <div class="p-8 bg-white w-full space-y-1">
     <p class="text-sm text-gray-500">
       <a href="/dashboard/stores" class="text-blue-600 hover:underline">Stores</a>
       / {data.store.name}
     </p>
-  
+     </div>
+
     <EntityList
       title={`Sections in ${data.store.name}`}
       columns={['Name', 'Description']}
@@ -26,6 +26,7 @@
       searchPlaceholder="Search sections"
       onRowClick={goToSection}
     >
+
       <div slot="drawerContent" let:closeDrawer>
         <h2 class="text-2xl font-bold mb-4">Create New Section</h2>
         <form method="POST" action="?/createSection" on:submit={() => closeDrawer()} class="space-y-4">
@@ -52,5 +53,5 @@
         </form>
       </div>
     </EntityList>
-  </section>
+
   

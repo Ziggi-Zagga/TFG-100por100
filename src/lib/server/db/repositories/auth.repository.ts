@@ -1,6 +1,6 @@
 import { db } from "..";
 import { eq } from "drizzle-orm";
-import { users, userSessions } from "../schema";
+import { users, userSessions,roles } from "../schema";
 
 // Buscar usuario por id
 export async function findUserById(id: number) {
@@ -12,12 +12,17 @@ export async function findUserByEmail(email: string) {
   return db.select().from(users).where(eq(users.email, email)).then(r => r[0]);
 }
 
+// Buscar rol por nombre
+export async function findroleByName(name: string) {
+  return db.select().from(roles).where(eq(roles.name, name)).then(r => r[0]);
+}
+
 // Crear usuario
 export async function createUser({
   username,
   password_hash,
-  salt,
   email,
+  //role,
   full_name,
   active = true,
   created_at,
@@ -25,23 +30,30 @@ export async function createUser({
 }: {
   username: string,
   password_hash: string,
-  salt: string,
   email: string,
+  //role: string, 
   full_name: string,
   active?: boolean,
   created_at: string,
   last_login?: string | null
 }) {
+  // Buscar el rol por nombre
+ /* const roleRecord = await findroleByName(role);
+  if (!roleRecord) {
+    throw new Error(`Role '${role}' not found`);
+  }
+*/
   const [user] = await db.insert(users).values({
     username,
     password_hash,
-    salt,
     email,
+    //rol: roleRecord.id, // Usar el ID del rol encontrado
     full_name,
     active,
     created_at,
     last_login
   }).returning();
+
   return findUserById(user.id);
 }
 

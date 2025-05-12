@@ -1,28 +1,72 @@
 <script lang="ts">
-    import EntityList from '$lib/components/EntityList.svelte';
-    import { goto } from '$app/navigation';
-  
-    export let data;
-  
-    function goToStoreDetails(id: number) {
-      goto(`/dashboard/stores/${id}`);
-    }
-  </script>
-  
+  import { enhance } from '$app/forms';
+  import EntityList from '$lib/components/EntityList.svelte';
+  import EntityListHeader from '$lib/components/EntityListHeader.svelte';
+  import EntityListSearchBar from '$lib/components/EntityListSearchBar.svelte';
+  import { goto } from '$app/navigation';
+
+  export let data;
+
+  let search = '';
+  let showDrawer = false;
+
+  let storesList = [...data.stores];
+
+  $: filteredStores = storesList.filter((store: any) =>
+    store.name.toLowerCase().includes(search.toLowerCase()) ||
+    (store.location ?? '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  function openDrawer() {
+    showDrawer = true;
+  }
+
+  function closeDrawer() {
+    showDrawer = false;
+  }
+
+  function goToStoreDetails(id: string) {
+    goto(`/dashboard/stores/${id}`);
+  }
+</script>
+
+<section class=" w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
   <EntityList
     title="Stores Management"
     columns={['Name', 'Location']}
-    items={data.stores.map((store: any) => ({
+    items={filteredStores.map((store: any) => ({
       id: store.id,
       name: store.name,
       location: store.location
     }))}
     searchPlaceholder="Search by name or location"
     onRowClick={goToStoreDetails}
+    {showDrawer}
+    onCloseDrawer={closeDrawer}
   >
     <div slot="drawerContent" let:closeDrawer>
       <h2 class="text-2xl font-bold mb-4">Create New Store</h2>
-      <form method="POST" action="?/create" on:submit={() => closeDrawer()} class="space-y-4">
+      <form
+        method="POST"
+        action="?/create"
+        use:enhance={{
+          result: async (res, form) => {
+            if (res.type === 'success') {
+              const fd = new FormData(form);
+              storesList = [
+                ...storesList,
+                {
+                  id: res.data?.id ?? crypto.randomUUID(), 
+                  name: fd.get('name')?.toString() ?? '',
+                  location: fd.get('location')?.toString() ?? ''
+                }
+              ];
+              closeDrawer();
+            }
+          }
+        }}
+        class="space-y-4"
+      >
         <input
           type="text"
           name="name"
@@ -53,4 +97,4 @@
       </form>
     </div>
   </EntityList>
-  
+</section>

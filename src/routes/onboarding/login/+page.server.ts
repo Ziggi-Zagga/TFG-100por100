@@ -18,7 +18,6 @@ export const actions: Actions = {
 			const email = formData.get('email') as string;
 			const password = formData.get('password') as string;
 			const result = await authService.login(email, password);
-
 			if (!result) {
 				throw new ServiceError('Invalid credentials', 'AUTHENTICATION_ERROR', 400);
 			}
@@ -34,7 +33,7 @@ export const actions: Actions = {
 
 			throw redirect(302, '/dashboard');
 		} catch (error: unknown) {
-			
+
 			if (error && typeof error === 'object' && 'status' in error && error['status'] === 302 && 'location' in error) {
 				throw error;
 			}

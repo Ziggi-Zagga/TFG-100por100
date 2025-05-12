@@ -2,7 +2,6 @@ import { db } from '$lib/server/db';
 import { stores, sections, storeRows, storeGaps } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-
 export const getFullStoresTree = async () => {
   const results = await db
     .select({
@@ -24,13 +23,11 @@ export const getFullStoresTree = async () => {
   return results;
 };
 
-
 export const getAllStores = async () => {
   return await db.select().from(stores);
 };
 
-
-export const getStoreAndSections = async (storeId: number) => {
+export const getStoreAndSections = async (storeId: string) => {
   const store = await db.query.stores.findFirst({
     where: eq(stores.id, storeId)
   });
@@ -43,8 +40,7 @@ export const getStoreAndSections = async (storeId: number) => {
   return { store, sections: sectionsList };
 };
 
-
-export const getSectionAndRows = async (sectionId: number) => {
+export const getSectionAndRows = async (sectionId: string) => {
   const section = await db.query.sections.findFirst({
     where: eq(sections.id, sectionId)
   });
@@ -57,7 +53,7 @@ export const getSectionAndRows = async (sectionId: number) => {
   return { section, rows: rowsList };
 };
 
-export const getRowAndGaps = async (rowId: number) => {
+export const getRowAndGaps = async (rowId: string) => {
   const row = await db.query.storeRows.findFirst({
     where: eq(storeRows.id, rowId)
   });
@@ -70,8 +66,7 @@ export const getRowAndGaps = async (rowId: number) => {
   return { row, gaps: gapsList };
 };
 
-
-export const getGap = async (gapId: number) => {
+export const getGap = async (gapId: string) => {
   const gap = await db.query.storeGaps.findFirst({
     where: eq(storeGaps.id, gapId)
   });
