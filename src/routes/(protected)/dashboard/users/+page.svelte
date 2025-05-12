@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Header from '$lib/components/utilities/Header/Header.svelte';
+	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
+	import Table from '$lib/components/utilities/table/Table.svelte';
 	export let data;
 
 	let showDrawer = false;
@@ -33,47 +36,48 @@
 		}
 		return true;
 	}
+
 </script>
 
 <section
 	class="min-h-screen w-full p-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 >
-	<!-- HEADER & ACTIONS -->
-	<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-		<!-- Title -->
-		<h1 class="text-2xl font-bold">Users</h1>
-	</div>
 
-	<!-- SEARCH BAR -->
-	<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
-			<input
-				type="text"
-				placeholder="Search by name, role..."
-				class="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2"
-			/>
-
-			<button class="rounded-md bg-green-400 px-4 py-2 font-semibold hover:bg-green-500">
-				Search
-			</button>
-
-		<div>
-			<button
-				class="rounded-md bg-gray-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-300"
-			>
-				Filter
-			</button>
-			<button
-				class="rounded-md bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
-				on:click={openDrawer}
-			>
-				+ Add User
-			</button>
-		</div>
-	</div>
+	<!-- HEADER & SEARCHBAR -->
+	<Header title="Users" subtitle="Manage your users">
+		<SearchBar placeholder="Search by name, role..." addBtnTxt="+ Add User" {openDrawer} />
+	</Header>
 
 	<!-- TABLE -->
+	<Table
+		columns={['#', 'Username', 'Full name', 'Email', 'Role', 'Last login']}
+		items={data.users}
+		on:delete={async (e) => {
+			const user = e.detail;
+
+			const confirmed = confirm(`Do you want to delete the user "${user.username}"?`);
+
+			if (!confirmed) return;
+
+			try {
+				const res = await fetch('./users', {
+					method: 'DELETE',
+					body: JSON.stringify({ id: user.id }),
+					headers: { 'Content-Type': 'application/json' }
+				});
+
+				if (res.ok) {
+					alert('User deleted successfully.');
+				} else {
+					alert('Error deleting user.');
+				}
+			} catch (error) {
+				console.error('Error:', error);
+			}
+		}}
+	/>
+	<!--
 	<div class="overflow-x-auto">
 		<table class="w-full table-auto border border-gray-300 text-sm">
 			<thead class="bg-gray-100 text-gray-700">
@@ -108,8 +112,11 @@
 			</tbody>
 		</table>
 	</div>
+	-->
 
 	<!-- DRAWER -->
+	 
+	<!--
 	{#if showDrawer}
 		<div class="fixed inset-0 z-40 bg-black/30" on:click={closeDrawer}></div>
 		<div
@@ -152,7 +159,7 @@
 					/>
 				</div>
 
-				<!-- Añadir ocultar contraseña -->
+				-- Añadir ocultar contraseña --
 				<div>
 					<label class="font-semibold"
 						>Password <span class="text-indigo-500 underline underline-offset-1"
@@ -199,4 +206,5 @@
 			</form>
 		</div>
 	{/if}
+	-->
 </section>

@@ -21,8 +21,7 @@
     </div>
   
     <!-- Aquí va el contenido extra que pase cada página -->
-    <div class="flex flex-wrap gap-4">
+    <div class="flex items-center justify-center">
       <slot />
     </div>
   </div>
-  
