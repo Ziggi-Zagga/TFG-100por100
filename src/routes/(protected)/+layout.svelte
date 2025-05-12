@@ -58,6 +58,10 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
         </a>
       </nav>
     </div>
+    <a href="/dashboard/stores" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
+          <img src="../icons/png/stores.png" class="w-8 h-8" alt="Logo" />
+          {#if !collapsed}<span class="ml-3 text-sm font-medium">Stores</span>{/if}
+        </a>
 
     <!-- Settings -->
     <div class="mt-6">
