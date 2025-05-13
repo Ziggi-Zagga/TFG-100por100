@@ -1,19 +1,21 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/utilities/Header/Header.svelte';
-	import SearchBar from '$lib/components/utilities//SearchBar/SearchBar.svelte';
+	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-	import { enhance } from '$app/forms';
+	import Breadcrumb from '$lib/components/utilities/Breadcrumb.svelte';
+	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import { goto } from '$app/navigation';
 
-	export let data;
+	const { data } = $props();
+	let sections = $state([...data.sections]);
+	let showDrawer = $state(false);
+	let search = $state('');
 
-	let showDrawer = false;
-	let search = '';
-	let store = data.store;
-	let sections = [...data.sections];
-
-	$: filteredSections = sections.filter(section =>
-		section.name.toLowerCase().includes(search.toLowerCase())
+	const filteredSections = $derived(() =>
+		sections.filter((section) =>
+			section.name.toLowerCase().includes(search.toLowerCase())
+		)
 	);
 
 	function openDrawer() {
@@ -23,52 +25,82 @@
 	function closeDrawer() {
 		showDrawer = false;
 	}
+
+	function goToSection(sectionId: string) {
+	goto(`/dashboard/stores/${data.store.id}/${sectionId}`);
+}
+
+	async function handleDelete(sectionId: string) {
+		const formData = new FormData();
+		formData.append('id', sectionId);
+
+		const res = await fetch('?/delete', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.ok) {
+			sections = sections.filter((s) => s.id !== sectionId);
+		} else {
+			console.error('Failed to delete section');
+		}
+	}
 </script>
 
-<section class="p-8 w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<PageHeader title={store.name} countLabel="sections" totalCount={sections.length} />
+<section class="min-h-screen w-full p-8" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+	<PageHeader title={data.store.name} countLabel="sections" totalCount={sections.length}>
+		<div class="flex items-center gap-4">
+			<Breadcrumb segments={[
+				{ name: 'Stores', href: '/dashboard/stores' },
+				{ name: data.store.name }
+			]} />
+		</div>
+	</PageHeader>
 
-	<SearchBar
-		bind:search
-		placeholder="Search sections..."
-		buttonText="+ Add Section"
-		{openDrawer}
-	/>
+	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
+		<div class="w-full md:flex-1">
+			<SearchBar bind:search placeholder="Search sections..." />
+		</div>
+		<div class="-mt-6 flex w-full justify-end md:w-auto">
+			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+				{@html '<span class="hidden md:inline">Add Section</span>'}
+			</Button>
+		</div>
+	</div>
 
 	<Table
-		columns={['name', 'description']}
-		items={filteredSections}
+		columns={['name']}
+		items={filteredSections()}
+		on:rowClick={(e) => goToSection(e.detail)}
+		on:delete={(e) => handleDelete(e.detail.id)}
 	/>
 
 	{#if showDrawer}
-		<Drawer title="➕ Add Section" onClose={closeDrawer}>
+		<Drawer title="➕ Create New Section" onClose={closeDrawer}>
 			<form
 				method="POST"
 				action="?/create"
-				use:enhance={{
-					result: (res, form) => {
-						if (res.type === 'success') {
-							const fd = new FormData(form);
-							sections = [
-								...sections,
-								{
-									id: res.data?.id ?? crypto.randomUUID(),
-									name: fd.get('name')?.toString() ?? '',
-									description: fd.get('description')?.toString() ?? ''
-								}
-							];
-							closeDrawer();
-						}
-					}
-				}}
-				class="space-y-4"
+				class="fixed top-0 right-0 z-50 h-full w-full max-w-3xl space-y-4 overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white p-10 shadow-2xl"
 			>
-				<input type="hidden" name="storeId" value={store.id} />
-				<input name="name" required placeholder="Section Name" class="w-full p-3 border border-gray-300 rounded-xl" />
-				<textarea name="description" placeholder="Description" class="w-full p-3 border border-gray-300 rounded-xl" />
-				<div class="flex justify-end gap-4 mt-6">
-					<button type="button" on:click={closeDrawer} class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-xl shadow-sm">Cancel</button>
-					<button type="submit" class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 to-indigo-600 text-white py-2 px-6 rounded-xl shadow-md">Create</button>
+				<h2 class="mb-8 text-3xl font-bold text-blue-800">➕ Create New Section</h2>
+
+				<input name="name" required placeholder="Section Name" class="w-full rounded-xl border border-gray-300 p-3" />
+				<textarea name="description" placeholder="Description" class="w-full rounded-xl border border-gray-300 p-3"></textarea>
+
+				<div class="mt-6 flex justify-end gap-4">
+					<button
+						type="button"
+						onclick={closeDrawer}
+						class="rounded-xl bg-gray-200 px-6 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-300"
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
+					>
+						Create
+					</button>
 				</div>
 			</form>
 		</Drawer>

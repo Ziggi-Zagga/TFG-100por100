@@ -1,122 +1,149 @@
 import * as repo from '../db/repositories/stores.repository';
-import { db } from '$lib/server/db';
-import { stores, sections, storeRows, storeGaps } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
+import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 
 export const getStoresTree = async () => {
-  const rows = await repo.getFullStoresTree();
-
-  const storeMap = new Map<string, any>();
-
-  for (const row of rows) {
-    if (!row.storeId) continue;
-
-    let store = storeMap.get(row.storeId);
-    if (!store) {
-      store = {
-        id: row.storeId,
-        name: row.storeName,
-        location: row.storeLocation,
-        sections: []
-      };
-      storeMap.set(row.storeId, store);
-    }
-
-    if (row.sectionId) {
-      let section = store.sections.find((s: any) => s.id === row.sectionId);
-      if (!section) {
-        section = {
-          id: row.sectionId,
-          name: row.sectionName,
-          rows: []
-        };
-        store.sections.push(section);
-      }
-
-      if (row.rowId) {
-        let rowObj = section.rows.find((r: any) => r.id === row.rowId);
-        if (!rowObj) {
-          rowObj = {
-            id: row.rowId,
-            name: row.rowName,
-            gaps: []
-          };
-          section.rows.push(rowObj);
-        }
-
-        if (row.gapId) {
-          const gapExists = rowObj.gaps.find((g: any) => g.id === row.gapId);
-          if (!gapExists) {
-            rowObj.gaps.push({
-              id: row.gapId,
-              name: row.gapName
-            });
-          }
-        }
-      }
-    }
-  }
-
-  return Array.from(storeMap.values());
+	return await repo.getFullStoresTree();
 };
 
 export const getStores = async () => {
-  return await repo.getAllStores();
+	return await repo.getAllStores();
 };
 
 export const getStoreWithSections = async (storeId: string) => {
-  return await repo.getStoreAndSections(storeId);
+	if (!storeId) {
+		throw new ServiceError('Store ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'storeId' });
+	}
+	return await repo.getStoreAndSections(storeId);
 };
 
 export const getSectionWithRows = async (sectionId: string) => {
-  return await repo.getSectionAndRows(sectionId);
+	if (!sectionId) {
+		throw new ServiceError('Section ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'sectionId' });
+	}
+	return await repo.getSectionAndRows(sectionId);
 };
 
 export const getRowWithGaps = async (rowId: string) => {
-  return await repo.getRowAndGaps(rowId);
+	if (!rowId) {
+		throw new ServiceError('Row ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'rowId' });
+	}
+	return await repo.getRowAndGaps(rowId);
 };
 
 export const getGapById = async (gapId: string) => {
-  return await repo.getGap(gapId);
+	if (!gapId) {
+		throw new ServiceError('Gap ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'gapId' });
+	}
+	return await repo.getGap(gapId);
 };
 
-export const createStore = async ({ name, location, description }: { name: string, location: string, description?: string }) => {
-  const id = crypto.randomUUID();
-  await db.insert(stores).values({
-    id,
-    name,
-    location,
-    description
-  });
+export const createStore = async ({
+	name,
+	location,
+	description
+}: {
+	name: string;
+	location: string;
+	description?: string;
+}) => {
+	if (!name) {
+		throw new ServiceError('Store name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+	if (!location) {
+		throw new ServiceError('Location is required', ERROR_TYPES.VALIDATION, 400, { field: 'location' });
+	}
+
+	const id = crypto.randomUUID();
+	await repo.insertStore({ id, name, location, description });
+	return { id };
 };
 
-export const createSection = async ({ storeId, name, description }: { storeId: string, name: string, description?: string }) => {
-  const id = crypto.randomUUID();
-  await db.insert(sections).values({
-    id,
-    store_id: storeId,
-    name,
-    description
-  });
+export const createSection = async ({
+	storeId,
+	name,
+	description
+}: {
+	storeId: string;
+	name: string;
+	description?: string;
+}) => {
+	if (!storeId) {
+		throw new ServiceError('Store ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'storeId' });
+	}
+	if (!name) {
+		throw new ServiceError('Section name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	const id = crypto.randomUUID();
+	await repo.insertSection({ id, storeId, name, description });
+	return { id };
 };
 
-export const createRow = async ({ sectionId, name }: { sectionId: string, name: string }) => {
-  const id = crypto.randomUUID();
-  await db.insert(storeRows).values({
-    id,
-    section_id: sectionId,
-    name
-  });
+export const createRow = async ({
+	sectionId,
+	name
+}: {
+	sectionId: string;
+	name: string;
+}) => {
+	if (!sectionId) {
+		throw new ServiceError('Section ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'sectionId' });
+	}
+	if (!name) {
+		throw new ServiceError('Row name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	const id = crypto.randomUUID();
+	await repo.insertRow({ id, sectionId, name });
+	return { id };
 };
 
-export const createGap = async ({ rowId, name, capacity, notes }: { rowId: string, name: string, capacity?: number, notes?: string }) => {
-  const id = crypto.randomUUID();
-  await db.insert(storeGaps).values({
-    id,
-    row_id: rowId,
-    name,
-    capacity,
-    notes
-  });
+export const createGap = async ({
+	rowId,
+	name,
+	capacity,
+	notes
+}: {
+	rowId: string;
+	name: string;
+	capacity?: number;
+	notes?: string;
+}) => {
+	if (!rowId) {
+		throw new ServiceError('Row ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'rowId' });
+	}
+	if (!name) {
+		throw new ServiceError('Gap name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	const id = crypto.randomUUID();
+	await repo.insertGap({ id, rowId, name, capacity, notes });
+	return { id };
+};
+export const deleteStoreById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Missing store ID', ERROR_TYPES.VALIDATION, 400);
+	}
+	await repo.removeStore(id);
+};
+export const deleteSectionById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Missing section ID', ERROR_TYPES.VALIDATION, 400);
+	}
+	await repo.removeSection(id);
+};
+
+export const deleteRowById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Missing row ID', ERROR_TYPES.VALIDATION, 400);
+	}
+	await repo.removeRow(id);
+};
+
+export const deleteGapById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Missing gap ID', ERROR_TYPES.VALIDATION, 400);
+	}
+	await repo.removeGap(id);
 };

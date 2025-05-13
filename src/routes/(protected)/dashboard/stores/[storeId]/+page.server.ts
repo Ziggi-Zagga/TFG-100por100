@@ -1,36 +1,54 @@
+import {
+	getStoreWithSections,
+	createSection,
+	deleteSectionById
+} from '$lib/server/services/stores.service';
+import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { json, error } from '@sveltejs/kit';
-import { getStoreWithSections, createSection } from '$lib/server/services/stores.service';
-import { basicErrorHandler } from '$lib/utils/errors/errors';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const storeId = params.id;
+	const storeId = params.storeId;
+	if (!storeId) throw fail(400, { message: 'Missing store ID' });
 
-	if (!storeId) throw error(400, 'Missing store ID');
+	const data = await getStoreWithSections(storeId);
+	if (!data.store) throw fail(404, { message: 'Store not found' });
 
-	const { store, sections } = await getStoreWithSections(storeId);
-
-	if (!store) throw error(404, 'Store not found');
-
-	return { store, sections };
+	return {
+		store: data.store,
+		sections: data.sections
+	};
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
+	create: async ({ request, params }) => {
+		const storeId = params.storeId;
+		if (!storeId) return fail(400, { message: 'Missing store ID' });
+
+		const formData = await request.formData();
+		const name = formData.get('name')?.toString() ?? '';
+		const description = formData.get('description')?.toString() ?? '';
+
 		try {
-			const formData = await request.formData();
-			const storeId = formData.get('storeId')?.toString();
-			const name = formData.get('name')?.toString();
-			const description = formData.get('description')?.toString() ?? '';
+			await createSection({ storeId, name, description });
+			throw redirect(303, `/dashboard/stores/${storeId}`);
+		} catch (error) {
+			console.error('Create section failed:', error);
+			return fail(500, { message: 'Failed to create section' });
+		}
+	},
 
-			if (!storeId || !name) {
-				return json({ success: false, message: 'Missing fields' }, { status: 400 });
-			}
+	delete: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
 
-			const { id } = await createSection({ storeId, name, description });
-			return json({ success: true, id, name, description });
-		} catch (err) {
-			return basicErrorHandler(err as Error);
+		if (!id) return fail(400, { message: 'Missing section ID' });
+
+		try {
+			await deleteSectionById(id);
+			return { success: true };
+		} catch (error) {
+			console.error('Delete section failed:', error);
+			return fail(500, { message: 'Failed to delete section' });
 		}
 	}
 };

@@ -67,7 +67,7 @@ export async function repoGetStoreGaps() {
 		.from(table.storeGaps);
 }
 
-// Crear una entrada de inventario
+
 export async function repoInsertInventoryItem({
 	product_id,
 	location_id,

@@ -1,7 +1,6 @@
-import type { PageServerLoad, Actions } from './$types';
-import { json } from '@sveltejs/kit';
-import { getStores, createStore } from '$lib/server/services/stores.service';
-import { basicErrorHandler } from '$lib/utils/errors/errors';
+import { getStores, createStore, deleteStoreById } from '$lib/server/services/stores.service';
+import { redirect, fail } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	const stores = await getStores();
@@ -10,20 +9,26 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	create: async ({ request }) => {
+		const formData = await request.formData();
+		const name = formData.get('name')?.toString() ?? '';
+		const location = formData.get('location')?.toString() ?? '';
+		const description = formData.get('description')?.toString() ?? '';
+		await createStore({ name, location, description });
+		throw redirect(303, '/dashboard/stores');
+	},
+
+	delete: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
+		if (!id) return fail(400, { message: 'Missing store ID' });
+
 		try {
-			const formData = await request.formData();
-			const name = formData.get('name')?.toString();
-			const location = formData.get('location')?.toString();
-			const description = formData.get('description')?.toString() ?? '';
-
-			if (!name || !location) {
-				return json({ success: false, message: 'Missing fields' }, { status: 400 });
-			}
-
-			const { id } = await createStore({ name, location, description });
-			return json({ success: true, id });
+			await deleteStoreById(id);
+			return { success: true };
 		} catch (error) {
-			return basicErrorHandler(error as Error);
+			console.error(error);
+			return fail(500, { message: 'Failed to delete store' });
 		}
 	}
 };
+

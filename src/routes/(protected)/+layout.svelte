@@ -26,10 +26,10 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
         <button onclick={toggleSidebar} class="text-gray-600 hover:text-black mb-4">
           ☰
         </button>
-        <img src="../logo/logo.png" class="w-8 h-8" alt="Logo" />
+        <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
       {:else}
         <div class="flex items-center gap-2">
-          <img src="../logo/logo.png" class="w-8 h-8" alt="Logo" />
+          <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
           <span class="text-lg font-bold">NG Manager</span>
         </div>
         <button onclick={toggleSidebar} class="text-gray-600 hover:text-black">
@@ -43,23 +43,23 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
       <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Main Menu</div>
       <nav class="mt-2 flex flex-col gap-1">
         <a href="/dashboard" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="../icons/png/datos.png" class="w-8 h-8" alt="Logo" />
+          <img src="/icons/png/datos.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Dashboard</span>{/if}
         </a>
         
         <a href="/dashboard/inventory" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="../icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
+          <img src="/icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Inventory</span>{/if}
         </a>
 
         <a href="/dashboard/products" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="../icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
+          <img src="/icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Products</span>{/if}
         </a>
       </nav>
     </div>
     <a href="/dashboard/stores" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="../icons/png/stores.png" class="w-8 h-8" alt="Logo" />
+          <img src="/icons/png/stores.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Stores</span>{/if}
         </a>
 
@@ -69,11 +69,11 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
       <nav class="mt-2 flex flex-col gap-1">
         <a href="/dashboard/users" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
           <!-- AÑADIR AUDITORIA DE IMAGEN users.png A www.freepik.es -->
-          <img src="../icons/png/users.png" class="w-8 h-8" alt="Logo" />
+          <img src="/icons/png/users.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Users</span>{/if}
         </a>
         <a href="#" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="../icons/png/ajuste.png" class="w-8 h-8" alt="Logo" />
+          <img src="/icons/png/ajuste.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Settings</span>{/if}
         </a>
       </nav>
@@ -84,7 +84,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 
     <!-- User Panel -->
     <div class="px-4 py-3 border-t border-gray-200 flex items-center gap-3">
-      <img src="../logo/logo.png" alt="User" class="w-8 h-8 rounded-full" />
+      <img src="/logo/logo.png" alt="User" class="w-8 h-8 rounded-full" />
       {#if !collapsed}
         <div>
           <div class="text-sm font-semibold">User</div>
@@ -95,7 +95,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 
     <!-- Logout -->
     <a href="../icons/png/salida-de-emergencia.png" class="mt-2 px-4 py-2 flex items-center text-black bg-indigo-200 hover:bg-indigo-300 transition">
-      <img src="../icons/png/salida-de-emergencia.png" class="w-8 h-8" alt="Logo" />
+      <img src="/icons/png/salida-de-emergencia.png" class="w-8 h-8" alt="Logo" />
       {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
     </a>
   </aside>
