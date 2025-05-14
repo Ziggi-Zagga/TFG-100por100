@@ -3,7 +3,7 @@
 	export let placeholder: string = 'Search...';
 </script>
 
-<div class="flex justify-between items-center mb-6">
+<div>
 	<input
 		type="text"
 		bind:value={search}
