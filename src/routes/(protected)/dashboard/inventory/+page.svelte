@@ -39,7 +39,7 @@
 </script>
 
 <section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<InventoryHeader title="Inventory" subtitle="{totalProducts} Products">
+	<InventoryHeader title="Inventory" totalCount="{totalProducts}" countLabel="Products">
 		<button class="btn">Export CSV</button>
 		<button class="btn">Export PDF</button>
 		<button class="btn">Import Data</button>

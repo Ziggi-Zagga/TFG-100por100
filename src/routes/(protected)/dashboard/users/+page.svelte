@@ -3,7 +3,24 @@
 	import Header from '$lib/components/utilities/Header/Header.svelte';
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
+	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	export let data;
+
+	let totalUsers = 0;
+	let search = '';
+	let availableRoles = [
+		{ id: 1, name: 'Admin' },
+		{ id: 2, name: 'User' },
+		{ id: 3, name: 'Guest' }
+	];
+	let user = {
+		id: 1,
+		name: 'John Doe',
+		code: 'JD123',
+		category: 'Admin',
+		supplier: 'Supplier A'
+	};
 
 	let showDrawer = false;
 
@@ -36,17 +53,24 @@
 		}
 		return true;
 	}
-
 </script>
 
 <section
 	class="min-h-screen w-full p-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 >
-
 	<!-- HEADER & SEARCHBAR -->
-	<Header title="Users" subtitle="Manage your users">
-		<SearchBar placeholder="Search by name, role..." addBtnTxt="+ Add User" {openDrawer} />
+	<Header title="Users" totalCount={totalUsers} countLabel="users">
+		<SearchBar {search} placeholder="Search by name, role..." />
+		<Button
+			type="button"
+			variant="primary"
+			size="md"
+			extraStyles="font-semibold text-sm rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
+			onclick={openDrawer}
+		>
+			+ Add User
+		</Button>
 	</Header>
 
 	<!-- TABLE -->
@@ -77,6 +101,105 @@
 			}
 		}}
 	/>
+
+	<!-- DRAWER -->
+	{#if showDrawer}
+		<Drawer title="Add New User" onClose={closeDrawer}>
+			<h2 class="mb-4 text-2xl font-bold">Add New User</h2>
+			<!-- ARREGLAR ESTA MIERDA -->
+			<form
+				class="flex flex-col gap-4"
+				on:submit|preventDefault={(e) => {
+					if (checkPassword()) {
+						createUser();
+					}
+				}}
+			>
+				<div>
+					<label class="font-semibold">Username</label>
+					<input
+						type="text"
+						placeholder="New user username"
+						class="w-full rounded-md border border-gray-300 p-2"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold">Full Name</label>
+					<input
+						type="text"
+						placeholder="New user full name"
+						class="w-full rounded-md border border-gray-300 p-2"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold">Email</label>
+					<input
+						type="text"
+						placeholder="New user email"
+						class="w-full rounded-md border border-gray-300 p-2"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold"
+						>Password <span class="text-indigo-500 underline underline-offset-1"
+							>User will change it on login</span
+						></label
+					>
+					<input
+						type="text"
+						placeholder="New user password"
+						class={wrongPassword
+							? 'w-full rounded-md border border-3 border-red-300 p-2'
+							: 'w-full rounded-md border border-gray-300 p-2'}
+						id="password"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold">Repeat Password</label>
+					<input
+						type="text"
+						placeholder="Repeat new user password"
+						class={wrongPassword
+							? 'w-full rounded-md border border-3 border-red-300 p-2'
+							: 'w-full rounded-md border border-gray-300 p-2'}
+						id="password-repeat"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold">Role</label>
+					<select
+						name="role"
+						id="role"
+						onchange={/*updateInfo*/null}
+						class="w-full rounded-xl border border-gray-300 bg-white p-3 shadow-sm focus:ring-2 focus:ring-blue-300 focus:outline-none"
+					>
+						<option disabled selected>Choose a product...</option>
+						{#each availableRoles as role}
+							<option value={role.id}>{role.name} ({user.code})</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="mt-4 flex justify-end gap-4">
+					<Button
+						type="button"
+						variant="secondary"
+						size="md"
+						class="rounded-md bg-gray-300 px-6 py-2 font-semibold text-gray-800 hover:bg-gray-400"
+						onclick={closeDrawer}
+					>
+						Cancel
+					</Button>
+					<Button type="submit" variant="primary" size="md">Create</Button>
+				</div>
+			</form>
+		</Drawer>
+	{/if}
 	<!--
 	<div class="overflow-x-auto">
 		<table class="w-full table-auto border border-gray-300 text-sm">
@@ -115,7 +238,7 @@
 	-->
 
 	<!-- DRAWER -->
-	 
+
 	<!--
 	{#if showDrawer}
 		<div class="fixed inset-0 z-40 bg-black/30" on:click={closeDrawer}></div>
