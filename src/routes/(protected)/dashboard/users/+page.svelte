@@ -7,6 +7,7 @@
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	export let data;
 
+	//FAKE DATA 
 	let totalUsers = 0;
 	let search = '';
 	let availableRoles = [
@@ -21,6 +22,8 @@
 		category: 'Admin',
 		supplier: 'Supplier A'
 	};
+	let userId = "";
+	//FAKE DATA END
 
 	let showDrawer = false;
 
@@ -53,6 +56,22 @@
 		}
 		return true;
 	}
+
+	function handleDelete(userId: string) = {
+		const formData = new FormData();
+		formData.append('id', userId);
+
+		const res = await fetch('/dashboard/stores?/delete', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.ok) {
+			userId = userId.filter((s) => s.id !== userId);
+		} else {
+			console.error('Failed to delete store');
+		}
+		}
 </script>
 
 <section
@@ -77,39 +96,17 @@
 	<Table
 		columns={['#', 'Username', 'Full name', 'Email', 'Role', 'Last login']}
 		items={data.users}
-		on:delete={async (e) => {
-			const user = e.detail;
-
-			const confirmed = confirm(`Do you want to delete the user "${user.username}"?`);
-
-			if (!confirmed) return;
-
-			try {
-				const res = await fetch('./users', {
-					method: 'DELETE',
-					body: JSON.stringify({ id: user.id }),
-					headers: { 'Content-Type': 'application/json' }
-				});
-
-				if (res.ok) {
-					alert('User deleted successfully.');
-				} else {
-					alert('Error deleting user.');
-				}
-			} catch (error) {
-				console.error('Error:', error);
-			}
-		}}
+		on:delete={handleDelete}
 	/>
 
 	<!-- DRAWER -->
 	{#if showDrawer}
 		<Drawer title="Add New User" onClose={closeDrawer}>
 			<h2 class="mb-4 text-2xl font-bold">Add New User</h2>
-			<!-- ARREGLAR ESTA MIERDA -->
 			<form
 				class="flex flex-col gap-4"
-				on:submit|preventDefault={(e) => {
+				onsubmit={(e) => {
+					e.preventDefault();
 					if (checkPassword()) {
 						createUser();
 					}
@@ -175,7 +172,7 @@
 					<select
 						name="role"
 						id="role"
-						onchange={/*updateInfo*/null}
+						onchange={/*updateInfo*/ null}
 						class="w-full rounded-xl border border-gray-300 bg-white p-3 shadow-sm focus:ring-2 focus:ring-blue-300 focus:outline-none"
 					>
 						<option disabled selected>Choose a product...</option>
@@ -200,6 +197,7 @@
 			</form>
 		</Drawer>
 	{/if}
+	
 	<!--
 	<div class="overflow-x-auto">
 		<table class="w-full table-auto border border-gray-300 text-sm">
