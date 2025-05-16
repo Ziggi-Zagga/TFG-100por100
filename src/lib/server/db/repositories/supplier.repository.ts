@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
-import { stores, sections, storeRows, storeGaps } from '$lib/server/db/schema';
+import { suppliers } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const getAllStores = async () => {
-    return await db.select().from(stores);
+export const getAllSuppliers = async () => {
+    return await db.select().from(suppliers);
 }
