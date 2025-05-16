@@ -1,150 +1,101 @@
-// Corregir esto, copia de stores.service.ts
-import * as repo from '../db/repositories/stores.repository';
+import * as repo from '../db/repositories/users.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 
-export const getStoresTree = async () => {
-    return await repo.getFullStoresTree();
+// Obtener todos los usuarios activos
+export const getUsers = async () => {
+	return await repo.getAllUsers();
 };
 
-export const getStores = async () => {
-    return await repo.getAllStores();
+// Obtener usuario por ID
+export const getUserById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	const user = await repo.getUserById(id);
+	if (!user || user.length === 0) {
+		throw new ServiceError('User not found', ERROR_TYPES.NOT_FOUND, 404);
+	}
+	return user[0];
 };
 
-export const getStoreWithSections = async (storeId: string) => {
-    if (!storeId) {
-        throw new ServiceError('Store ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'storeId' });
-    }
-    return await repo.getStoreAndSections(storeId);
-};
-
-export const getSectionWithRows = async (sectionId: string) => {
-    if (!sectionId) {
-        throw new ServiceError('Section ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'sectionId' });
-    }
-    return await repo.getSectionAndRows(sectionId);
-};
-
-export const getRowWithGaps = async (rowId: string) => {
-    if (!rowId) {
-        throw new ServiceError('Row ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'rowId' });
-    }
-    return await repo.getRowAndGaps(rowId);
-};
-
-export const getGapById = async (gapId: string) => {
-    if (!gapId) {
-        throw new ServiceError('Gap ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'gapId' });
-    }
-    return await repo.getGap(gapId);
-};
-
-export const createStore = async ({
-    name,
-    location,
-    description
+// Crear usuario
+export const createUser = async ({
+	username,
+	password_hash,
+	email,
+	full_name,
+	rol
 }: {
-    name: string;
-    location: string;
-    description?: string;
+	username: string;
+	password_hash: string;
+	email: string;
+	full_name: string;
+	rol: string;
 }) => {
-    if (!name) {
-        throw new ServiceError('Store name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
-    }
-    if (!location) {
-        throw new ServiceError('Location is required', ERROR_TYPES.VALIDATION, 400, { field: 'location' });
-    }
+	if (!username) {
+		throw new ServiceError('Username is required', ERROR_TYPES.VALIDATION, 400, { field: 'username' });
+	}
+	if (!password_hash) {
+		throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
+	}
+	if (!email) {
+		throw new ServiceError('Email is required', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
+	}
+	if (!full_name) {
+		throw new ServiceError('Full name is required', ERROR_TYPES.VALIDATION, 400, { field: 'full_name' });
+	}
+	if (!rol) {
+		throw new ServiceError('Role is required', ERROR_TYPES.VALIDATION, 400, { field: 'rol' });
+	}
 
-    const id = crypto.randomUUID();
-    await repo.insertStore({ id, name, location, description });
-    return { id };
+	const id = crypto.randomUUID();
+	const created_at = new Date().toISOString();
+	await repo.insertUser({
+		id,
+		username,
+		password_hash,
+		email,
+		full_name,
+		active: true,
+		created_at,
+		last_login: null,
+		rol
+	});
+	return { id };
 };
 
-export const createSection = async ({
-    storeId,
-    name,
-    description
-}: {
-    storeId: string;
-    name: string;
-    description?: string;
-}) => {
-    if (!storeId) {
-        throw new ServiceError('Store ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'storeId' });
-    }
-    if (!name) {
-        throw new ServiceError('Section name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
-    }
-
-    const id = crypto.randomUUID();
-    await repo.insertSection({ id, storeId, name, description });
-    return { id };
+// Actualizar usuario
+export const updateUser = async (
+	id: string,
+	data: Partial<{
+		username: string;
+		password_hash: string;
+		email: string;
+		full_name: string;
+		active: boolean;
+		last_login: string;
+		rol: string;
+	}>
+) => {
+	if (!id) {
+		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	await repo.updateUser(id, data);
 };
 
-export const createRow = async ({
-    sectionId,
-    name
-}: {
-    sectionId: string;
-    name: string;
-}) => {
-    if (!sectionId) {
-        throw new ServiceError('Section ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'sectionId' });
-    }
-    if (!name) {
-        throw new ServiceError('Row name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
-    }
-
-    const id = crypto.randomUUID();
-    await repo.insertRow({ id, sectionId, name });
-    return { id };
+// Eliminar usuario (soft delete)
+export const softDeleteUser = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	await repo.softDeleteUser(id);
 };
 
-export const createGap = async ({
-    rowId,
-    name,
-    capacity,
-    notes
-}: {
-    rowId: string;
-    name: string;
-    capacity?: number;
-    notes?: string;
-}) => {
-    if (!rowId) {
-        throw new ServiceError('Row ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'rowId' });
-    }
-    if (!name) {
-        throw new ServiceError('Gap name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
-    }
-
-    const id = crypto.randomUUID();
-    await repo.insertGap({ id, rowId, name, capacity, notes });
-    return { id };
-};
-export const deleteStoreById = async (id: string) => {
-    if (!id) {
-        throw new ServiceError('Missing store ID', ERROR_TYPES.VALIDATION, 400);
-    }
-    await repo.removeStore(id);
-};
-export const deleteSectionById = async (id: string) => {
-    if (!id) {
-        throw new ServiceError('Missing section ID', ERROR_TYPES.VALIDATION, 400);
-    }
-    await repo.removeSection(id);
-};
-
-export const deleteRowById = async (id: string) => {
-    if (!id) {
-        throw new ServiceError('Missing row ID', ERROR_TYPES.VALIDATION, 400);
-    }
-    await repo.removeRow(id);
-};
-
-export const deleteGapById = async (id: string) => {
-    if (!id) {
-        throw new ServiceError('Missing gap ID', ERROR_TYPES.VALIDATION, 400);
-    }
-    await repo.removeGap(id);
+// Eliminar usuario (hard delete)
+export const deleteUser = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	await repo.deleteUser(id);
 };
