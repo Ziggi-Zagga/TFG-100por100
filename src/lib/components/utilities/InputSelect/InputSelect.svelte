@@ -24,7 +24,7 @@
     <option disabled value=""></option>
     {#each options as option}
       <option value={option.id}>
-        {option.name} ({option.code})
+        {option.name}
       </option>
     {/each}
   </select>
