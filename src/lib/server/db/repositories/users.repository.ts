@@ -87,3 +87,9 @@ export const softDeleteUser = async (id: string) => {
 export const deleteUser = async (id: string) => {
   await db.delete(users).where(eq(users.id, id));
 };
+
+// Obtener todos los roles
+export const getAllRoles = async () => {
+  return await db.select().from(roles);
+};
+
