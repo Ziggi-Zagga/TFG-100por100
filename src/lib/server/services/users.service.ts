@@ -99,3 +99,8 @@ export const deleteUser = async (id: string) => {
 	}
 	await repo.deleteUser(id);
 };
+
+// Obtener todos los roles
+export const getRoles = async () => {
+	return await repo.getAllRoles();
+};

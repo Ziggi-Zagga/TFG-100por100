@@ -5,31 +5,18 @@
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-	export let data;
 
-	//FAKE DATA 
-	let totalUsers = 0;
-	let search = '';
-	let availableRoles = [
-		{ id: 1, name: 'Admin' },
-		{ id: 2, name: 'User' },
-		{ id: 3, name: 'Guest' }
-	];
-	let user = {
-		id: 1,
-		name: 'John Doe',
-		code: 'JD123',
-		category: 'Admin',
-		supplier: 'Supplier A'
-	};
-	let userId = "";
-	//FAKE DATA END
+	const { data } = $props();
 
-	let showDrawer = false;
+	let showDrawer = $state(false);
+	let wrongPassword = $state(false);
+	let search = $state('');
+	let users = $state([...data.users]);
+	let roles = $state([...data.roles]);
 
-	let wrongPassword = false;
+	let totalUsers = $state(users.length);
 
-	function goToDetails(id: number) {
+	function goToDetails(id: string) {
 		goto(`/dashboard/users/${id}`);
 	}
 
@@ -40,12 +27,12 @@
 	function closeDrawer() {
 		showDrawer = false;
 	}
-
+/*
 	function createUser() {
 		alert('User created (fake action for now).');
 		closeDrawer();
 	}
-
+*/
 	function checkPassword() {
 		const password = document.getElementById('password') as HTMLInputElement;
 		const passwordRepeat = document.getElementById('password-repeat') as HTMLInputElement;
@@ -57,21 +44,30 @@
 		return true;
 	}
 
-	function handleDelete(userId: string) = {
-		const formData = new FormData();
-		formData.append('id', userId);
+	const filteredUsers = $derived(() =>
+		users.filter((user) =>
+			user.username.toLowerCase().includes(search.toLowerCase()) ||
+			(user.fullName ?? '').toLowerCase().includes(search.toLowerCase()) ||
+			(user.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
+			(user.role ?? '').toLowerCase().includes(search.toLowerCase())
+		)
+	);
 
-		const res = await fetch('/dashboard/stores?/delete', {
-			method: 'POST',
-			body: formData
-		});
+	async function handleDelete(userId: string) {
+    	const formData = new FormData();
+    	formData.append('id', userId);
 
-		if (res.ok) {
-			userId = userId.filter((s) => s.id !== userId);
-		} else {
-			console.error('Failed to delete store');
-		}
-		}
+    	const res = await fetch('/dashboard/users?/delete', {
+        	method: 'POST',
+        	body: formData
+    	});
+
+    	if (res.ok) {
+    	    users = users.filter((s) => s.id !== userId);
+    	} else {
+        	console.error('Failed to delete user');
+    	}
+	}
 </script>
 
 <section
@@ -95,8 +91,9 @@
 	<!-- TABLE -->
 	<Table
 		columns={['#', 'Username', 'Full name', 'Email', 'Role', 'Last login']}
-		items={data.users}
-		on:delete={handleDelete}
+		items={filteredUsers()}
+		on:rowClick={(e) => goToDetails(e.detail)}
+		on:delete={(e) => handleDelete(e.detail.id)}
 	/>
 
 	<!-- DRAWER -->
@@ -104,11 +101,13 @@
 		<Drawer title="Add New User" onClose={closeDrawer}>
 			<h2 class="mb-4 text-2xl font-bold">Add New User</h2>
 			<form
+				method="POST"
+				action="?/create"
 				class="flex flex-col gap-4"
 				onsubmit={(e) => {
 					e.preventDefault();
 					if (checkPassword()) {
-						createUser();
+						(e.target as HTMLFormElement).requestSubmit();
 					}
 				}}
 			>
@@ -170,14 +169,14 @@
 				<div>
 					<label class="font-semibold">Role</label>
 					<select
-						name="role"
-						id="role"
-						onchange={/*updateInfo*/ null}
+						name="rol"
+						id="rol"
 						class="w-full rounded-xl border border-gray-300 bg-white p-3 shadow-sm focus:ring-2 focus:ring-blue-300 focus:outline-none"
+						required
 					>
-						<option disabled selected>Choose a product...</option>
-						{#each availableRoles as role}
-							<option value={role.id}>{role.name} ({user.code})</option>
+						<option disabled selected>Choose a role...</option>
+						{#each roles as role}
+							<option value={role.id}>{role.name}</option>
 						{/each}
 					</select>
 				</div>
@@ -192,12 +191,18 @@
 					>
 						Cancel
 					</Button>
-					<Button type="submit" variant="primary" size="md">Create</Button>
+					<!--<Button type="submit" variant="primary" size="md">Create</Button>-->
+					<button
+						type="submit"
+						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
+					>
+						Create
+					</button>
 				</div>
 			</form>
 		</Drawer>
 	{/if}
-	
+
 	<!--
 	<div class="overflow-x-auto">
 		<table class="w-full table-auto border border-gray-300 text-sm">
