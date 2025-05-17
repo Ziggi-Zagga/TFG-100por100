@@ -1,21 +1,39 @@
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { roles } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { getUsers, createUser, deleteUser, getRoles } from '$lib/server/services/users.service';
+import { redirect, fail } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
-export async function load() {
-  const result = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      fullName: users.full_name,
-      email: users.email,
-      lastLogin: users.last_login,
-      role: roles.name,
-    })
-    .from(users)
-    .innerJoin(roles, eq(users.rol, roles.id))
-    .where(eq(users.active, true));
+export const load: PageServerLoad = async () => {
+	const users = await getUsers();
+	const roles = await getRoles();
+	return { users, roles };
+};
 
-  return { users: result };
-}
+
+
+export const actions: Actions = {
+	create: async ({ request }) => {
+		const formData = await request.formData();
+		const username = formData.get('username')?.toString() ?? '';
+		const password_hash = formData.get('password_hash')?.toString() ?? '';
+		const email = formData.get('email')?.toString() ?? '';
+		const full_name = formData.get('full_name')?.toString() ?? '';
+		const rol = formData.get('rol')?.toString() ?? '';
+
+		await createUser({ username, password_hash, email, full_name, rol });
+		throw redirect(303, '/dashboard/users');
+	},
+
+	delete: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
+		if (!id) return fail(400, { message: 'Missing user ID' });
+
+		try {
+			await deleteUser(id);
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return fail(500, { message: 'Failed to delete user' });
+		}
+	}
+};
