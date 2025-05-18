@@ -8,7 +8,7 @@
     children: any;
   }>();
   let collapsed = $state(false);
-
+  let openOrders = $state(false);
   function toggleSidebar() {
     collapsed = !collapsed;
   }
@@ -66,6 +66,51 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
         </a>
       </nav>
     </div>
+    <!-- Orders (desplegable) -->
+<div class="px-4">
+  <div
+    role="button"
+    tabindex="0"
+    class="flex items-center justify-between cursor-pointer px-2 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+    onclick={() => openOrders = !openOrders}
+    onkeydown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        openOrders = !openOrders;
+        e.preventDefault();
+      }
+    }}
+    aria-expanded={openOrders}
+    aria-controls="orders-menu"
+  >
+    <div class="flex items-center">
+      <img src="/icons/png/datos.png" class="w-8 h-8" alt="Orders" />
+      {#if !collapsed}<span class="ml-3 text-sm font-medium">Orders</span>{/if}
+    </div>
+    {#if !collapsed}
+      <svg
+        class="w-4 h-4 transition-transform ml-2"
+        style:transform={openOrders ? 'rotate(90deg)' : 'rotate(0deg)'}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    {/if}
+  </div>
+
+  {#if openOrders}
+    <ul class={`ml-10 mt-1 ${collapsed ? 'hidden' : ''}`}>
+      <li>
+        <a href="/dashboard/orders/ordersList" class="block py-1 text-sm text-gray-600 hover:text-blue-700">Order List</a>
+      </li>
+      <li>
+        <a href="/dashboard/orders/tracking" class="block py-1 text-sm text-gray-600 hover:text-blue-700">Tracking</a>
+      </li>
+    </ul>
+  {/if}
+</div>
+
     <a href="/dashboard/stores" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
           <img src="/icons/png/stores.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Stores</span>{/if}
@@ -76,7 +121,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
       <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Settings</div>
       <nav class="mt-2 flex flex-col gap-1">
         <a href="/dashboard/users" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <!-- AÑADIR AUDITORIA DE IMAGEN users.png A www.freepik.es -->
           <img src="/icons/png/users.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Users</span>{/if}
         </a>

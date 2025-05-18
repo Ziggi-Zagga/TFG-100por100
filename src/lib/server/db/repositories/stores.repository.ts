@@ -16,9 +16,9 @@ export const getFullStoresTree = async () => {
 			gapName: storeGaps.name
 		})
 		.from(stores)
-		.leftJoin(sections, eq(sections.store_id, stores.id))
-		.leftJoin(storeRows, eq(storeRows.section_id, sections.id))
-		.leftJoin(storeGaps, eq(storeGaps.row_id, storeRows.id));
+		.leftJoin(sections, eq(sections.storeId, stores.id))
+		.leftJoin(storeRows, eq(storeRows.sectionId, sections.id))
+		.leftJoin(storeGaps, eq(storeGaps.rowId, storeRows.id));
 };
 
 export const getAllStores = async () => {
@@ -27,19 +27,19 @@ export const getAllStores = async () => {
 
 export const getStoreAndSections = async (storeId: string) => {
 	const store = await db.query.stores.findFirst({ where: eq(stores.id, storeId) });
-	const sectionsList = await db.select().from(sections).where(eq(sections.store_id, storeId));
+	const sectionsList = await db.select().from(sections).where(eq(sections.storeId, storeId));
 	return { store, sections: sectionsList };
 };
 
 export const getSectionAndRows = async (sectionId: string) => {
 	const section = await db.query.sections.findFirst({ where: eq(sections.id, sectionId) });
-	const rowsList = await db.select().from(storeRows).where(eq(storeRows.section_id, sectionId));
+	const rowsList = await db.select().from(storeRows).where(eq(storeRows.sectionId, sectionId));
 	return { section, rows: rowsList };
 };
 
 export const getRowAndGaps = async (rowId: string) => {
 	const row = await db.query.storeRows.findFirst({ where: eq(storeRows.id, rowId) });
-	const gapsList = await db.select().from(storeGaps).where(eq(storeGaps.row_id, rowId));
+	const gapsList = await db.select().from(storeGaps).where(eq(storeGaps.rowId, rowId));
 	return { row, gaps: gapsList };
 };
 
@@ -81,7 +81,7 @@ export const insertSection = async ({
 }) => {
 	await db.insert(sections).values({
 		id,
-		store_id: storeId,
+		storeId,
 		name,
 		description
 	});
@@ -98,7 +98,7 @@ export const insertRow = async ({
 }) => {
 	await db.insert(storeRows).values({
 		id,
-		section_id: sectionId,
+		sectionId,
 		name
 	});
 };
@@ -118,7 +118,7 @@ export const insertGap = async ({
 }) => {
 	await db.insert(storeGaps).values({
 		id,
-		row_id: rowId,
+		rowId,
 		name,
 		capacity,
 		notes

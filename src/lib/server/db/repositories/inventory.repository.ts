@@ -12,16 +12,16 @@ export async function repoGetInventoryView() {
 			price: table.products.price,
 			unit: table.products.unit,
 			quantity: table.inventory.quantity,
-			last_count: table.inventory.last_count,
+			lastCount: table.inventory.lastCount,
 			location: table.storeGaps.name,
 			supplier: table.suppliers.name,
 			category: table.categories.name
 		})
 		.from(table.products)
-		.innerJoin(table.inventory, eq(table.products.id, table.inventory.product_id))
-		.innerJoin(table.storeGaps, eq(table.inventory.store_gap_id, table.storeGaps.id))
-		.leftJoin(table.suppliers, eq(table.products.supplier_id, table.suppliers.id))
-		.leftJoin(table.categories, eq(table.products.category_id, table.categories.id))
+		.innerJoin(table.inventory, eq(table.products.id, table.inventory.productId))
+		.innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
+		.leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
+		.leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
 		.where(eq(table.products.active, true));
 }
 
@@ -36,8 +36,8 @@ export async function repoGetAvailableProducts() {
 			supplier: table.suppliers.name
 		})
 		.from(table.products)
-		.leftJoin(table.categories, eq(table.products.category_id, table.categories.id))
-		.leftJoin(table.suppliers, eq(table.products.supplier_id, table.suppliers.id))
+		.leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
+		.leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
 		.where(
 			and(
 				eq(table.products.active, true),
@@ -45,7 +45,7 @@ export async function repoGetAvailableProducts() {
 					db
 						.select()
 						.from(table.inventory)
-						.where(eq(table.inventory.product_id, table.products.id))
+						.where(eq(table.inventory.productId, table.products.id))
 				)
 			)
 		);
@@ -69,22 +69,36 @@ export async function repoGetStoreGaps() {
 
 
 export async function repoInsertInventoryItem({
-	product_id,
-	location_id,
-	stock
+	productId,
+	storeGapId,
+	stock,
+	id,
+	createdAt,
+	updatedAt,
+	minQuantity,
+	reorderQuantity,
+	lastCount
 }: {
-	product_id: string;
-	location_id: string;
+	productId: string;
+	storeGapId: string;
 	stock: number;
+	id: string;
+	createdAt: Date;
+	updatedAt: Date;
+	minQuantity: number;
+	reorderQuantity: number;
+	lastCount: Date;
 }) {
 	return db.insert(table.inventory).values({
-        id: crypto.randomUUID(),
-		product_id,
-		store_gap_id: location_id,
+		id,
+		productId,
+		storeGapId,
 		quantity: stock,
-		min_quantity: 0,
-		reorder_quantity: 0,
-		last_count: new Date().toISOString()
+		minQuantity,
+		reorderQuantity,
+		lastCount,
+		createdAt,
+		updatedAt
 	});
 }
 

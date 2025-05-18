@@ -27,7 +27,7 @@ export class UserUtils {
       id,
       username,
       email,
-      role: AUTH_CONSTANTS.ROLES.ADMIN,
+      roleId: AUTH_CONSTANTS.ROLES.ADMIN,
       full_name: fullName,
       active: true
     };
