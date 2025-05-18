@@ -1,7 +1,7 @@
 <script lang="ts">
   export let label: string = "Select";
   export let name: string = "";
-  export let options: Array<{ id: string; name: string; code: string }> = [];
+  export let options: Array<{ id: string; name: string; }> = [];
   export let selected: string = "";
   export let disabled: boolean = false;
   export let onChange: (e: Event) => void = () => {};

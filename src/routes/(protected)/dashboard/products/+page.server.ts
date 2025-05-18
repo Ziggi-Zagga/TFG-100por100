@@ -9,9 +9,16 @@ export const load: PageServerLoad = async () => {
   const allProducts = await getFullProductsList();
   if (!allProducts) throw fail(404, { message: 'Products not found' });
 
+  const suppliers = await db.query.suppliers.findMany();
+  const manufacturers = await db.query.manufacturers.findMany();
+  const categories = await db.query.categories.findMany();
+
   return {
     products: allProducts,
-    totalProducts: allProducts.length
+    totalProducts: allProducts.length,
+    suppliers,
+    manufacturers,
+    categories
   };
 };
 

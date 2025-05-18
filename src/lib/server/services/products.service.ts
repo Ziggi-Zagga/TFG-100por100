@@ -18,12 +18,24 @@ export const getAllCategories = async () => {
 	return await categories.getAllCategories();
 }
 
+export const getIdNameCategory = async () => {
+	return await categories.getIdNameCategory();
+}
+
 export const getAllManufacturers = async () => {
     return await manufac.getAllManufacturers();
 }
 
+export const getIdNameManufacturer = async () => {
+	return await manufac.getIdNameManufacturer();
+}
+
 export const getAllSuppliers = async () => {
     return await supp.getAllSuppliers();
+}
+
+export const getIdNameSupplier = async () => {
+	return await supp.getIdNameSupplier();
 }
 
 export const createProduct = async ({

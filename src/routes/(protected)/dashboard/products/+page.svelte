@@ -8,14 +8,19 @@
     import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
     import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
     import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
+    import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
 
     const { data } = $props();
     let productsCopy = $state([...data.products]);
+    let suppliers = $state([...data.suppliers]);
+    let manufacturers = $state([...data.manufacturers]);
+    let categories = $state([...data.categories]);
     let showDrawer = $state(false);
     let search = $state('');
     let totalProducts = $state(data.products.length);
-
-    
+    let selectedSupplier = $state(null);
+    let selectedManufacturer = $state(null);
+    let selectedCategory = $state(null);
 
     function goToProductDetails(id: string) {
       console.log('Navigating to product ID:', id);
@@ -87,9 +92,9 @@
           <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" />
           <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" />
           <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" />
-          <TextInput label="Supplier ID" name="supplierId" placeholder="Select supplier or enter ID" />
-          <TextInput label="Manufacturer ID" name="manufacturerId" placeholder="Select manufacturer or enter ID" />
-          <TextInput label="Category ID" name="categoryId" placeholder="Select category or enter ID" />
+          <InputSelect label="Supplier" name="supplierId" options={suppliers} selected={selectedSupplier ?? undefined} />
+          <InputSelect label="Manufacturer" name="manufacturerId" options={manufacturers} selected={selectedManufacturer ?? undefined} />
+          <InputSelect label="Category" name="categoryId" options={categories} selected={selectedCategory ?? undefined} />
         </div>
  
         <div class="mt-6 flex justify-end gap-4">

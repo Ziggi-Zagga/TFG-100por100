@@ -6,12 +6,18 @@
 	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
 	import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
 
 	const { data } = $props();
 	let items = $state([...data.items]);
+	let availableProducts = $state([...data.safeAvailableProducts]);
 	let showDrawer = $state(false);
 	let search = $state('');
 	let totalProducts = $state(data.items.length);
+	let selectedSupplier = $state('');
+	let selectedManufacturer = $state('');
+	let selectedCategory = $state('');
+	let selectedProduct = $state('');
 
 	function openDrawer() {
 		showDrawer = true;
@@ -60,9 +66,10 @@
 			<form method="POST" action="?/create" class="fixed top-0 right-0 z-50 h-full w-full max-w-3xl space-y-4 overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white p-10 shadow-2xl"
 			>
 			  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				<TextInput label="Product ID" name="product_id" placeholder="Enter product ID" required />
-				<TextInput label="Category" name="category" value={"CAT1"} disabled />
-				<TextInput label="Supplier" name="supplier" value={"selectedSupplier"} disabled />
+				<InputSelect label="Product ID" name="product_id" options={availableProducts} selected={selectedProduct} />
+				<TextInput label="Category" name="category" value={selectedCategory} disabled />
+				<TextInput label="Supplier" name="supplier" value={selectedSupplier} disabled />
+				<TextInput label="Manufacturer" name="manufacturer" value={selectedManufacturer} disabled />
 				<TextInput label="Location ID" name="location_id" placeholder="Enter location ID" required />
 				<NumberInput label="Stock" name="stock" min={0} placeholder="Stock quantity" required />
 			  </div>
