@@ -1,7 +1,7 @@
 <script lang="ts">
 	import InventoryHeader from '$lib/components/utilities/Header/Header.svelte';
-	import InventorySearchBar from '$lib/components/inventory/SearchBar.svelte';
-	import ProductDrawer from '$lib/components/inventory/DrawerAddProduct.svelte';
+	import InventorySearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
+	import ProductDrawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
 
 	export let data;

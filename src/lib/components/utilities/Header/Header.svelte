@@ -1,8 +1,7 @@
 <script lang="ts">
-  const { title, totalCount = 0, countLabel = 'items', children }: {
+  const { title, subtitle = 'items', children }: {
     title: string;
-    totalCount?: number;
-    countLabel?: string;
+    subtitle?: string;
     children?: () => any;
 
   } = $props();
@@ -20,7 +19,7 @@
 >
   <div>
     <h1 class="text-2xl font-semibold text-gray-800">{title}</h1>
-    <p class="text-sm text-gray-700 mt-1">{totalCount} {countLabel}</p>
+    <p class="text-sm text-gray-700 mt-1">{subtitle}</p>
   </div>
 
   <div class="flex flex-wrap items-center gap-4 w-full md:w-auto justify-end">
