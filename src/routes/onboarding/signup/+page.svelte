@@ -1,18 +1,25 @@
 <script lang="ts">
   import TextInput from '$lib/components/utilities/form/TextInput.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
+  import { scale } from 'svelte/transition';
   
-  let showPassword = false;
-  let showConfirmPassword = false;
-  let username = '';
-  let email = '';
-  let password = '';
-  let confirmPassword = '';
-  let error = '';
+	const { data } = $props();
+	const error = data.error;
+  
+  let showPassword = $state(false);
+  let showConfirmPassword = $state(false);
+  let username = $state('');
+  let email = $state('');
+  let password = $state('');
+  let confirmPassword = $state('');
+ 
+
+  
 </script>
 
 <div class="min-h-screen w-full flex items-center justify-center font-inter">
-    <div class="w-full max-w-md flex flex-col items-center justify-center bg-white/90 shadow-xl rounded-3xl p-10 border border-gray-200">
+    <div class="w-full max-w-md flex flex-col items-center justify-center bg-white/90 shadow-xl rounded-3xl p-10 border border-gray-200"
+    in:scale={{ duration: 1500, start: 0.8 }}>
       <div class="w-50 h-50 mx-auto rounded flex items-center justify-center text-xs text-gray-600">
         <img src="../logo/logo.png" alt="Logo" class="w-100 h-100 object-contain" />
       </div>
@@ -79,6 +86,7 @@
             tabindex="-1"
             onclick={() => (showConfirmPassword = !showConfirmPassword)}
           >
+          
             {#if showConfirmPassword}
               <img src="../icons/visible.png" alt="visible" class="h-4.5 w-5.5" />
             {:else}
@@ -86,6 +94,9 @@
             {/if}
           </button>
         </div>
+        {#if error?.message}
+        <p class="text-sm text-red-600 text-center">{error.message}</p>
+        {/if}
         <Button
           type="submit"
           variant="primary"
@@ -94,9 +105,6 @@
         >
           Create user
         </Button>
-        {#if error}
-          <span class="mt-1 text-xs font-medium text-red-500">{error}</span>
-        {/if}
       </form>
     </div>
 </div>

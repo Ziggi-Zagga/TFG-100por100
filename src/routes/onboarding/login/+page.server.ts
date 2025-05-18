@@ -1,44 +1,56 @@
-import {  redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import * as authService from '$lib/server/services/auth.service';
+import { redirect } from '@sveltejs/kit';
 import { ServiceError } from '$lib/utils/errors/ServiceError';
-import { basicErrorHandler } from '$lib/utils/errors/errors';
+import { storeError, getStoredError } from '$lib/stores/error.store'; 
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) { 
+	if (event.locals.user) {
 		throw redirect(302, '/dashboard');
 	}
-	return {};
+
+	const error = getStoredError();
+
+	return { error };
 };
 
 export const actions: Actions = {
 	default: async (event) => {
-		try {
-			const formData = await event.request.formData();
-			const email = formData.get('email') as string;
-			const password = formData.get('password') as string;
-			const result = await authService.login(email, password);
-			if (!result) {
-				throw new ServiceError('Invalid credentials', 'AUTHENTICATION_ERROR', 400);
-			}
+		const formData = await event.request.formData();
+		const identifier = formData.get('identifier') as string;
+		const password = formData.get('password') as string;
+		const ip = event.getClientAddress?.() ?? 'unknown';
+		const userAgent = event.request.headers.get('user-agent') ?? 'unknown';
 
+		try {
+			const result = await authService.login(identifier, password, ip, userAgent);
 			const { session, token } = result;
 			event.cookies.set('auth-session', token, {
 				path: '/',
-				expires: new Date(session.expires_at),
+				expires: new Date(session.expiresAt),
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax'
 			});
-
 			throw redirect(302, '/dashboard');
-		} catch (error: unknown) {
+		} catch (error: any) {
+			let message = 'Unexpected error';
+			let type = 'INTERNAL';
+			let field = '';
 
-			if (error && typeof error === 'object' && 'status' in error && error['status'] === 302 && 'location' in error) {
-				throw error;
+			if (error instanceof ServiceError) {
+				message = error.message;
+				type = error.type;
+				field = error.field ?? '';
 			}
-			console.error('LOGIN ERROR:', error); 
-			return basicErrorHandler(error as Error);
+
+			storeError({
+				message,
+				type,
+				field
+			});
+
+			throw redirect(302, `/onboarding/login`);
 		}
 	}
 };

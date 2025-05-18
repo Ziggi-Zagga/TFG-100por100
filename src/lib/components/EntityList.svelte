@@ -60,7 +60,12 @@
   </div>
 
   {#if showDrawer}
-    <div class="fixed inset-0 bg-black/30 z-40" onclick={closeDrawer}></div>
+    <button
+      type="button"
+      class="fixed inset-0 bg-black/30 z-40 cursor-pointer"
+      onclick={closeDrawer}
+      aria-label="Close drawer"
+    ></button>
     <div class="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto z-50">
       <slot name="drawerContent" {closeDrawer}></slot>
     </div>

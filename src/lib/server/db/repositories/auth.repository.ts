@@ -1,108 +1,121 @@
 import { db } from "..";
 import { eq } from "drizzle-orm";
-import { users, userSessions,roles } from "../schema";
+import { users, userSessions, roles } from "../schema";
 
-// Buscar usuario por id
-export async function findUserById(id: number) {
+// --- USUARIOS ---
+
+export async function findUserById(id: string) {
   return db.select().from(users).where(eq(users.id, id)).then(r => r[0]);
 }
 
-// Buscar usuario por email
 export async function findUserByEmail(email: string) {
   return db.select().from(users).where(eq(users.email, email)).then(r => r[0]);
 }
 
-// Buscar rol por nombre
-export async function findroleByName(name: string) {
-  return db.select().from(roles).where(eq(roles.name, name)).then(r => r[0]);
+export async function findUserByUsername(username: string) {
+  return db.select().from(users).where(eq(users.username, username)).then(r => r[0]);
 }
 
-// Crear usuario
+export async function findRoleByName(name: string) {
+  return db.select().from(roles).where(eq(roles.name, name)).then(r => r[0]);
+}
+export async function getSessionWithUser(token: string) {
+	const [result] = await db
+		.select({
+			user: {
+				id: users.id,
+				username: users.username,
+				email: users.email
+			},
+			session: userSessions
+		})
+		.from(userSessions)
+		.innerJoin(users, eq(userSessions.userId, users.id))
+		.where(eq(userSessions.sessionToken, token));
+	return result;
+}
+
 export async function createUser({
+  id,
   username,
-  password_hash,
+  passwordHash,
   email,
-  //role,
-  full_name,
+  roleId,
   active = true,
-  created_at,
-  last_login = null
+  createdAt,
+  lastLogin = null
 }: {
-  username: string,
-  password_hash: string,
-  email: string,
-  //role: string, 
-  full_name: string,
-  active?: boolean,
-  created_at: string,
-  last_login?: string | null
+  id: string;
+  username: string;
+  passwordHash: string;
+  email: string;
+  roleId: string;
+  active?: boolean;
+  createdAt: Date;
+  lastLogin?: Date | null;
 }) {
-  // Buscar el rol por nombre
- /* const roleRecord = await findroleByName(role);
-  if (!roleRecord) {
-    throw new Error(`Role '${role}' not found`);
-  }
-*/
   const [user] = await db.insert(users).values({
+    id,
     username,
-    password_hash,
+    passwordHash,
     email,
-    //rol: roleRecord.id, // Usar el ID del rol encontrado
-    full_name,
+    roleId,
     active,
-    created_at,
-    last_login
+    createdAt,
+    lastLogin
   }).returning();
 
   return findUserById(user.id);
 }
 
-
-export async function updateLastLogin(userId: number, lastLogin: string) {
-  await db.update(users).set({ last_login: lastLogin }).where(eq(users.id, userId));
+export async function updateLastLogin(userId: string, lastLogin: Date) {
+  await db.update(users).set({ lastLogin }).where(eq(users.id, userId));
 }
 
-
-export async function setActiveStatus(userId: number, active: boolean) {
+export async function setActiveStatus(userId: string, active: boolean) {
   await db.update(users).set({ active }).where(eq(users.id, userId));
 }
 
 // --- SESIONES ---
 
 export async function createSession({
-  user_id,
-  session_token,
-  created_at,
-  expires_at,
-  ip_address = null,
-  user_agent = null
+  sessionId,
+  userId,
+  sessionToken,
+  createdAt,
+  expiresAt,
+  ipAddress = null,
+  userAgent = null
 }: {
-  user_id: number,
-  session_token: string,
-  created_at: string,
-  expires_at: string,
-  ip_address?: string | null,
-  user_agent?: string | null
+  sessionId: string;
+  userId: string;
+  sessionToken: string;
+  createdAt: Date;
+  expiresAt: Date;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }) {
-  const result = await db.insert(userSessions).values({
-    user_id,
-    session_token,
-    created_at,
-    expires_at,
-    ip_address,
-    user_agent
+  await db.insert(userSessions).values({
+    sessionId,
+    userId,
+    sessionToken,
+    createdAt,
+    expiresAt,
+    ipAddress,
+    userAgent
   });
-  return findSessionByToken(session_token);
+
+  return findSessionByToken(sessionToken);
 }
 
-export async function findSessionByToken(session_token: string) {
-  return db.select().from(userSessions).where(eq(userSessions.session_token, session_token)).then(r => r[0]);
+export async function findSessionByToken(sessionToken: string) {
+  return db.select().from(userSessions).where(eq(userSessions.sessionToken, sessionToken)).then(r => r[0]);
 }
 
-export async function deleteSession(session_token: string) {
-  await db.delete(userSessions).where(eq(userSessions.session_token, session_token));
+export async function deleteSession(sessionToken: string) {
+  await db.delete(userSessions).where(eq(userSessions.sessionToken, sessionToken));
 }
 
-export async function updateSessionExpiry(session_token: string, expires_at: string) {
-  await db.update(userSessions).set({ expires_at }).where(eq(userSessions.session_token, session_token));
+export async function updateSessionExpiry(sessionToken: string, expiresAt: Date) {
+  await db.update(userSessions).set({ expiresAt }).where(eq(userSessions.sessionToken, sessionToken));
 }
