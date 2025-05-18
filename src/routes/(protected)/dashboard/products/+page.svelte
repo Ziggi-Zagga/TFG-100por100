@@ -27,8 +27,8 @@
   let showConfirm = $state(false);
   let productToDelete = $state<string | null>(null);
 
-  function goToProductDetails(id: string) {
-    goto(`./products/${id}`);
+  function goToProductDetails(id: string, queryParams: string) {
+    goto(`./products/${id}${queryParams}`);
   }
 
   function openDrawer() {
@@ -89,7 +89,8 @@
   <Table
     columns={['code', 'name', 'price', 'unit', 'active']}
     items={filteredProducts()}
-    on:rowClick={(e) => goToProductDetails(e.detail)}
+    on:rowClick={(e) => goToProductDetails(e.detail, '')}
+    on:edit={(e) => goToProductDetails(e.detail.id, '?edit=true')}
     on:delete={(e) => askDelete(e.detail.id, e.detail.name)}
   />
 

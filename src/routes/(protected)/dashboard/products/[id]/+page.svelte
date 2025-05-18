@@ -25,9 +25,14 @@
   let showConfirm = $state(false);
 
   onMount(() => {
-    id = get(page).params.id;
-    activeText = product.active ? 'Yes' : 'No';
-  });
+  id = get(page).params.id;
+  activeText = product.active ? 'Yes' : 'No';
+
+  const urlParams = new URLSearchParams(get(page).url.search);
+  if (urlParams.get('edit') === 'true') {
+    isEditing = true;
+  }
+});
 
   function toggleEdit() {
     isEditing = !isEditing;
