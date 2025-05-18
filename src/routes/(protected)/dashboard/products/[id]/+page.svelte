@@ -9,6 +9,7 @@
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Header from '$lib/components/utilities/Header/Header.svelte';
   import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
+  import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
   import { goto } from '$app/navigation';
 
   const { data } = $props();
@@ -21,6 +22,8 @@
   let manufacturers = $state([...data.manufacturers]);
   let categories = $state([...data.categories]);
 
+  let showConfirm = $state(false);
+
   onMount(() => {
     id = get(page).params.id;
     activeText = product.active ? 'Yes' : 'No';
@@ -30,21 +33,31 @@
     isEditing = !isEditing;
   }
 
-  async function handleDelete(productSelectedId: string) {
-      const formData = new FormData();
-      formData.append('id', productSelectedId);
+  async function confirmDeletion() {
+    const formData = new FormData();
+    formData.append('id', product.id);
 
-      const res = await fetch('/dashboard/products?/delete', {
-        method: 'POST',
-        body: formData
-      });
+    const res = await fetch('/dashboard/products?/delete', {
+      method: 'POST',
+      body: formData
+    });
 
-      if (res.ok) {
-        goto('/dashboard/products');
-      } else {
-        console.error('Failed to delete store');
-      }
+    showConfirm = false;
+
+    if (res.ok) {
+      goto('/dashboard/products');
+    } else {
+      console.error('Failed to delete store');
     }
+  }
+
+  function handleDelete() {
+    showConfirm = true;
+  }
+
+  function cancelDeletion() {
+    showConfirm = false;
+  }
 
   function goBack() {
     history.back();
@@ -54,7 +67,7 @@
     isEditing = false;
   }
 
-  //SELECT HISTORY ORDERS / INVENTORY MOVES
+  // TABLES DISPLAY
   let selectedOption = $state<'orders' | 'inventory'>('orders');
 
   const historyOptions = [
@@ -72,7 +85,6 @@
 <section class="pt-0 pb-4 md:pb-8 px-4 md:px-8 min-h-screen flex justify-center" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
   <div class="bg-white rounded-2xl shadow-xl px-6 md:px-10 py-6 md:py-8 w-full max-w-7xl space-y-12">
     
-    <!-- Header -->
     <div class="flex justify-between items-center">
       <button onclick={goBack} class="text-indigo-600 hover:text-indigo-800 text-2xl">
         ←
@@ -81,15 +93,13 @@
         <button onclick={toggleEdit} class="hover:scale-110 transition text-yellow-500 hover:text-yellow-600 text-2xl">
           {isEditing ? '✖️' : '✏️'}
         </button>
-        <button onclick={(e) => handleDelete(product.id)} class="hover:scale-110 transition text-red-500 hover:text-red-600 text-2xl">
+        <button onclick={handleDelete} class="hover:scale-110 transition text-red-500 hover:text-red-600 text-2xl">
           🗑️
         </button>
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="flex flex-col md:flex-row gap-12">
-      <!-- Image -->
       <div class="w-full md:w-1/3 flex justify-center">
         <div class="rounded-xl overflow-hidden shadow-md bg-gradient-to-br from-indigo-100 to-indigo-200 p-2">
           <img 
@@ -100,7 +110,6 @@
         </div>
       </div>
 
-      <!-- Details -->
       <div class="w-full md:w-2/3 flex flex-col gap-6">
         {#if isEditing}
           <form method="POST" action="?/update" class="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md">
@@ -147,14 +156,12 @@
       </div>
     </div>
 
-    <!-- Dynamic Header with select -->
     <Header title={selectedOption === 'orders' ? 'Order History' : 'Inventory History'} subtitle={product.name}>
       <div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
         <InputSelect label="Select History Type" name="historyType" options={historyOptions} bind:selected={selectedOption} onChange={handleSelectChange} />
       </div>
     </Header>
 
-    <!-- Dynamic Table -->
     {#if selectedOption === 'orders'}
       <Table columns={["order_id", "date", "quantity", "customer"]} items={[]} />
     {:else if selectedOption === 'inventory'}
@@ -162,6 +169,13 @@
     {/if}
   </div>
 </section>
+
+<ConfirmDialog
+  show={showConfirm}
+  message={`Are you sure you want to eliminate product: ${product.name}?`}
+  onConfirm={confirmDeletion}
+  onCancel={cancelDeletion}
+/>
 {:else}
 <p class="text-center text-red-500 mt-8">Error: Product not found.</p>
 {/if}
