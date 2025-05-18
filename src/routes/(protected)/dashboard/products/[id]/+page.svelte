@@ -16,6 +16,10 @@
   let isEditing = $state(false);
   let activeText: string;
 
+  let suppliers = $state([...data.suppliers]);
+  let manufacturers = $state([...data.manufacturers]);
+  let categories = $state([...data.categories]);
+
   onMount(() => {
     id = get(page).params.id;
     activeText = product.active ? 'Yes' : 'No';
@@ -80,7 +84,7 @@
         <div class="rounded-xl overflow-hidden shadow-md bg-gradient-to-br from-indigo-100 to-indigo-200 p-2">
           <img 
             src="https://via.placeholder.com/300x300.png?text=Product+Image" 
-            alt="Product Image" 
+            alt="Product" 
             class="rounded-lg w-full object-cover"
           />
         </div>
@@ -99,9 +103,9 @@
               <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" value={product.dimensions ?? undefined} />
               <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" value={product.material ?? undefined} />
               <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" value={product.specifications ?? undefined} />
-              <TextInput label="Supplier ID" name="supplier_id" placeholder="Select supplier or enter ID" value={product.supplierId ?? undefined} />
-              <TextInput label="Manufacturer ID" name="manufacturer_id" placeholder="Select manufacturer or enter ID" value={product.manufacturerId ?? undefined} />
-              <TextInput label="Category ID" name="category_id" placeholder="Select category or enter ID" value={product.categoryId ?? undefined} />
+              <InputSelect label="Supplier ID" name="supplier_id" options={suppliers} selected={product.supplierId ?? undefined} />
+              <InputSelect label="Manufacturer ID" name="manufacturer_id" options={manufacturers} selected={product.manufacturerId ?? undefined} />
+              <InputSelect label="Category ID" name="category_id" options={categories} selected={product.categoryId ?? undefined} />
             </div>
 
             <div class="mt-6 flex justify-end gap-4">
@@ -124,9 +128,9 @@
             <ShowText label="Specifications" value={product.specifications} />
             <ShowText label="Active" value={product.active ? 'Yes' : 'No'} />
             <ShowText label="SKU (Code)" value={product.code} uppercase={true} />
-            <ShowText label="Manufacturer" value={product.manufacturerId} />
-            <ShowText label="Supplier" value={product.supplierId} />
-            <ShowText label="Category" value={product.categoryId} />
+            <ShowText label="Manufacturer" value={data.manufacturerName[0].name} />
+            <ShowText label="Supplier" value={data.supplierName[0].name} />
+            <ShowText label="Category" value={data.categoryName[0].name} />
           </div>
         {/if}
       </div>

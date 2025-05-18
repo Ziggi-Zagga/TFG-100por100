@@ -14,6 +14,7 @@ export const getFullProductsList = async () => {
     return await prod.getFullProductsList();
 }
 
+// =========== CATEGORIES ===========
 export const getAllCategories = async () => {
 	return await categories.getAllCategories();
 }
@@ -22,6 +23,11 @@ export const getIdNameCategory = async () => {
 	return await categories.getIdNameCategory();
 }
 
+export const getCategoriesById = async (id: string) => {
+	return await categories.getCategoriesById(id);
+}
+
+// =========== MANUFACTURERS ===========
 export const getAllManufacturers = async () => {
     return await manufac.getAllManufacturers();
 }
@@ -30,6 +36,11 @@ export const getIdNameManufacturer = async () => {
 	return await manufac.getIdNameManufacturer();
 }
 
+export const getManufacturersById = async (id: string) => {
+	return await manufac.getManufacturersById(id);
+}
+
+// =========== SUPPLIERS ===========
 export const getAllSuppliers = async () => {
     return await supp.getAllSuppliers();
 }
@@ -38,6 +49,11 @@ export const getIdNameSupplier = async () => {
 	return await supp.getIdNameSupplier();
 }
 
+export const getSuppliersById = async (id: string) => {
+	return await supp.getSuppliersById(id);
+}
+
+// =========== PRODUCTS ===========
 export const createProduct = async ({
 	code,
 	name,
