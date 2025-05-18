@@ -10,7 +10,7 @@
     import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
 
     const { data } = $props();
-    let products = $state([...data.products]);
+    let productsCopy = $state([...data.products]);
     let showDrawer = $state(false);
     let search = $state('');
     let totalProducts = $state(data.products.length);
@@ -31,9 +31,9 @@
     }
 
     const filteredProducts = $derived(() =>
-      data.products.filter((products) =>
-        products.name.toLowerCase().includes(search.toLowerCase()) ||
-        (products.code ?? '').toLowerCase().includes(search.toLowerCase())
+    productsCopy.filter((productsCopy) =>
+    productsCopy.name.toLowerCase().includes(search.toLowerCase()) ||
+        (productsCopy.code ?? '').toLowerCase().includes(search.toLowerCase())
       )
     );
 
@@ -47,7 +47,7 @@
       });
 
       if (res.ok) {
-        products = products.filter((p) => p.id !== productSelectedId);
+        productsCopy = productsCopy.filter((p) => p.id !== productSelectedId);
       } else {
         console.error('Failed to delete store');
       }
@@ -87,9 +87,9 @@
           <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" />
           <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" />
           <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" />
-          <TextInput label="Supplier ID" name="supplier_id" placeholder="Select supplier or enter ID" />
-          <TextInput label="Manufacturer ID" name="manufacturer_id" placeholder="Select manufacturer or enter ID" />
-          <TextInput label="Category ID" name="category_id" placeholder="Select category or enter ID" />
+          <TextInput label="Supplier ID" name="supplierId" placeholder="Select supplier or enter ID" />
+          <TextInput label="Manufacturer ID" name="manufacturerId" placeholder="Select manufacturer or enter ID" />
+          <TextInput label="Category ID" name="categoryId" placeholder="Select category or enter ID" />
         </div>
  
         <div class="mt-6 flex justify-end gap-4">

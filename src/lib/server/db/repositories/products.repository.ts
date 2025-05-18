@@ -25,12 +25,12 @@ export const getFullProductsList = async () => {
       categoryId: categories.id,
       categoryName: categories.name,
       categoryDescription: categories.description,
-      categoryParentId: categories.parent_id,
+      categoryParentId: categories.parentId,
     })
     .from(products)
-    .leftJoin(suppliers, eq(suppliers.id, products.supplier_id))
-    .leftJoin(manufacturers, eq(manufacturers.id, products.manufacturer_id))
-    .leftJoin(categories, eq(categories.id, products.category_id));
+    .leftJoin(suppliers, eq(suppliers.id, products.supplierId))
+    .leftJoin(manufacturers, eq(manufacturers.id, products.manufacturerId))
+    .leftJoin(categories, eq(categories.id, products.categoryId));
 };
 
 export const getAllProducts = async () => {
@@ -42,44 +42,50 @@ export const insertProduct = async ({
   code,
   name,
   description,
-  supplier_id,
-  manufacturer_id,
-  category_id,
+  supplierId,
+  manufacturerId,
+  categoryId,
   price,
   unit,
   dimensions,
   material,
   specifications,
   active,
+  createdAt,
+  updatedAt,
 }: {
   id: string;
   name: string;
   code: string;
   description?: string;
-  supplier_id?: string;
-  manufacturer_id?: string;
-  category_id?: string;
+  supplierId?: string;
+  manufacturerId?: string;
+  categoryId?: string;
   price?: number;
   unit?: string;
   dimensions?: string;
   material?: string;
   specifications?: string;
   active?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }) => {
   await db.insert(products).values({
     id,
     code,
     name,
     description: description ?? null,
-    supplier_id: supplier_id ?? null,
-    manufacturer_id: manufacturer_id ?? null,
-    category_id: category_id ?? null,
+    supplierId: supplierId ?? null,
+    manufacturerId: manufacturerId ?? null,
+    categoryId: categoryId ?? null,
     price: price ?? null,
     unit: unit ?? null,
     dimensions: dimensions ?? null,
     material: material ?? null,
     specifications: specifications ?? null,
-    active: active ?? false, 
+    active: active ?? false,
+    createdAt: createdAt ?? new Date(),
+    updatedAt: updatedAt ?? new Date(), 
   });
 
   return {
@@ -87,15 +93,21 @@ export const insertProduct = async ({
     code,
     name,
     description,
-    supplier_id,
-    manufacturer_id,
-    category_id,
+    supplierId,
+    manufacturerId,
+    categoryId,
     price,
     unit,
     dimensions,
     material,
     specifications,
     active: active ?? false,
+    createdAt,
+    updatedAt,
   };
+};
+
+export const removeProduct = async (id: string) => {
+	await db.delete(products).where(eq(products.id, id));
 };
 

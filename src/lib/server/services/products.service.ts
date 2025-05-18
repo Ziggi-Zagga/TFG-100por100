@@ -4,6 +4,7 @@ import * as categories from '../db/repositories/category.repository';
 import * as supp from '../db/repositories/supplier.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
+import type { create } from 'domain';
 
 export const getAllProducts = async () => {
     return await prod.getAllProducts();
@@ -29,26 +30,30 @@ export const createProduct = async ({
 	code,
 	name,
 	description,
-	supplier_id,
-	manufacturer_id,
-	category_id,
+	supplierId,
+	manufacturerId,
+	categoryId,
 	price,
 	unit,
 	dimensions,
 	material,
-	specifications
+	specifications,
+	createdAt = new Date(),
+	updatedAt = new Date()
 }: {
 	code: string;
 	name: string;
 	description?: string;
-	supplier_id?: string;
-	manufacturer_id?: string;
-	category_id?: string;
+	supplierId?: string;
+	manufacturerId?: string;
+	categoryId?: string;
 	price?: number;
 	unit?: string;
 	dimensions?: string;
 	material?: string;
 	specifications?: string;
+	createdAt?: Date;
+	updatedAt?: Date;
 }) => {
 	if (!code) {
 		throw new ServiceError('Product code is required', ERROR_TYPES.VALIDATION, 400, { field: 'code' });
@@ -64,16 +69,25 @@ export const createProduct = async ({
 		code,
 		name,
 		description,
-		supplier_id,
-		manufacturer_id,
-		category_id,
+		supplierId,
+		manufacturerId,
+		categoryId,
 		price,
 		unit,
 		dimensions,
 		material,
 		specifications,
-		active: false
+		active: false,
+		createdAt,
+		updatedAt
 	});
 
 	return { id };
+};
+
+export const deleteProductById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Missing product ID', ERROR_TYPES.VALIDATION, 400);
+	}
+	await prod.removeProduct(id);
 };

@@ -1,11 +1,13 @@
 import { db } from '$lib/server/db';
 import { products } from '$lib/server/db/schema';
-import { getFullProductsList, createProduct } from '$lib/server/services/products.service';
-import { fail, type Actions, redirect } from '@sveltejs/kit';
+import { getFullProductsList, createProduct, deleteProductById } from '$lib/server/services/products.service';
+import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
+import type { PageServerLoad, Actions } from './$types';
 
-export const load = async () => {
+export const load: PageServerLoad = async () => {
   const allProducts = await getFullProductsList();
+  if (!allProducts) throw fail(404, { message: 'Products not found' });
 
   return {
     products: allProducts,
@@ -19,9 +21,9 @@ export const actions: Actions = {
     const name = formData.get('name')?.toString() ?? '';
     const code = formData.get('code')?.toString() ?? '';
     const description = formData.get('description')?.toString() ?? '';
-    const supplier_id = formData.get('supplier_id')?.toString() ?? '';
-    const manufacturer_id = formData.get('manufacturer_id')?.toString() ?? '';
-    const category_id = formData.get('category_id')?.toString() ?? '';
+    const supplierId = formData.get('supplierId')?.toString() ?? '';
+    const manufacturerId = formData.get('manufacturerId')?.toString() ?? '';
+    const categoryId = formData.get('categoryId')?.toString() ?? '';
     const price = formData.get('price')?.toString() ?? '';
     const unit = formData.get('unit')?.toString() ?? '';
     const dimensions = formData.get('dimensions')?.toString() ?? '';
@@ -32,14 +34,16 @@ export const actions: Actions = {
       code,
       name,
       description,
-      supplier_id,
-      manufacturer_id,
-      category_id,
+      supplierId,
+      manufacturerId,
+      categoryId,
       price: price ? parseFloat(price) : undefined,
       unit,
       dimensions,
       material,
-      specifications
+      specifications,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     throw redirect(303, '/dashboard/products');
@@ -51,7 +55,7 @@ export const actions: Actions = {
     if (!id) return fail(400, { message: 'Missing product ID' });
 
     try {
-      await db.delete(products).where(eq(products.id, id));
+      await deleteProductById(id);
       return { success: true };
     } catch (error) {
       console.error(error);
