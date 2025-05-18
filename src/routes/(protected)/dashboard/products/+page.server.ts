@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { products } from '$lib/server/db/schema';
-import { getFullProductsList, createProduct, deleteProductById } from '$lib/server/services/products.service';
+import { getFullProductsList, createProduct, deleteProductById, updateProduct } from '$lib/server/services/products.service';
 import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
@@ -68,5 +68,5 @@ export const actions: Actions = {
       console.error(error);
       return fail(500, { message: 'Failed to delete product' });
     }
-  }
+  },
 };

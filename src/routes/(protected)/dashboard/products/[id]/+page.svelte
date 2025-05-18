@@ -9,6 +9,7 @@
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Header from '$lib/components/utilities/Header/Header.svelte';
   import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
+  import { goto } from '$app/navigation';
 
   const { data } = $props();
   let id: string;
@@ -29,12 +30,21 @@
     isEditing = !isEditing;
   }
 
-  function deleteProduct() {
-    const confirmDelete = confirm('Are you sure you want to delete this product?');
-    if (confirmDelete) {
-      alert(`Product with ID: ${id} deleted (fake action for now).`);
+  async function handleDelete(productSelectedId: string) {
+      const formData = new FormData();
+      formData.append('id', productSelectedId);
+
+      const res = await fetch('/dashboard/products?/delete', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        goto('/dashboard/products');
+      } else {
+        console.error('Failed to delete store');
+      }
     }
-  }
 
   function goBack() {
     history.back();
@@ -71,7 +81,7 @@
         <button onclick={toggleEdit} class="hover:scale-110 transition text-yellow-500 hover:text-yellow-600 text-2xl">
           {isEditing ? '✖️' : '✏️'}
         </button>
-        <button onclick={deleteProduct} class="hover:scale-110 transition text-red-500 hover:text-red-600 text-2xl">
+        <button onclick={(e) => handleDelete(product.id)} class="hover:scale-110 transition text-red-500 hover:text-red-600 text-2xl">
           🗑️
         </button>
       </div>
@@ -93,7 +103,8 @@
       <!-- Details -->
       <div class="w-full md:w-2/3 flex flex-col gap-6">
         {#if isEditing}
-          <form method="POST" action="?/create" class="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md">
+          <form method="POST" action="?/update" class="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md">
+            <input type="hidden" name="id" value={product.id} />
             <TextInput label="Product Name" name="name" placeholder="Enter product name" value={product.name} required />
             <TextInput label="Product Code" name="code" placeholder="Enter product code" value={product.code} required />
             <TextInput label="Description" name="description" placeholder="Enter product description" value={product.description ?? undefined} />
@@ -103,9 +114,9 @@
               <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" value={product.dimensions ?? undefined} />
               <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" value={product.material ?? undefined} />
               <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" value={product.specifications ?? undefined} />
-              <InputSelect label="Supplier ID" name="supplier_id" options={suppliers} selected={product.supplierId ?? undefined} />
-              <InputSelect label="Manufacturer ID" name="manufacturer_id" options={manufacturers} selected={product.manufacturerId ?? undefined} />
-              <InputSelect label="Category ID" name="category_id" options={categories} selected={product.categoryId ?? undefined} />
+              <InputSelect label="Supplier ID" name="supplierId" options={suppliers} selected={product.supplierId ?? undefined} />
+              <InputSelect label="Manufacturer ID" name="manufacturerId" options={manufacturers} selected={product.manufacturerId ?? undefined} />
+              <InputSelect label="Category ID" name="categoryId" options={categories} selected={product.categoryId ?? undefined} />
             </div>
 
             <div class="mt-6 flex justify-end gap-4">
