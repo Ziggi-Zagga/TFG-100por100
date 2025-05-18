@@ -14,12 +14,11 @@ export const actions: Actions = {
 	create: async ({ request }) => {
 		const formData = await request.formData();
 		const username = formData.get('username')?.toString() ?? '';
-		const password_hash = formData.get('password_hash')?.toString() ?? '';
+		const passwordHash = formData.get('password_hash')?.toString() ?? '';
 		const email = formData.get('email')?.toString() ?? '';
-		const full_name = formData.get('full_name')?.toString() ?? '';
-		const rol = formData.get('rol')?.toString() ?? '';
+		const roleId = formData.get('rol')?.toString() ?? '';
 
-		await createUser({ username, password_hash, email, full_name, rol });
+		await createUser({ username, passwordHash, email, roleId });
 		throw redirect(303, '/dashboard/users');
 	},
 

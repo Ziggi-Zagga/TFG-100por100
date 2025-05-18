@@ -22,47 +22,47 @@ export const getUserById = async (id: string) => {
 // Crear usuario
 export const createUser = async ({
 	username,
-	password_hash,
+	passwordHash,
 	email,
-	full_name,
-	rol
+	roleId
 }: {
 	username: string;
-	password_hash: string;
+	passwordHash: string;
 	email: string;
-	full_name: string;
-	rol: string;
+	roleId: string;
 }) => {
 	if (!username) {
 		throw new ServiceError('Username is required', ERROR_TYPES.VALIDATION, 400, { field: 'username' });
 	}
-	if (!password_hash) {
+	if (!passwordHash) {
 		throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
 	}
 	if (!email) {
 		throw new ServiceError('Email is required', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
 	}
-	if (!full_name) {
-		throw new ServiceError('Full name is required', ERROR_TYPES.VALIDATION, 400, { field: 'full_name' });
-	}
-	if (!rol) {
-		throw new ServiceError('Role is required', ERROR_TYPES.VALIDATION, 400, { field: 'rol' });
+	if (!roleId) {
+		throw new ServiceError('Role ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'roleId' });
 	}
 
 	const id = crypto.randomUUID();
-	const created_at = new Date().toISOString();
+	const createdAt = Math.floor(Date.now() / 1000);
+
 	await repo.insertUser({
 		id,
 		username,
-		password_hash,
+		passwordHash,
 		email,
-		full_name,
-		active: true,
-		created_at,
-		last_login: null,
-		rol
+		roleId,
+		createdAt
 	});
-	return { id };
+
+	return {
+		id,
+		username,
+		email,
+		roleId,
+		createdAt
+	};
 };
 
 // Actualizar usuario
@@ -70,37 +70,108 @@ export const updateUser = async (
 	id: string,
 	data: Partial<{
 		username: string;
-		password_hash: string;
+		passwordHash: string;
 		email: string;
-		full_name: string;
+		roleId: string;
 		active: boolean;
-		last_login: string;
-		rol: string;
+		lastLogin: number;
 	}>
 ) => {
 	if (!id) {
 		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
 	}
+
 	await repo.updateUser(id, data);
 };
 
 // Eliminar usuario (soft delete)
-export const softDeleteUser = async (id: string) => {
-	if (!id) {
-		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
-	}
-	await repo.softDeleteUser(id);
-};
-
-// Eliminar usuario (hard delete)
 export const deleteUser = async (id: string) => {
 	if (!id) {
 		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
 	}
+
+	await repo.softDeleteUser(id);
+};
+
+// Eliminar usuario permanentemente (hard delete)
+export const deletePermanently = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+
 	await repo.deleteUser(id);
 };
 
 // Obtener todos los roles
 export const getRoles = async () => {
 	return await repo.getAllRoles();
+};
+
+// Obtener rol por ID
+export const getRoleById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Role ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+
+	const role = await repo.getRoleById(id);
+	if (!role || role.length === 0) {
+		throw new ServiceError('Role not found', ERROR_TYPES.NOT_FOUND, 404);
+	}
+	return role[0];
+};
+
+// Crear rol
+export const createRole = async ({
+	name,
+	description,
+	permissions
+}: {
+	name: string;
+	description?: string;
+	permissions?: string;
+}) => {
+	if (!name) {
+		throw new ServiceError('Role name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	const id = crypto.randomUUID();
+
+	await repo.insertRole({
+		id,
+		name,
+		description,
+		permissions
+	});
+
+	return {
+		id,
+		name,
+		description,
+		permissions
+	};
+};
+
+// Actualizar rol
+export const updateRole = async (
+	id: string,
+	data: Partial<{
+		name: string;
+		description: string;
+		permissions: string;
+	}>
+) => {
+	if (!id) {
+		throw new ServiceError('Role ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+
+	await repo.updateRole(id, data);
+};
+
+// Eliminar rol
+export const deleteRole = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('Role ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+
+	await repo.deleteRole(id);
 };
