@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { scale } from 'svelte/transition';
-	import TextInput from '$lib/components/utilities/form/TextInput.svelte';
+	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 
 	const { data } = $props();

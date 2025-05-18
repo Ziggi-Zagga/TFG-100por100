@@ -1,0 +1,113 @@
+import { db } from '$lib/server/db';
+import { products, suppliers, manufacturers, categories } from '$lib/server/db/schema';
+import { desc, eq } from 'drizzle-orm';
+
+export const getFullProductsList = async () => {
+  return await db
+    .select({
+      id: products.id,
+      code: products.code,
+      name: products.name,
+      description: products.description,
+      price: products.price,
+      unit: products.unit,
+      dimensions: products.dimensions,
+      material: products.material,
+      specifications: products.specifications,
+      active: products.active,
+
+      supplierId: suppliers.id,
+      supplierName: suppliers.name,
+
+      manufacturerId: manufacturers.id,
+      manufacturerName: manufacturers.name,
+
+      categoryId: categories.id,
+      categoryName: categories.name,
+      categoryDescription: categories.description,
+      categoryParentId: categories.parentId,
+    })
+    .from(products)
+    .leftJoin(suppliers, eq(suppliers.id, products.supplierId))
+    .leftJoin(manufacturers, eq(manufacturers.id, products.manufacturerId))
+    .leftJoin(categories, eq(categories.id, products.categoryId));
+};
+
+export const getAllProducts = async () => {
+  return await db.select().from(products);
+};
+
+export const insertProduct = async ({
+  id,
+  code,
+  name,
+  description,
+  supplierId,
+  manufacturerId,
+  categoryId,
+  price,
+  unit,
+  dimensions,
+  material,
+  specifications,
+  active,
+  createdAt,
+  updatedAt,
+}: {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  supplierId?: string;
+  manufacturerId?: string;
+  categoryId?: string;
+  price?: number;
+  unit?: string;
+  dimensions?: string;
+  material?: string;
+  specifications?: string;
+  active?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}) => {
+  await db.insert(products).values({
+    id,
+    code,
+    name,
+    description: description ?? null,
+    supplierId: supplierId ?? null,
+    manufacturerId: manufacturerId ?? null,
+    categoryId: categoryId ?? null,
+    price: price ?? null,
+    unit: unit ?? null,
+    dimensions: dimensions ?? null,
+    material: material ?? null,
+    specifications: specifications ?? null,
+    active: active ?? false,
+    createdAt: createdAt ?? new Date(),
+    updatedAt: updatedAt ?? new Date(), 
+  });
+
+  return {
+    id,
+    code,
+    name,
+    description,
+    supplierId,
+    manufacturerId,
+    categoryId,
+    price,
+    unit,
+    dimensions,
+    material,
+    specifications,
+    active: active ?? false,
+    createdAt,
+    updatedAt,
+  };
+};
+
+export const removeProduct = async (id: string) => {
+	await db.delete(products).where(eq(products.id, id));
+};
+

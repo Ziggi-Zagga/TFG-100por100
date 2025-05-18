@@ -13,11 +13,16 @@ export async function repoGetInventoryView() {
 			unit: table.products.unit,
 			quantity: table.inventory.quantity,
 			lastCount: table.inventory.lastCount,
+			lastCount: table.inventory.lastCount,
 			location: table.storeGaps.name,
 			supplier: table.suppliers.name,
 			category: table.categories.name
 		})
 		.from(table.products)
+		.innerJoin(table.inventory, eq(table.products.id, table.inventory.productId))
+		.innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
+		.leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
+		.leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
 		.innerJoin(table.inventory, eq(table.products.id, table.inventory.productId))
 		.innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
 		.leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
@@ -38,6 +43,8 @@ export async function repoGetAvailableProducts() {
 		.from(table.products)
 		.leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
 		.leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
+		.leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
+		.leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
 		.where(
 			and(
 				eq(table.products.active, true),
@@ -45,6 +52,7 @@ export async function repoGetAvailableProducts() {
 					db
 						.select()
 						.from(table.inventory)
+						.where(eq(table.inventory.productId, table.products.id))
 						.where(eq(table.inventory.productId, table.products.id))
 				)
 			)
@@ -78,7 +86,12 @@ export async function repoInsertInventoryItem({
 	minQuantity,
 	reorderQuantity,
 	lastCount
+	productId,
+	storeGapId,
+	stock
 }: {
+	productId: string;
+	storeGapId: string;
 	productId: string;
 	storeGapId: string;
 	stock: number;
@@ -93,12 +106,20 @@ export async function repoInsertInventoryItem({
 		id,
 		productId,
 		storeGapId,
+        id: crypto.randomUUID(),
+		productId,
+		storeGapId,
 		quantity: stock,
 		minQuantity,
 		reorderQuantity,
 		lastCount,
 		createdAt,
 		updatedAt
+		minQuantity: 0,
+		reorderQuantity: 0,
+		lastCount: new Date(),
+		createdAt: new Date(),
+		updatedAt: new Date()
 	});
 }
 

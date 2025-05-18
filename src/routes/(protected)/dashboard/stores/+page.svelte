@@ -49,7 +49,7 @@
 </script>
 
 <section class="min-h-screen w-full p-8" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<PageHeader title="Stores Management" countLabel="stores" totalCount={stores.length} />
+	<PageHeader title="Stores Management" subtitle="{stores.length} stores" />
 
 	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
 		<div class="w-full md:flex-1">
