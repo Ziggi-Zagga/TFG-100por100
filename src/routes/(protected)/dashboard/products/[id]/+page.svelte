@@ -65,10 +65,10 @@
       </button>
       <div class="flex gap-4">
         <button onclick={toggleEdit} class="hover:scale-110 transition text-yellow-500 hover:text-yellow-600 text-2xl">
-          {isEditing ? '💾' : '✏️'}
+          {isEditing ? '✖️' : '✏️'}
         </button>
         <button onclick={deleteProduct} class="hover:scale-110 transition text-red-500 hover:text-red-600 text-2xl">
-          🔚️
+          🗑️
         </button>
       </div>
     </div>
@@ -89,7 +89,7 @@
       <!-- Details -->
       <div class="w-full md:w-2/3 flex flex-col gap-6">
         {#if isEditing}
-          <form method="POST" action="?/create" class="space-y-6">
+          <form method="POST" action="?/create" class="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md">
             <TextInput label="Product Name" name="name" placeholder="Enter product name" value={product.name} required />
             <TextInput label="Product Code" name="code" placeholder="Enter product code" value={product.code} required />
             <TextInput label="Description" name="description" placeholder="Enter product description" value={product.description ?? undefined} />
