@@ -92,10 +92,10 @@
             {:else}
               <img src="../icons/hide.png" alt="hide" class="h-5 w-5.5" />
             {/if}
-          </button>
+          </button> 
         </div>
         {#if error?.message}
-        <p class="text-sm text-red-600 text-center">{error.message}</p>
+          <p class="text-sm text-red-600 text-center">{error.message}</p>
         {/if}
         <Button
           type="submit"

@@ -75,7 +75,6 @@ export async function login(
     SessionManager.checkLoginAttempts(ip);
     ValidationUtils.validateRequiredFields({ identifier, password }, ['identifier', 'password']);
 
-    // Buscar usuario por email o username
     const user = await authRepository.findUserByEmail(identifier) || 
                  await authRepository.findUserByUsername(identifier);
     
