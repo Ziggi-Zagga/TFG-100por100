@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TextInput from '$lib/components/utilities/form/TextInput.svelte';
+  import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
   
   let showPassword = false;

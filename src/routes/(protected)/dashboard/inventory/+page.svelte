@@ -45,7 +45,7 @@
 		<button class="btn">Import Data</button>
 	</InventoryHeader>
 
-	<InventorySearchBar {openDrawer} />
+	<InventorySearchBar bind:search placeholder="Search by name or code..." />
 
 	<Table
 		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
