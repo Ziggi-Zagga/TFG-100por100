@@ -5,11 +5,12 @@
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
+	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
+	import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
 
 	const { data } = $props();
 
 	let showDrawer = $state(false);
-	let wrongPassword = $state(false);
 	let search = $state('');
 	let users = $state([...data.users]);
 	let roles = $state([...data.roles]);
@@ -25,17 +26,6 @@
 
 	function closeDrawer() {
 		showDrawer = false;
-	}
-
-	function checkPassword() {
-		const password = document.getElementById('password') as HTMLInputElement;
-		const passwordRepeat = document.getElementById('password-repeat') as HTMLInputElement;
-
-		if (password.value !== passwordRepeat.value) {
-			wrongPassword = true;
-			return false;
-		}
-		return true;
 	}
 
 	const filteredUsers = $derived(() =>
@@ -69,7 +59,7 @@
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 >
 	<!-- HEADER & SEARCHBAR -->
-	<Header title="Users" totalCount={totalUsers()} countLabel="users" />
+	<Header title="Users" subtitle={totalUsers().toString() + ' users'} />
 
 	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
 		<div class="w-full md:flex-1">
@@ -81,12 +71,13 @@
 				variant="primary"
 				size="md"
 				extraStyles="font-semibold text-sm rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
-				onclick={openDrawer}
+				onclick={() => openDrawer()}
 			>
-				+ Add User
+				+ Add Role
 			</Button>
 		</div>
 	</div>
+
 	<!-- TABLE -->
 	<Table
 		columns={['username', 'email', 'role', 'lastLogin']}
@@ -97,87 +88,38 @@
 
 	<!-- DRAWER -->
 	{#if showDrawer}
-		<Drawer title="Add New User" onClose={closeDrawer}>
-			<h2 class="mb-4 text-2xl font-bold">Add New User</h2>
+		<Drawer title="Add New Role" onClose={closeDrawer}>
+			<h2 class="mb-4 text-2xl font-bold">Add New Role</h2>
 			<form
 				method="POST"
-				action="?/create"
+				action="?/createRole"
 				class="flex flex-col gap-4"
 				onsubmit={(e) => {
 					e.preventDefault();
-					if (checkPassword()) {
-						(e.target as HTMLFormElement).requestSubmit();
-					}
+					(e.target as HTMLFormElement).requestSubmit();
+					closeDrawer();
 				}}
 			>
 				<div>
-					<label class="font-semibold">Username</label>
-					<input
-						type="text"
-						placeholder="New user username"
-						class="w-full rounded-md border border-gray-300 p-2"
-					/>
+					<label class="font-semibold">Role Name</label>
+					<TextInput name="name" placeholder="Enter role name" extraStyles="w-full" />
 				</div>
 
 				<div>
-					<label class="font-semibold">Full Name</label>
-					<input
-						type="text"
-						placeholder="New user full name"
-						class="w-full rounded-md border border-gray-300 p-2"
-					/>
+					<label class="font-semibold">Description</label>
+					<TextInput name="description" placeholder="Enter role description" extraStyles="w-full" />
 				</div>
 
 				<div>
-					<label class="font-semibold">Email</label>
-					<input
-						type="text"
-						placeholder="New user email"
-						class="w-full rounded-md border border-gray-300 p-2"
+					<label class="font-semibold">Permissions</label>
+					<InputSelect
+						name="permissions"
+						selected="Select permissions"
+						options={[
+							{id:"full", name:"Full"},
+							{id:"limited", name:"Limited"},
+						]}
 					/>
-				</div>
-
-				<div>
-					<label class="font-semibold"
-						>Password <span class="text-indigo-500 underline underline-offset-1"
-							>User will change it on login</span
-						></label
-					>
-					<input
-						type="text"
-						placeholder="New user password"
-						class={wrongPassword
-							? 'w-full rounded-md border border-3 border-red-300 p-2'
-							: 'w-full rounded-md border border-gray-300 p-2'}
-						id="password"
-					/>
-				</div>
-
-				<div>
-					<label class="font-semibold">Repeat Password</label>
-					<input
-						type="text"
-						placeholder="Repeat new user password"
-						class={wrongPassword
-							? 'w-full rounded-md border border-3 border-red-300 p-2'
-							: 'w-full rounded-md border border-gray-300 p-2'}
-						id="password-repeat"
-					/>
-				</div>
-
-				<div>
-					<label class="font-semibold">Role</label>
-					<select
-						name="rol"
-						id="rol"
-						class="w-full rounded-xl border border-gray-300 bg-white p-3 shadow-sm focus:ring-2 focus:ring-blue-300 focus:outline-none"
-						required
-					>
-						<option disabled selected>Choose a role...</option>
-						{#each roles as role}
-							<option value={role.id}>{role.name}</option>
-						{/each}
-					</select>
 				</div>
 
 				<div class="mt-4 flex justify-end gap-4">
@@ -190,13 +132,14 @@
 					>
 						Cancel
 					</Button>
-					<!--<Button type="submit" variant="primary" size="md">Create</Button>-->
-					<button
+					<Button
 						type="submit"
+						variant="primary"
+						size="md"
 						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
 					>
-						Create
-					</button>
+						Create Role
+					</Button>
 				</div>
 			</form>
 		</Drawer>

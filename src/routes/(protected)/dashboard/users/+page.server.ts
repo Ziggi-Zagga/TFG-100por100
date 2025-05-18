@@ -1,4 +1,4 @@
-import { getUsers, createUser, deleteUser, getRoles } from '$lib/server/services/users.service';
+import { getUsers, createUser, deleteUser, getRoles, createRole } from '$lib/server/services/users.service';
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -33,6 +33,29 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error(error);
 			return fail(500, { message: 'Failed to delete user' });
+		}
+	},
+
+	createRole: async ({ request }) => {
+		const formData = await request.formData();
+		const name = formData.get('role_name')?.toString() ?? '';
+		const description = formData.get('role_description')?.toString() ?? '';
+		const permissions = formData.getAll('permissions') as string[];
+
+		if (!name) {
+			return fail(400, { message: 'Role name is required' });
+		}
+
+		try {
+			await createRole({
+				name,
+				description,
+				permissions: permissions.join(',')
+			});
+			throw redirect(303, '/dashboard/users');
+		} catch (error) {
+			console.error(error);
+			return fail(500, { message: 'Failed to create role' });
 		}
 	}
 };
