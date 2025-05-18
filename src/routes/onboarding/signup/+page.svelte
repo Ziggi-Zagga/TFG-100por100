@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
+  import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import { scale } from 'svelte/transition';
   

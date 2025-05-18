@@ -3,8 +3,8 @@
 	import InventorySearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import ProductDrawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
-	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
-	import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
+	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+	import NumberInput from '$lib/components/utilities/Form/NumberInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 
 	const { data } = $props();

@@ -6,8 +6,8 @@
     import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
     import Button from '$lib/components/utilities/Button/Button.svelte';
     import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-    import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
-    import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
+    import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+    import NumberInput from '$lib/components/utilities/Form/NumberInput.svelte';
 
     const { data } = $props();
     let productsCopy = $state([...data.products]);

@@ -1,10 +1,11 @@
-import { getOrders, createOrderWithItems, deleteOrderById } from '$lib/server/services/orders.service';
+import { getOrders, createOrderWithItems, deleteOrderById, getSuppliers } from '$lib/server/services/orders.service';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	const orders = await getOrders();
-	return { orders };
+	const suppliers = await getSuppliers();
+	return { orders, suppliers };
 };
 
 export const actions: Actions = {

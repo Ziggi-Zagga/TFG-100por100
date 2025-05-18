@@ -1,4 +1,5 @@
 import * as repo from '../db/repositories/orders.repository';
+import { getAllSuppliers } from '../db/repositories/supplier.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 import type { orders, orderItems } from '$lib/server/db/schema';
@@ -77,4 +78,8 @@ export const deleteOrderById = async (orderId: string) => {
 	}
 	await repo.removeOrderItemsByOrderId(orderId);
 	await repo.removeOrder(orderId);
+};
+
+export const getSuppliers = async () => {
+	return await getAllSuppliers();
 };
