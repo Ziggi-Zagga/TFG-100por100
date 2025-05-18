@@ -5,6 +5,12 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: import('$lib/server/services/auth.service').AuthUser | null;
+			session: import('$lib/server/services/auth.service').userSession | null;
+			loginError?: {
+				message: string;
+				field?: string;
+				type?: string;
+			};
 		}
 		// interface PageData {}
 		// interface PageState {}

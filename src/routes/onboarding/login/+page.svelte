@@ -2,10 +2,15 @@
 	import { scale } from 'svelte/transition';
 	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
-	export let form: any;
-	let showPassword = false;
-	let email = '';
-	let password = '';
+
+	const { data } = $props();
+	const error = data.error;
+
+	let identifier = $state('');
+	let password = $state('');
+	let showPassword = $state(false);
+
+
 </script>
 
 <div class="font-inter flex min-h-screen w-full items-center justify-center">
@@ -17,17 +22,13 @@
 			<img src="../logo/logo.png" alt="Logo" class="h-100 w-100 object-contain" />
 		</div>
 
-		<div class="text-center">
-			<p class="text-sm text-gray-500">Please sign in to continue</p>
-		</div>
 		<form method="POST" class="space-y-4" autocomplete="off">
 			<TextInput
-				type="email"
-				name="email"
-				placeholder="Email address"
+				type="text"
+				name="identifier"
+				placeholder="Email address or username"
 				required
-				bind:value={email}
-				extraStyles=""
+				bind:value={identifier}
 			/>
 
 			<div class="relative">
@@ -42,8 +43,8 @@
 				<button
 					type="button"
 					class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
-					aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-					tabindex="-1"
+					aria-label={showPassword ? 'Hide password' : 'Show password'}
+					tabIndex={-1}
 					onclick={() => (showPassword = !showPassword)}
 				>
 					{#if showPassword}
@@ -54,18 +55,18 @@
 				</button>
 			</div>
 
-			{#if form?.message}
-				<p class="text-sm text-red-600">{form.message}</p>
+			{#if error?.message}
+				<p class="text-sm text-red-600 text-center">{error.message}</p>
 			{/if}
 
-			<Button
-				type="submit"
-				variant="primary"
-				size="lg"
-				extraStyles="w-full"
-			>
+			<Button type="submit" variant="primary" size="lg" extraStyles="w-full">
 				Sign In
 			</Button>
+
+			<div class="mt-4 text-center">
+				<span class="text-gray-600">Don't have an account?</span>
+				<a href="/onboarding/signup" class="ml-2 font-medium text-blue-600 hover:text-blue-800">Sign Up</a>
+			</div>
 		</form>
 	</div>
 </div>

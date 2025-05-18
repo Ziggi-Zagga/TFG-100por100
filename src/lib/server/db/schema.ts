@@ -10,29 +10,30 @@ export const roles = sqliteTable('roles', {
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   username: text('username', { length: 50 }).notNull().unique(),
-  password_hash: text('password_hash', { length: 128 }).notNull(),
+  passwordHash: text('passwordHash', { length: 255 }).notNull(),
   email: text('email', { length: 255 }).notNull().unique(),
-  full_name: text('full_name', { length: 100 }).notNull(),
   active: integer('active', { mode: 'boolean' }).notNull(),
-  created_at: text('created_at').notNull(),
-  last_login: text('last_login'),
-  rol: integer('roles_id').references(() => roles.id),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  lastLogin: integer('lastLogin', { mode: 'timestamp' }),
+  roleId: text('roleId').references(() => roles.id).notNull(),
 });
 
-export const userSessions = sqliteTable('user_sessions', {
-  session_id: text('id').primaryKey(),
-  user_id: text('user_id').notNull().references(() => users.id),
-  session_token: text('session_token', { length: 128 }).notNull().unique(),
-  created_at: text('created_at').notNull(),
-  expires_at: text('expires_at').notNull(),
-  ip_address: text('ip_address'),
-  user_agent: text('user_agent'),
+export const userSessions = sqliteTable('userSessions', {
+	sessionId: text('id').primaryKey(),
+	userId: text('userId')
+		.notNull()
+		.references(() => users.id),
+	createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+	expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
+  sessionToken: text('sessionToken', { length: 128 }).unique().notNull(),
+  ipAddress: text('ipAddress'),
+  userAgent: text('userAgent'),
 });
 
 export const suppliers = sqliteTable('suppliers', {
   id: text('id').primaryKey(),
   name: text('name', { length: 100 }).notNull(),
-  contact_person: text('contact_person'),
+  contactPerson: text('contactPerson'),
   email: text('email', { length: 255 }),
   phone: text('phone'),
   website: text('website'),
@@ -49,10 +50,10 @@ export const categories = sqliteTable('categories', {
   id: text('id').primaryKey(),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
-  parent_id: text('parent_id'),
+  parentId: text('parentId'),
 }, (table) => ({
   parentCategoryFk: foreignKey({
-    columns: [table.parent_id],
+    columns: [table.parentId],
     foreignColumns: [table.id],
   }),
 }));
@@ -62,15 +63,17 @@ export const products = sqliteTable('products', {
   code: text('code', { length: 50 }).notNull().unique(),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
-  supplier_id: text('supplier_id').references(() => suppliers.id),
-  manufacturer_id: text('manufacturer_id').references(() => manufacturers.id),
-  category_id: text('category_id').references(() => categories.id),
+  supplierId: text('supplierId').references(() => suppliers.id),
+  manufacturerId: text('manufacturerId').references(() => manufacturers.id),
+  categoryId: text('categoryId').references(() => categories.id),
   price: real('price'),
   unit: text('unit', { length: 20 }),
   dimensions: text('dimensions'),
   material: text('material'),
   specifications: text('specifications'),
   active: integer('active', { mode: 'boolean' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
 
@@ -83,20 +86,20 @@ export const stores = sqliteTable('stores', {
 
 export const sections = sqliteTable('sections', {
   id: text('id').primaryKey(),
-  store_id: text('store_id').references(() => stores.id).notNull(),
+  storeId: text('storeId').references(() => stores.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
 });
 
-export const storeRows = sqliteTable('store_rows', {
+export const storeRows = sqliteTable('storeRows', {
   id: text('id').primaryKey(),
-  section_id: text('section_id').references(() => sections.id).notNull(),
+  sectionId: text('sectionId').references(() => sections.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
 });
 
-export const storeGaps = sqliteTable('store_gaps', {
+export const storeGaps = sqliteTable('storeGaps', {
   id: text('id').primaryKey(),
-  row_id: text('row_id').references(() => storeRows.id).notNull(),
+  rowId: text('rowId').references(() => storeRows.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
   capacity: real('capacity'),
   notes: text('notes'),
@@ -104,57 +107,65 @@ export const storeGaps = sqliteTable('store_gaps', {
 
 export const inventory = sqliteTable('inventory', {
   id: text('id').primaryKey(),
-  product_id: text('product_id').notNull().references(() => products.id),
-  store_gap_id: text('store_gap_id').notNull().references(() => storeGaps.id),
+  productId: text('productId').notNull().references(() => products.id),
+  storeGapId: text('storeGapId').notNull().references(() => storeGaps.id),
   quantity: real('quantity').notNull(),
-  min_quantity: real('min_quantity'),
-  reorder_quantity: real('reorder_quantity'),
-  last_count: text('last_count'),
+  minQuantity: real('minQuantity'),
+  reorderQuantity: real('reorderQuantity'),
+  lastCount: integer('lastCount', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
-export const inventoryMovements = sqliteTable('inventory_movements', {
+export const inventoryMovements = sqliteTable('inventoryMovements', {
   id: text('id').primaryKey(),
   type: text('type', { length: 50 }).notNull(),
-  date: text('date').notNull(),
-  user_id: text('user_id').references(() => users.id),
+  date: integer('date', { mode: 'timestamp' }).notNull(),
+  userId: text('userId').references(() => users.id),
   reference: text('reference'),
   notes: text('notes'),
 });
 
-export const movementItems = sqliteTable('movement_items', {
+export const movementItems = sqliteTable('movementItems', {
   id: text('id').primaryKey(),
-  movement_id: text('movement_id').notNull().references(() => inventoryMovements.id),
-  inventory_id: text('inventory_id').notNull().references(() => inventory.id),
+  movementId: text('movementId').notNull().references(() => inventoryMovements.id),
+  inventoryId: text('inventoryId').notNull().references(() => inventory.id),
   quantity: real('quantity').notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
 export const orders = sqliteTable('orders', {
   id: text('id').primaryKey(),
-  order_number: text('order_number', { length: 50 }).notNull().unique(),
-  supplier_id: text('supplier_id').notNull().references(() => suppliers.id),
-  user_id: text('user_id').notNull().references(() => users.id),
-  order_date: text('order_date').notNull(),
+  orderNumber: text('orderNumber', { length: 50 }).notNull().unique(),
+  supplierId: text('supplierId').notNull().references(() => suppliers.id),
+  userId: text('userId').notNull().references(() => users.id),
+  orderDate: integer('orderDate', { mode: 'timestamp' }).notNull(),
   status: text('status', { length: 50 }).notNull(),
-  expected_arrival: text('expected_arrival'),
+  expectedArrival: integer('expectedArrival', { mode: 'timestamp' }),
   notes: text('notes'),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
-export const orderItems = sqliteTable('order_items', {
+export const orderItems = sqliteTable('orderItems', {
   id: text('id').primaryKey(),
-  order_id: text('order_id').notNull().references(() => orders.id),
-  product_id: text('product_id').notNull().references(() => products.id),
+  orderId: text('orderId').notNull().references(() => orders.id),
+  productId: text('productId').notNull().references(() => products.id),
   quantity: real('quantity').notNull(),
   price: real('price').notNull(),
   status: text('status'),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
-export const orderTracking = sqliteTable('order_tracking', {
+export const orderTracking = sqliteTable('orderTracking', {
   id: text('id').primaryKey(),
-  order_id: text('order_id').notNull().references(() => orders.id),
-  tracking_number: text('tracking_number'),
+  orderId: text('orderId').notNull().references(() => orders.id),
+  trackingNumber: text('trackingNumber'),
   carrier: text('carrier'),
   status: text('status'),
-  updated_at: text('updated_at'),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }),
 });
 
 export const zones = sqliteTable('zones', {
@@ -168,8 +179,8 @@ export const machinery = sqliteTable('machinery', {
   code: text('code', { length: 50 }).notNull().unique(),
   name: text('name', { length: 100 }).notNull(),
   model: text('model'),
-  zone_id: text('zone_id').references(() => zones.id),
-  installation_date: text('installation_date'),
+  zoneId: text('zoneId').references(() => zones.id),
+  installationDate: integer('installationDate', { mode: 'timestamp' }),
   status: text('status', { length: 50 }),
 });
 
@@ -178,31 +189,36 @@ export const incidents = sqliteTable('incidents', {
   code: text('code', { length: 50 }).notNull().unique(),
   title: text('title', { length: 100 }).notNull(),
   description: text('description'),
-  machine_id: text('machine_id').references(() => machinery.id),
-  reported_by: text('reported_by').references(() => users.id),
-  assigned_to: text('assigned_to').references(() => users.id),
-  created_at: text('created_at'),
-  due_date: text('due_date'),
+  machineId: text('machineId').references(() => machinery.id),
+  reportedBy: text('reportedBy').references(() => users.id),
+  assignedTo: text('assignedTo').references(() => users.id),
+  createdAt: integer('createdAt', { mode: 'timestamp' }),
+  dueDate: integer('dueDate', { mode: 'timestamp' }),
   priority: text('priority'),
   status: text('status'),
-  estimated_hours: real('estimated_hours'),
-  actual_hours: real('actual_hours'),
+  estimatedHours: real('estimatedHours'),
+  actualHours: real('actualHours'),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
-export const incidentItems = sqliteTable('incident_items', {
+export const incidentItems = sqliteTable('incidentItems', {
   id: text('id').primaryKey(),
-  incident_id: text('incident_id').notNull().references(() => incidents.id),
-  inventory_id: text('inventory_id').notNull().references(() => inventory.id),
+  incidentId: text('incidentId').notNull().references(() => incidents.id),
+  inventoryId: text('inventoryId').notNull().references(() => inventory.id),
   quantity: real('quantity').notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });
 
-export const incidentHistory = sqliteTable('incident_history', {
+export const incidentHistory = sqliteTable('incidentHistory', {
   id: text('id').primaryKey(),
-  incident_id: text('incident_id').notNull().references(() => incidents.id),
-  user_id: text('user_id').notNull().references(() => users.id),
-  timestamp: text('timestamp').notNull(),
+  incidentId: text('incidentId').notNull().references(() => incidents.id),
+  userId: text('userId').notNull().references(() => users.id),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
   action: text('action'),
   comments: text('comments'),
-  status_from: text('status_from'),
-  status_to: text('status_to'),
+  statusFrom: text('statusFrom'),
+  statusTo: text('statusTo'),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });

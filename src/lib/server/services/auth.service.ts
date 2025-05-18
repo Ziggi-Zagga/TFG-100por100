@@ -1,168 +1,206 @@
-import { createUser as repoCreateUser, createSession as repoCreateSession, findSessionByToken, updateSessionExpiry, deleteSession, updateLastLogin, findUserById, findroleByName } from '../db/repositories/auth.repository';
-import { encodeBase64url } from '@oslojs/encoding';
+import * as authRepository from '../db/repositories/auth.repository';
 import { ERROR_TYPES, ServiceError } from '$lib/utils/errors/ServiceError';
+import { redirect } from '@sveltejs/kit';
+import type { RequestEvent } from '@sveltejs/kit';
+import { AUTH_CONSTANTS } from '$lib/constants/auth.constants';
+import { SessionManager } from '$lib/utils/auth/session.utils';
+import { ValidationUtils } from '$lib/utils/auth/validation.utils';
+import { UserUtils } from '$lib/utils/auth/user.utils';
+import type { AuthUser, userSession } from '$lib/types/auth.types';
 import crypto from 'crypto';
 import argon2 from 'argon2';
 
-export interface AuthUser {
-  id: number;
-  username: string;
-  email: string;
-}
+setInterval(() => {
+  SessionManager.cleanupLoginAttempts();
+}, 60 * 60 * 1000); 
 
-const HASH_CONFIG = {
-  memoryCost: 19456,
-  timeCost: 2,
-  outputLen: 32,
-  parallelism: 1
+// --- Actualizar expiración de sesión ---
+export const updateSessionExpiry = async (token: string, expiryDate: Date): Promise<void> => {
+  return await authRepository.updateSessionExpiry(token, expiryDate);
 };
 
-export async function validateSession(token: string): Promise<{ session: any | null; user: AuthUser | null }> {
-  const session = await findSessionByToken(token);
-  if (!session) {
-    return { session: null, user: null };
-  }
- 
-  const sessionExpired = Date.now() >= new Date(session.expires_at).getTime();
-  if (sessionExpired) {
-    await deleteSession(token);
-    return { session: null, user: null };
-  }
+// --- Validar sesión existente ---
+export async function validateSession(token: string) {
+	const result = await authRepository.getSessionWithUser(token);
+	if (!result) return { session: null, user: null };
 
- 
-  const renewSession = Date.now() >= new Date(session.expires_at).getTime() - 15 * 24 * 60 * 60 * 1000;
-  if (renewSession) {
-    const newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    await updateSessionExpiry(token, newExpiry.toISOString());
-    session.expires_at = newExpiry.toISOString();
-  }
-  
-  
-  const user = await findUserById(session.user_id);
+	const { session, user } = result;
+	const now = Date.now();
 
-  return { session, user: user ? { id: user.id, username: user.username, email: user.email } : null };
+	if (now >= session.expiresAt.getTime()) {
+		await authRepository.deleteSession(session.sessionId);
+		return { session: null, user: null };
+	}
+
+	const shouldRenew = now >= session.expiresAt.getTime() - 15 * 24 * 60 * 60 * 1000;
+	if (shouldRenew) {
+		const newExpiry = new Date(now + 30 * 24 * 60 * 60 * 1000);
+		await authRepository.updateSessionExpiry(session.sessionId, newExpiry);
+		session.expiresAt = newExpiry;
+	}
+
+	return { session, user };
 }
 
 
-export async function createSession(token: string, userId: number, username: string): Promise<any> {
-  const session = await repoCreateSession({
-    user_id: userId,
-    session_token: token,
-    created_at: new Date().toISOString(),
-    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    ip_address: null,
-    user_agent: null
+// --- Crear sesión ---
+export async function createSession(
+  token: string,
+  userId: string,
+  ip?: string,
+  userAgent?: string
+): Promise<userSession> {
+  const now = Date.now();
+  const expiresAt = new Date(now + 30 * 24 * 60 * 60 * 1000); // 30 días
+
+  return await authRepository.createSession({
+    sessionId: crypto.randomUUID(),
+    userId,
+    sessionToken: token,
+    createdAt: new Date(now),
+    expiresAt,
+    ipAddress: ip || null,
+    userAgent: userAgent || null
   });
-  return session;
 }
 
-
-export async function login(email: string, password: string): Promise<{ user: AuthUser; session: any; token: string } | null> {
+// --- Login ---
+export async function login(
+  identifier: string,
+  password: string,
+  ip: string = 'unknown',
+  userAgent?: string
+): Promise<{ user: AuthUser; session: userSession; token: string }> {
   try {
-    if (!email) {
-      throw new ServiceError('Email is required', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
-    }
-    if (!password) {
-      throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
-    }
+    SessionManager.checkLoginAttempts(ip);
+    ValidationUtils.validateRequiredFields({ identifier, password }, ['identifier', 'password']);
+
+    const user = await authRepository.findUserByEmail(identifier) || 
+                 await authRepository.findUserByUsername(identifier);
     
-    const user = await findUserByEmail(email);
     if (!user) {
-      throw new ServiceError('Email does not exist', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
+      throw new ServiceError('Invalid credentials', ERROR_TYPES.VALIDATION, 400, { field: 'identifier' });
     }
-    const validPassword = await verify(password, user.password_hash);
+
+    UserUtils.validateUserStatus(user);
+
+    const validPassword = await verify(password, user.passwordHash);
     if (!validPassword) {
-      throw new ServiceError('Invalid password', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
+      const attemptsLeft = SessionManager.incrementLoginAttempts(ip);
+      throw new ServiceError(`Invalid password. ${attemptsLeft} attempts remaining`, ERROR_TYPES.VALIDATION, 400, {
+        field: 'password'
+      });
     }
-    const token = generateSessionToken();
-    const session = await createSession(token, user.id, user.username);
-    await updateLastLogin(user.id, new Date().toISOString());
+
+    SessionManager.resetLoginAttempts(ip);
+    const token = SessionManager.generateToken();
+    const session = await createSession(token, user.id, ip, userAgent);
+    
+    if (typeof session.expiresAt === 'number') {
+      session.expiresAt = new Date(session.expiresAt);
+    }
+    if (typeof session.createdAt === 'number') {
+      session.createdAt = new Date(session.createdAt);
+    }
+
+    await authRepository.updateLastLogin(user.id, new Date());
     return {
-      user: { id: user.id, username: user.username, email: user.email },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        roleId: user.roleId ?? '2'
+      },
       session,
       token
     };
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[authService.login][ERROR]', error);
     throw error;
   }
 }
 
-export async function signup(email: string, username: string, password: string, confirmPassword: string): Promise<{ user: AuthUser; session: any; token: string }> {
+// --- Signup ---
+export async function signup(
+  email: string,
+  username: string,
+  password: string,
+  confirmPassword: string,
+  ip: string,
+  userAgent?: string,
+  event?: RequestEvent
+): Promise<{ user: AuthUser; session: userSession; token: string }> {
   try {
-    if (!email) {
-      throw new ServiceError('Email is required', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
-    }
-    if (!username) {
-      throw new ServiceError('Username is required', ERROR_TYPES.VALIDATION, 400, { field: 'username' });
-    }
-   /* if (!role) {
-      throw new ServiceError('Role is required', ERROR_TYPES.VALIDATION, 400, { field: 'role' });
-    }*/
-    if (!password) {
-      throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
-    }
+    ValidationUtils.validateRequiredFields({ email, username, password, confirmPassword, ip, userAgent }, [
+      'email',
+      'username',
+      'password',
+      'confirmPassword',
+      'ip',
+      'userAgent'
+    ]);
+    ValidationUtils.validateEmail(email);
+    ValidationUtils.validateUsername(username);
+    ValidationUtils.validatePassword(password);
+
     if (password !== confirmPassword) {
       throw new ServiceError('Passwords do not match', ERROR_TYPES.VALIDATION, 400, { field: 'confirmPassword' });
     }
 
-    const password_hash = await hash(password);
+    await UserUtils.validateNewUser(email, username);
+    const passwordHash = await hash(password);
+    const id = crypto.randomUUID();
 
-    // Fetch role ID from the repository
-    /*const roleRecord = await findroleByName(role);
-    if (!roleRecord) {
-      throw new ServiceError(`Role '${role}' not found`, ERROR_TYPES.VALIDATION, 400, { field: 'role' });
-    }*/
-
-    const user = await repoCreateUser({
+    const user = await authRepository.createUser({
+      id,
       username,
-      password_hash,
       email,
-     // role: String(roleRecord.id), 
-      full_name: username,
-      created_at: new Date().toISOString(),
-      active: true
+      passwordHash,
+      roleId: AUTH_CONSTANTS.ROLES.WORKER,
+      active: true,
+      createdAt: new Date()
     });
 
-    const token = generateSessionToken();
-    const session = await createSession(token, user.id, user.username);
-    await updateLastLogin(user.id, new Date().toISOString());
+    const token = SessionManager.generateToken();
+    const session = await createSession(token, user.id, ip, userAgent);
+
+    // Set session cookie and validate it immediately
+    if (event) {
+      event.cookies.set('auth-session', token, {
+        path: '/',
+        expires: session.expiresAt,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+
+      // Set user and session in locals before redirect
+      event.locals.user = user;
+      event.locals.session = session;
+      throw redirect(302, '/dashboard');
+    }
 
     return {
-      user: { id: user.id, username: user.username, email: user.email },
+      user: { id: user.id, username: user.username, email: user.email, roleId: user.roleId ?? '2' },
       session,
       token
     };
-  } catch (error: any) {
-    console.error('Signup service error:', error);
+  } catch (error) {
+    console.error('Signup error:', error);
     throw error;
   }
 }
 
+// --- Hash y verificación ---
 export async function hash(password: string): Promise<string> {
   return await argon2.hash(password, {
     type: argon2.argon2id,
-    memoryCost: 2 ** 16,   // Puedes ajustar estos parámetros
+    memoryCost: 2 ** 16,
     timeCost: 3,
-    parallelism: 1,
+    parallelism: 1
   });
 }
 
 export async function verify(password: string, hash: string): Promise<boolean> {
   return await argon2.verify(hash, password);
-}
-
-function generateSessionToken(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(18));
-  return encodeBase64url(bytes);
-}
-
-// Helper to find user by email
-async function findUserByEmail(email: string) {
-  // You need to implement this in your repository!
-  const users = await import('../db/schema');
-  const db = await import('../db');
-  const { eq } = await import('drizzle-orm');
-  const result = await db.db.select().from(users.users).where(eq(users.users.email, email));
-  return result[0];
 }

@@ -1,6 +1,13 @@
-//FAKE DATA cambiar cuando se tengan las tablas
-export const load = async () => {
-    const userName = "User";
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user) {
+		throw redirect(302, '/onboarding/login');
+	}
+
+	const userName = locals.user.username;
+
     const unreadAlerts = 3;
     const today = new Date().toLocaleDateString("en-GB");
 

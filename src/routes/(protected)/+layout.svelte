@@ -1,11 +1,19 @@
 <script lang="ts">
-  let { children } = $props();
+  import type { AuthUser } from '$lib/types/auth.types';
+
+  const { data, children } = $props<{
+    data: {
+      user: AuthUser;
+    };
+    children: any;
+  }>();
   let collapsed = $state(false);
 
   function toggleSidebar() {
     collapsed = !collapsed;
   }
 </script>
+
 
 <!--
 PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
@@ -87,17 +95,20 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
       <img src="/logo/logo.png" alt="User" class="w-8 h-8 rounded-full" />
       {#if !collapsed}
         <div>
-          <div class="text-sm font-semibold">User</div>
-          <div class="text-xs text-gray-500">Admin</div>
+          <div class="text-sm font-semibold">{data.user.username}</div>
+          <div class="text-xs text-gray-500 capitalize">{data.user.role}</div>
         </div>
       {/if}
     </div>
 
     <!-- Logout -->
-    <a href="../icons/png/salida-de-emergencia.png" class="mt-2 px-4 py-2 flex items-center text-black bg-indigo-200 hover:bg-indigo-300 transition">
-      <img src="/icons/png/salida-de-emergencia.png" class="w-8 h-8" alt="Logo" />
-      {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
-    </a>
+    <form method="POST" action="/logout" class="w-full">
+      <button type="submit" class="mt-2 px-4 py-2 w-full flex items-center text-black bg-indigo-200 hover:bg-indigo-300 transition">
+        <img src="/icons/png/salida-de-emergencia.png" class="w-8 h-8" alt="Logout" />
+        {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
+      </button>
+    </form>
+    
   </aside>
 
   <!-- Main Content -->
