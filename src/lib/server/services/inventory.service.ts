@@ -22,25 +22,25 @@ export async function getInventoryData() {
 }
 
 export async function createInventoryEntry({
-	product_id,
-	location_id,
+	productId,
+	storeGapId,
 	stock
 }: {
-	product_id: string;
-	location_id: string;
+	productId: string;
+	storeGapId: string;
 	stock: number;
 }) {
-	if (!product_id) {
+	if (!productId) {
 		throw new ServiceError('Product ID is required', ERROR_TYPES.VALIDATION, 400);
 	}
-	if (!location_id) {
+	if (!storeGapId) {
 		throw new ServiceError('Location ID is required', ERROR_TYPES.VALIDATION, 400);
 	}
 	if (isNaN(stock) || stock < 0) {
 		throw new ServiceError('Stock must be a valid non-negative number', ERROR_TYPES.VALIDATION, 400);
 	}
 
-	await repoInsertInventoryItem({ product_id, location_id, stock });
+	await repoInsertInventoryItem({ productId, storeGapId, stock });
 }
 
 export async function deleteInventoryEntry(id: string) {

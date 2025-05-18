@@ -20,9 +20,9 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	create: async ({ request }) => {
 		try {
-			const { product_id, location_id, stock } = await request.json();
+			const { productId, storeGapId, stock } = await request.json();
 
-			await createInventoryEntry({ product_id, location_id, stock });
+			await createInventoryEntry({ productId, storeGapId, stock });
 
 			return json({ success: true });
 		} catch (err) {
