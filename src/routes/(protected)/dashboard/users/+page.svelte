@@ -102,12 +102,12 @@
 			>
 				<div>
 					<label class="font-semibold">Role Name</label>
-					<TextInput name="name" placeholder="Enter role name" extraStyles="w-full" />
+					<TextInput name="role_name" placeholder="Enter role name" extraStyles="w-full" />
 				</div>
 
 				<div>
 					<label class="font-semibold">Description</label>
-					<TextInput name="description" placeholder="Enter role description" extraStyles="w-full" />
+					<TextInput name="role_description" placeholder="Enter role description" extraStyles="w-full" />
 				</div>
 
 				<div>

@@ -40,7 +40,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const name = formData.get('role_name')?.toString() ?? '';
 		const description = formData.get('role_description')?.toString() ?? '';
-		const permissions = formData.getAll('permissions') as string[];
+		const permission = formData.get('permissions')?.toString() ?? '';
 
 		if (!name) {
 			return fail(400, { message: 'Role name is required' });
@@ -50,7 +50,7 @@ export const actions: Actions = {
 			await createRole({
 				name,
 				description,
-				permissions: permissions.join(',')
+				permissions: permission
 			});
 			throw redirect(303, '/dashboard/users');
 		} catch (error) {
