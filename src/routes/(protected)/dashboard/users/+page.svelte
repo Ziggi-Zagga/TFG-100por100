@@ -1,15 +1,23 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
 	import Header from '$lib/components/utilities/Header/Header.svelte';
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
-	export let data;
+	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
+	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
+	import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
 
-	let showDrawer = false;
+	const { data } = $props();
 
-	let wrongPassword = false;
+	let showDrawer = $state(false);
+	let search = $state('');
+	let users = $state([...data.users]);
+	let roles = $state([...data.roles]);
+	let totalUsers = $derived(() => users.length);
 
-	function goToDetails(id: number) {
+	function goToDetails(id: string) {
 		goto(`/dashboard/users/${id}`);
 	}
 
@@ -21,190 +29,117 @@
 		showDrawer = false;
 	}
 
-	function createUser() {
-		alert('User created (fake action for now).');
-		closeDrawer();
-	}
+	const filteredUsers = $derived(() =>
+		users.filter(
+			(user) =>
+				user.username.toLowerCase().includes(search.toLowerCase()) ||
+				(user.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
+				(user.role ?? '').toLowerCase().includes(search.toLowerCase())
+		)
+	);
 
-	function checkPassword() {
-		const password = document.getElementById('password') as HTMLInputElement;
-		const passwordRepeat = document.getElementById('password-repeat') as HTMLInputElement;
+	async function handleDelete(userId: string) {
+		const formData = new FormData();
+		formData.append('id', userId);
 
-		if (password.value !== passwordRepeat.value) {
-			wrongPassword = true;
-			return false;
+		const res = await fetch('?/delete', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.ok) {
+			users = users.filter((s) => s.id !== userId);
+		} else {
+			console.error('Failed to delete user');
 		}
-		return true;
 	}
-
 </script>
 
 <section
 	class="min-h-screen w-full p-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 >
-
 	<!-- HEADER & SEARCHBAR -->
-	<Header title="Users" subtitle="Manage your users">
-		<SearchBar placeholder="Search by name, role..." addBtnTxt="+ Add User" {openDrawer} />
-	</Header>
+	<Header title="Users" subtitle={totalUsers().toString() + ' users'} />
+
+	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
+		<div class="w-full md:flex-1">
+			<SearchBar {search} placeholder="Search by name, role..." />
+		</div>
+		<div class="-mt-6 flex w-full justify-end md:w-auto">
+			<Button
+				type="button"
+				variant="primary"
+				size="md"
+				extraStyles="font-semibold text-sm rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
+				onclick={() => openDrawer()}
+			>
+				+ Add Role
+			</Button>
+		</div>
+	</div>
 
 	<!-- TABLE -->
 	<Table
-		columns={['#', 'Username', 'Full name', 'Email', 'Role', 'Last login']}
-		items={data.users}
-		on:delete={async (e) => {
-			const user = e.detail;
-
-			const confirmed = confirm(`Do you want to delete the user "${user.username}"?`);
-
-			if (!confirmed) return;
-
-			try {
-				const res = await fetch('./users', {
-					method: 'DELETE',
-					body: JSON.stringify({ id: user.id }),
-					headers: { 'Content-Type': 'application/json' }
-				});
-
-				if (res.ok) {
-					alert('User deleted successfully.');
-				} else {
-					alert('Error deleting user.');
-				}
-			} catch (error) {
-				console.error('Error:', error);
-			}
-		}}
+		columns={['username', 'email', 'role', 'lastLogin']}
+		items={filteredUsers()}
+		on:rowClick={(e) => goToDetails(e.detail)}
+		on:delete={(e) => handleDelete(e.detail.id)}
 	/>
-	<!--
-	<div class="overflow-x-auto">
-		<table class="w-full table-auto border border-gray-300 text-sm">
-			<thead class="bg-gray-100 text-gray-700">
-				<tr>
-					<th class="p-3 text-left font-semibold">#</th>
-					<th class="p-3 text-left font-semibold">Username</th>
-					<th class="p-3 text-left font-semibold">Full name</th>
-					<th class="p-3 text-left font-semibold">Email</th>
-					<th class="p-3 text-left font-semibold">Role</th>
-					<th class="p-3 text-left font-semibold">Last login</th>
-					<th class="p-3 text-center font-semibold">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each data.users as user}
-					<tr
-						class="cursor-pointer border-t hover:bg-gray-50"
-						on:click={() => goToDetails(user.id)}
-					>
-						<td class="p-3 whitespace-nowrap">{user.id}</td>
-						<td class="p-3 whitespace-nowrap">{user.username}</td>
-						<td class="p-3 whitespace-nowrap">{user.fullName}</td>
-						<td class="p-3 whitespace-nowrap">{user.email}</td>
-						<td class="p-3 whitespace-nowrap">{user.role}</td>
-						<td class="p-3 whitespace-nowrap">{user.lastLogin}</td>
-						<td class="flex justify-center gap-3 p-3" on:click|stopPropagation>
-							<button class="text-blue-600 hover:text-blue-800">✏️</button>
-							<button class="text-red-600 hover:text-red-800">🗑️</button>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
-	-->
 
 	<!-- DRAWER -->
-	 
-	<!--
 	{#if showDrawer}
-		<div class="fixed inset-0 z-40 bg-black/30" on:click={closeDrawer}></div>
-		<div
-			class="fixed top-0 right-0 z-50 flex h-full w-full max-w-md flex-col gap-6 overflow-y-auto bg-white p-8 shadow-2xl"
-		>
-			<h2 class="mb-4 text-2xl font-bold">Add New User</h2>
-
+		<Drawer title="Add New Role" onClose={closeDrawer}>
+			<h2 class="mb-4 text-2xl font-bold">Add New Role</h2>
 			<form
+				method="POST"
+				use:enhance
+				action="?/createRole"
 				class="flex flex-col gap-4"
-				on:submit|preventDefault={(e) => {
-					if (checkPassword()) {
-						createUser();
-					}
-				}}
 			>
 				<div>
-					<label class="font-semibold">Username</label>
-					<input
-						type="text"
-						placeholder="New user username"
-						class="w-full rounded-md border border-gray-300 p-2"
-					/>
+					<label class="font-semibold">Role Name</label>
+					<TextInput name="role_name" placeholder="Enter role name" extraStyles="w-full" />
 				</div>
 
 				<div>
-					<label class="font-semibold">Full Name</label>
-					<input
-						type="text"
-						placeholder="New user full name"
-						class="w-full rounded-md border border-gray-300 p-2"
-					/>
+					<label class="font-semibold">Description</label>
+					<TextInput name="role_description" placeholder="Enter role description" extraStyles="w-full" />
 				</div>
 
 				<div>
-					<label class="font-semibold">Email</label>
-					<input
-						type="text"
-						placeholder="New user email"
-						class="w-full rounded-md border border-gray-300 p-2"
-					/>
-				</div>
-
-				-- Añadir ocultar contraseña --
-				<div>
-					<label class="font-semibold"
-						>Password <span class="text-indigo-500 underline underline-offset-1"
-							>User will change it on login</span
-						></label
-					>
-					<input
-						type="text"
-						placeholder="New user password"
-						class={wrongPassword
-							? 'w-full rounded-md border border-3 border-red-300 p-2'
-							: 'w-full rounded-md border border-gray-300 p-2'}
-						id="password"
-					/>
-				</div>
-
-				<div>
-					<label class="font-semibold">Repeat Password</label>
-					<input
-						type="text"
-						placeholder="Repeat new user password"
-						class={wrongPassword
-							? 'w-full rounded-md border border-3 border-red-300 p-2'
-							: 'w-full rounded-md border border-gray-300 p-2'}
-						id="password-repeat"
+					<label class="font-semibold">Permissions</label>
+					<InputSelect
+						name="permissions"
+						selected="Select permissions"
+						options={[
+							{id:"full", name:"Full"},
+							{id:"limited", name:"Limited"},
+						]}
 					/>
 				</div>
 
 				<div class="mt-4 flex justify-end gap-4">
-					<button
+					<Button
 						type="button"
-						on:click={closeDrawer}
+						variant="secondary"
+						size="md"
 						class="rounded-md bg-gray-300 px-6 py-2 font-semibold text-gray-800 hover:bg-gray-400"
+						onclick={closeDrawer}
 					>
 						Cancel
-					</button>
-					<button
+					</Button>
+					<Button
 						type="submit"
-						class="rounded-md bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700"
-					>
-						Create
-					</button>
+						variant="primary"
+						size="md"
+						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
+						
+						>
+						Create Role
+					</Button>
 				</div>
 			</form>
-		</div>
+		</Drawer>
 	{/if}
-	-->
 </section>
