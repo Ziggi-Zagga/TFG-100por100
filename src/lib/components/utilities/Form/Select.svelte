@@ -1,48 +1,48 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
+	import type { HTMLSelectAttributes } from 'svelte/elements';
 
 	let {
 		label,
-		value = $bindable(),
-		type = 'text',
+		value = $bindable<string>(),
 		name,
-		placeholder = '',
+		options = [],
 		required = false,
 		disabled = false,
 		error = '',
-		extraStyles = ''
-        
+		extraStyles = '',
+		onValueChange,
+		...rest
 	}: {
 		label?: string;
-		value?: string | number;
-		type?: string;
+		value?: string;
 		name?: string;
-		placeholder?: string;
+		options?: Array<{ id: string; name: string; code?: string }>;
 		required?: boolean;
 		disabled?: boolean;
 		error?: string;
 		extraStyles?: string;
-	} = $props();
+		onValueChange?: (val: string) => void;
+	} & HTMLSelectAttributes = $props();
+
+	$effect(() => onValueChange?.(value));
 </script>
 
 <div class="flex flex-col gap-1.5">
 	{#if label}
 		<label for={name} class="text-sm font-medium tracking-wide text-fresh-300">
-			{label}
-			{#if required}
-				<span class="text-coral-500">*</span>
-			{/if}
+			{label}{#if required}<span class="text-coral-500">*</span>{/if}
 		</label>
 	{/if}
 
 	<div class="relative">
-		<input
-			{type}
-			{disabled}
+		<select
 			id={name}
 			name={name}
 			bind:value
-			placeholder={placeholder}
+			{disabled}
+			{required}
+			{...rest}
 			class={cn(
 				'w-full rounded-xl border border-brand-300 bg-white/50 px-4 py-2.5',
 				'font-inter text-brand-700 placeholder:text-brand-400/70',
@@ -54,8 +54,15 @@
 				error && 'border-error-500',
 				disabled && 'bg-gray-100'
 			)}
-			{required}
-		/>
+		>
+			<option disabled value="" selected={value === ''}>
+				Select an option
+			</option>
+
+			{#each options as option}
+				<option value={option.id}>{option.name}</option>
+			{/each}
+		</select>
 
 		{#if error}
 			<span class="mt-1 text-xs font-medium text-red-500">{error}</span>

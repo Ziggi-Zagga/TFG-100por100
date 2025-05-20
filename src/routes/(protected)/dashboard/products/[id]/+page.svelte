@@ -3,8 +3,8 @@
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
-  import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
-  import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
+  import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+  import NumberInput from '$lib/components/utilities/Form/NumberInput.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Header from '$lib/components/utilities/Header/Header.svelte';

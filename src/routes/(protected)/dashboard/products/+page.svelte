@@ -105,7 +105,7 @@
           <TextInput label="Product Name" name="name" placeholder="Enter product name" required />
           <TextInput label="Product Code" name="code" placeholder="Enter product code" required />
           <TextInput label="Description" name="description" placeholder="Enter product description" />
-          <NumberInput label="Price" name="price" min={0} placeholder="Enter product price" required />
+          <TextInput label="Price" name="price" type="number" min={0} placeholder="Enter product price" required />
           <TextInput label="Unit" name="unit" placeholder="e.g. piece, kg, box" />
           <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" />
           <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" />

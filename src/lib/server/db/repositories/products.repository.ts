@@ -1,6 +1,27 @@
 import { db } from '$lib/server/db';
 import { products, suppliers, manufacturers, categories } from '$lib/server/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { eq, or, ilike } from 'drizzle-orm';
+
+// Obtener productos filtrados por proveedor
+export const getProductsBySupplier = async (supplierId: string) => {
+	return await db
+		.select({
+			id: products.id,
+			code: products.code,
+			name: products.name,
+			description: products.description,
+			price: products.price,
+			unit: products.unit,
+			supplierId: suppliers.id,
+			supplierName: suppliers.name,
+			categoryId: categories.id,
+			categoryName: categories.name
+		})
+		.from(products)
+		.leftJoin(suppliers, eq(suppliers.id, products.supplierId))
+		.leftJoin(categories, eq(categories.id, products.categoryId))
+		.where(eq(products.supplierId, supplierId));
+};
 
 export const getFullProductsList = async () => {
   return await db

@@ -10,7 +10,7 @@
 	}
 </script>
 
-
+<!-- Overlay -->
 <div
 	class="fixed inset-0 bg-black/30 z-40"
 	on:click={onClose}
@@ -20,4 +20,12 @@
 	aria-label="Close drawer"
 ></div>
 
-<slot />
+<!-- Drawer Panel -->
+<div
+	class="fixed top-0 right-0 z-50 h-full w-30% max-w-3xl overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white shadow-2xl p-10"
+	in:fly={{ x: 300, duration: 300 }}
+	out:fly={{ x: 300, duration: 200 }}
+>
+	<h2 class="mb-8 text-3xl font-bold text-blue-800">{title}</h2>
+	<slot />
+</div>
