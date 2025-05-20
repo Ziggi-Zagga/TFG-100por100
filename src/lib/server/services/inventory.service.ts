@@ -6,6 +6,10 @@ import {
 	repoDeleteInventoryItem
 } from '$lib/server/db/repositories/inventory.repository';
 
+import { getCategoriesById } from '$lib/server/db/repositories/category.repository';
+import { getSuppliersById } from '$lib/server/db/repositories/supplier.repository';
+import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.repository';
+
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 
 export async function getInventoryData() {
@@ -49,4 +53,16 @@ export async function deleteInventoryEntry(id: string) {
 	}
 
 	await repoDeleteInventoryItem(id);
+}
+
+export async function getCategories(id: string) {
+	return await getCategoriesById(id);
+}
+
+export async function getSuppliers(id: string) {
+	return await getSuppliersById(id);
+}
+
+export async function getManufacturers(id: string) {
+	return await getManufacturersById(id);
 }

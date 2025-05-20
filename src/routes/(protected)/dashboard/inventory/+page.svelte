@@ -27,6 +27,17 @@
 		showDrawer = false;
 	}
 
+	function handleProductChange(event: Event) {
+		const selectedId = (event.target as HTMLSelectElement).value;
+		selectedProduct = selectedId;
+
+		const selected = availableProducts.find(p => p.id === selectedId);
+		if (selected) {
+			selectedCategory = selected.name ?? '';
+			selectedSupplier = selected.name ?? '';
+		}
+	}
+
 	async function deleteProductFromInventory(id: string, name: string) {
 		const confirmed = confirm(`Do you want to delete "${name}" from the inventory?`);
 		if (!confirmed) return;
@@ -62,26 +73,39 @@
 	/>
 
 	{#if showDrawer}
-		<ProductDrawer title="➕ Add Product to Inventory" onClose={closeDrawer} >
-			<form method="POST" action="?/create" class="fixed top-0 right-0 z-50 h-full w-full max-w-3xl space-y-4 overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white p-10 shadow-2xl"
+		<ProductDrawer title="➕ Add Product to Inventory" onClose={closeDrawer}>
+			<form
+			method="POST"
+			action="?/create"
+			class="fixed top-0 right-0 z-50 h-full w-full max-w-3xl space-y-4 overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white p-10 shadow-2xl"
 			>
-			  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				<InputSelect label="Product ID" name="product_id" options={availableProducts} selected={selectedProduct} />
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div class="col-span-1 sm:col-span-2 lg:col-span-3">
+				<InputSelect label="Product" name="productId" options={availableProducts} selected={selectedProduct} onChange={handleProductChange}/>
+				</div>
+		
 				<TextInput label="Category" name="category" value={selectedCategory} disabled />
 				<TextInput label="Supplier" name="supplier" value={selectedSupplier} disabled />
 				<TextInput label="Manufacturer" name="manufacturer" value={selectedManufacturer} disabled />
-				<TextInput label="Location ID" name="location_id" placeholder="Enter location ID" required />
+
+				<div class="col-span-1 sm:col-span-2 lg:col-span-3">
 				<NumberInput label="Stock" name="stock" min={0} placeholder="Stock quantity" required />
-			  </div>
-		  
-			  <div class="mt-6 flex justify-end gap-4">
+				</div>
+
+				<div class="col-span-1 sm:col-span-2 lg:col-span-3">
+				<TextInput label="Location ID" name="storeId" placeholder="Enter location ID" required />
+				</div>
+			</div>
+		
+			<div class="mt-6 flex justify-end gap-4">
 				<Button onclick={closeDrawer} variant="secondary" size="md" extraStyles="w-full md:w-auto">
-				  {@html '<span class="hidden md:inline">Cancel</span>'}
-				</Button> 
+				{@html '<span class="hidden md:inline">Cancel</span>'}
+				</Button>
 				<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-				  {@html '<span class="hidden md:inline">+ Add Inventory</span>'}
-				</Button> 
-			  </div>
+				{@html '<span class="hidden md:inline">+ Add Inventory</span>'}
+				</Button>
+			</div>
+			</form>
 		</ProductDrawer>
 	{/if}
 </section>

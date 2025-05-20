@@ -51,9 +51,8 @@ export async function repoGetAvailableProducts() {
 		);
 
 	return result.map((p) => ({
-		...p,
-		category: p.category ?? undefined,
-		supplier: p.supplier ?? undefined
+		id: p.id,
+		name: p.name
 	}));
 }
 
