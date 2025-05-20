@@ -64,7 +64,7 @@
 
 	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
 		<div class="w-full md:flex-1">
-			<SearchBar {search} placeholder="Search by name, role..." />
+			<SearchBar bind:search={search} placeholder="Search by name, role..." />
 		</div>
 		<div class="-mt-6 flex w-full justify-end md:w-auto">
 			<Button
