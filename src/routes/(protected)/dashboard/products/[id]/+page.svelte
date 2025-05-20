@@ -4,11 +4,10 @@
   import { get } from 'svelte/store';
   import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
-  import NumberInput from '$lib/components/utilities/Form/NumberInput.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Header from '$lib/components/utilities/Header/Header.svelte';
-  import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
+  import Select from '$lib/components/utilities/Form/Select.svelte';
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
   import { goto } from '$app/navigation';
 
@@ -123,14 +122,14 @@
             <TextInput label="Product Code" name="code" placeholder="Enter product code" value={product.code} required />
             <TextInput label="Description" name="description" placeholder="Enter product description" value={product.description ?? undefined} />
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <NumberInput label="Price" name="price" min={0} placeholder="Enter product price" value={product.price ?? undefined} required />
+              <TextInput label="Price" name="price" type="number" min={0} placeholder="Enter product price" value={product.price ?? undefined} required />
               <TextInput label="Unit" name="unit" placeholder="e.g. piece, kg, box" value={product.unit ?? undefined} />
               <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" value={product.dimensions ?? undefined} />
               <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" value={product.material ?? undefined} />
               <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" value={product.specifications ?? undefined} />
-              <InputSelect label="Supplier ID" name="supplierId" options={suppliers} selected={product.supplierId ?? undefined} />
-              <InputSelect label="Manufacturer ID" name="manufacturerId" options={manufacturers} selected={product.manufacturerId ?? undefined} />
-              <InputSelect label="Category ID" name="categoryId" options={categories} selected={product.categoryId ?? undefined} />
+              <Select label="Supplier" name="supplierId" options={suppliers} value={product.supplierId ?? undefined} />
+              <Select label="Manufacturer" name="manufacturerId" options={manufacturers} value={product.manufacturerId ?? undefined} />
+              <Select label="Category" name="categoryId" options={categories} value={product.categoryId ?? undefined} />
             </div>
 
             <div class="mt-6 flex justify-end gap-4">
@@ -163,7 +162,7 @@
 
     <Header title={selectedOption === 'orders' ? 'Order History' : 'Inventory History'} subtitle={product.name}>
       <div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
-        <InputSelect label="Select History Type" name="historyType" options={historyOptions} bind:selected={selectedOption} onChange={handleSelectChange} />
+        <Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />
       </div>
     </Header>
 

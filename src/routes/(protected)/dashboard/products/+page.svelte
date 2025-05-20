@@ -1,27 +1,26 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-
   import InventoryHeader from '$lib/components/utilities/Header/Header.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
   import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-  import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
-  import NumberInput from '$lib/components/utilities/NumberInput/NumberInput.svelte';
-  import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
+  import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+  import Select from '$lib/components/utilities/Form/Select.svelte';
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
+  import type { Supplier, Manufacturer, Category } from '$lib/types/products.types';
 
   const { data } = $props();
   let productsCopy = $state([...data.products]);
-  let suppliers = $state([...data.suppliers]);
-  let manufacturers = $state([...data.manufacturers]);
-  let categories = $state([...data.categories]);
+  let suppliers = $state<Supplier[]>([...data.suppliers]);
+  let manufacturers = $state<Manufacturer[]>([...data.manufacturers]);
+  let categories = $state<Category[]>([...data.categories]);
   let showDrawer = $state(false);
   let search = $state('');
   let totalProducts = $state(data.products.length);
-  let selectedSupplier = $state(null);
-  let selectedManufacturer = $state(null);
-  let selectedCategory = $state(null);
+  let selectedSupplier = $state<Supplier | null>(null);
+  let selectedManufacturer = $state<Manufacturer | null>(null);
+  let selectedCategory = $state<Category | null>(null);
 
   // Confirm dialog
   let showConfirm = $state(false);
@@ -89,9 +88,9 @@
   <Table
     columns={['code', 'name', 'price', 'unit', 'active']}
     items={filteredProducts()}
-    on:rowClick={(e) => goToProductDetails(e.detail, '')}
-    on:edit={(e) => goToProductDetails(e.detail.id, '?edit=true')}
-    on:delete={(e) => askDelete(e.detail.id, e.detail.name)}
+    onRowClick={(id) => goToProductDetails(id, '')}
+    onEdit={(e) => goToProductDetails(e.detail.id, '?edit=true')}
+    onDelete={(e) => askDelete(e.detail.id, e.detail.name)}
   />
 
   {#if showDrawer}
@@ -110,9 +109,9 @@
           <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" />
           <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" />
           <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" />
-          <InputSelect label="Supplier" name="supplierId" options={suppliers} selected={selectedSupplier ?? undefined} />
-          <InputSelect label="Manufacturer" name="manufacturerId" options={manufacturers} selected={selectedManufacturer ?? undefined} />
-          <InputSelect label="Category" name="categoryId" options={categories} selected={selectedCategory ?? undefined} />
+          <Select label="Supplier" name="supplierId" options={suppliers} placeholder={selectedSupplier?.name ?? undefined} />
+          <Select label="Manufacturer" name="manufacturerId" options={manufacturers} placeholder={selectedManufacturer?.name ?? undefined} />
+          <Select label="Category" name="categoryId" options={categories} placeholder={selectedCategory?.name ?? undefined} />
         </div>
 
         <div class="mt-6 flex justify-end gap-4">

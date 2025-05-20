@@ -6,8 +6,8 @@
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-	import TextInput from '$lib/components/utilities/TextInput/TextInput.svelte';
-	import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
+	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+	import Select from '$lib/components/utilities/Form/Select.svelte';
 
 	const { data } = $props();
 
@@ -83,8 +83,14 @@
 	<Table
 		columns={['username', 'email', 'role', 'lastLogin']}
 		items={filteredUsers()}
-		on:rowClick={(e) => goToDetails(e.detail)}
-		on:delete={(e) => handleDelete(e.detail.id)}
+		onRowClick={(id) => goToDetails(id)}
+		onDelete={(item) => handleDelete(item.id)}
+		columnTypes={{
+			role: {
+				type: 'select',
+				options: roles.map(r => ({ id: r.id, name: r.name }))
+			}
+		}}
 	/>
 
 	<!-- DRAWER -->
@@ -109,9 +115,9 @@
 
 				<div>
 					<label class="font-semibold">Permissions</label>
-					<InputSelect
+					<Select
 						name="permissions"
-						selected="Select permissions"
+						placeholder="Select permissions"
 						options={[
 							{id:"full", name:"Full"},
 							{id:"limited", name:"Limited"},

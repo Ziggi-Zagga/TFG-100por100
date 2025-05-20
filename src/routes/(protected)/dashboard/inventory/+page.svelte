@@ -5,7 +5,7 @@
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
-	import InputSelect from '$lib/components/utilities/InputSelect/InputSelect.svelte';
+	import Select from '$lib/components/utilities/Form/Select.svelte';
 
 	const { data } = $props();
 	let items = $state([...data.items]);
@@ -79,7 +79,7 @@
 			class="fixed top-0 right-0 z-50 h-full w-full max-w-3xl space-y-4 overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white p-10 shadow-2xl"
 			>
 			  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				<TextInput label="Product ID" name="product_id" placeholder="Enter product ID" required />
+				<Select label="Product" name="product_id" options={availableProducts.map(p => ({ id: p.id, name: p.name }))} />
 				<TextInput label="Category" name="category" value={"CAT1"} disabled />
 				<TextInput label="Supplier" name="supplier" value={"selectedSupplier"} disabled />
 				<TextInput label="Location ID" name="location_id" placeholder="Enter location ID" required />
