@@ -1,8 +1,8 @@
 import { db } from '$lib/server/db';
 import { orders, orderItems, products, suppliers, users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
-// Obtener todos los pedidos (sin items)
+
 export const getAllOrders = async () => {
 	return await db
 		.select({
@@ -20,8 +20,8 @@ export const getAllOrders = async () => {
 		.from(orders);
 };
 
-// Obtener pedido con sus items
-export const getOrderWithItems = async (orderId: string) => {
+
+export const getItemsByOrderId = async (orderId: string) => {
 	const order = await db.query.orders.findFirst({
 		where: eq(orders.id, orderId)
 	});
@@ -44,31 +44,52 @@ export const getOrderWithItems = async (orderId: string) => {
 	return { order, items };
 };
 
-// Insertar pedido
+
 export const insertOrder = async (order: typeof orders.$inferInsert) => {
 	await db.insert(orders).values(order);
 };
 
-// Insertar múltiples items
+
 export const insertOrderItems = async (items: typeof orderItems.$inferInsert[]) => {
 	if (items.length === 0) return;
 	await db.insert(orderItems).values(items);
 };
 
-// Eliminar pedido
+
 export const removeOrder = async (orderId: string) => {
 	await db.delete(orders).where(eq(orders.id, orderId));
 };
 
-// Eliminar todos los items de un pedido
+
 export const removeOrderItemsByOrderId = async (orderId: string) => {
 	await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
 };
 
-// Actualizar pedido
+
 export const updateOrder = async (
 	orderId: string,
 	updatedData: Partial<typeof orders.$inferInsert>
 ) => {
 	await db.update(orders).set(updatedData).where(eq(orders.id, orderId));
 };
+
+export const updateOrderItems = async (
+	orderId: string,
+	items: typeof orderItems.$inferInsert[]
+) => {
+	await removeOrderItemsByOrderId(orderId);
+	if (items.length > 0) {
+		await db.insert(orderItems).values(items);
+	}
+};
+
+export const getLastOrderNumber = async () => {
+	const result = await db
+		.select({ orderNumber: orders.orderNumber })
+		.from(orders)
+		.orderBy(desc(orders.createdAt))
+		.limit(1);
+	
+	return result[0]?.orderNumber;
+};
+

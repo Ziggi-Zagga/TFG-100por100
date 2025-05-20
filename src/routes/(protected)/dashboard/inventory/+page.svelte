@@ -4,7 +4,6 @@
 	import ProductDrawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
-	import NumberInput from '$lib/components/utilities/Form/NumberInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 
 	const { data } = $props();
@@ -52,7 +51,7 @@
 	<Table
 		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
 		items={items}
-		on:delete={(e) => deleteProductFromInventory(e.detail.id, e.detail.name)}
+		onDelete={(item) => deleteProductFromInventory(item.id, item.name)}
 	/>
 
 	{#if showDrawer}
@@ -64,7 +63,7 @@
 				<TextInput label="Category" name="category" value={"CAT1"} disabled />
 				<TextInput label="Supplier" name="supplier" value={"selectedSupplier"} disabled />
 				<TextInput label="Location ID" name="location_id" placeholder="Enter location ID" required />
-				<NumberInput label="Stock" name="stock" min={0} placeholder="Stock quantity" required />
+				<TextInput label="Stock" name="stock" type="number" min={0} placeholder="Stock quantity" required />
 			  </div>
 		  
 			  <div class="mt-6 flex justify-end gap-4">

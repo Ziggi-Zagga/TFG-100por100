@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
+	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	let {
 		label,
-		value = $bindable(),
+		value = $bindable<string | number>(),
 		type = 'text',
 		name,
 		placeholder = '',
 		required = false,
 		disabled = false,
 		error = '',
-		extraStyles = ''
-        
+		extraStyles = '',
+		min,
+		max,
+		step,
+		onValueChange,
+		...rest
 	}: {
 		label?: string;
 		value?: string | number;
@@ -22,27 +27,35 @@
 		disabled?: boolean;
 		error?: string;
 		extraStyles?: string;
-	} = $props();
+		min?: number;
+		max?: number;
+		step?: number;
+		onValueChange?: (val: string | number) => void;
+	} & HTMLInputAttributes = $props();
+	
+	$effect(() => onValueChange?.(value));
 </script>
 
 <div class="flex flex-col gap-1.5">
 	{#if label}
 		<label for={name} class="text-sm font-medium tracking-wide text-fresh-300">
-			{label}
-			{#if required}
-				<span class="text-coral-500">*</span>
-			{/if}
+			{label}{#if required}<span class="text-coral-500">*</span>{/if}
 		</label>
 	{/if}
 
 	<div class="relative">
 		<input
 			{type}
-			{disabled}
 			id={name}
 			name={name}
 			bind:value
 			placeholder={placeholder}
+			{min}
+			{max}
+			{step}
+			{required}
+			{disabled}
+			{...rest}
 			class={cn(
 				'w-full rounded-xl border border-brand-300 bg-white/50 px-4 py-2.5',
 				'font-inter text-brand-700 placeholder:text-brand-400/70',
@@ -54,7 +67,6 @@
 				error && 'border-error-500',
 				disabled && 'bg-gray-100'
 			)}
-			{required}
 		/>
 
 		{#if error}

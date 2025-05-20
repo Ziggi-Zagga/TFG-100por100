@@ -1,39 +1,60 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
+	import Select from '$lib/components/utilities/Form/Select.svelte';
+	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 
 	const {
-		columns = [],
-		items = [],
-		highlightQuantity = false
-	} = $props<{
-		columns: string[];
-		items: any[];
-		highlightQuantity?: boolean;
-	}>();
+	columns = [],
+	items = [],
+	highlightQuantity = false,
+	columnTypes = {},
+	onCellChange = () => {},
+	onRowClick = () => {},
+	onEdit = () => {},
+	onDelete = () => {}
+} = $props<{
+	columns?: string[];
+	items?: any[];
+	highlightQuantity?: boolean;
+	columnTypes?: {
+		[type: string]: {
+			type: 'input' | 'select' | 'textarea';
+			options?: any[];
+			min?: number;
+			max?: number;
+			step?: number;
+		};
+	};
+	onCellChange?: (item: any, column: string, value: any) => void;
+	onRowClick?: (id: string) => void;
+	onEdit?: (item: any) => void;
+	onDelete?: (item: any) => void;
+}>();
 
-	const dispatch = createEventDispatcher<{
-		rowClick: string;
-		edit: any;
-		delete: any;
-	}>();
-
-	function formatHeader(header: string) {
-		return header.charAt(0).toUpperCase() + header.slice(1);
-	}
 
 	function handleRowClick(id: string) {
-		dispatch('rowClick', id);
-	}
+	onRowClick(id);
+}
 
-	function handleEdit(e: MouseEvent, item: any) {
-		e.stopPropagation();
-		dispatch('edit', item);
-	}
+function handleCellChange(item: any, column: string, value: any) {
+	item[column] = value;
+	onCellChange(item, column, value);
+}
 
-	function handleDelete(e: MouseEvent, item: any) {
-		e.stopPropagation();
-		dispatch('delete', item);
-	}
+function handleEdit(e: MouseEvent, item: any) {
+	e.stopPropagation();
+	onEdit(item);
+}
+
+function handleDelete(e: MouseEvent, item: any, name?: string) {
+	e.stopPropagation();
+	onDelete(item);
+}
+function formatHeader(header: string): string {
+	return header.charAt(0).toUpperCase() + header.slice(1);
+}
+
+
 </script>
 
 <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-7xl mx-auto">
@@ -55,19 +76,39 @@
 							onclick={() => handleRowClick(item.id)}
 						>
 							{#each columns as col}
-								<td class="px-4 py-3 whitespace-nowrap {col === 'quantity' ? 'font-semibold' : ''}">
-									{#if col === 'quantity' && highlightQuantity}
-										<span class={item[col] < 25 ? 'text-red-500 font-semibold' : 'text-gray-700'}>
-											{item[col]} units
+								<td class="px-4 py-3 whitespace-nowrap">
+									{#if columnTypes[col]}
+										{#if columnTypes[col].type === 'select'}
+										<Select
+										bind:value={item[col]}
+										options={columnTypes[col].options}
+										onValueChange={(val) => handleCellChange(item, col, val)}
+									/>
+										{:else if columnTypes[col].type === 'textarea'}
+											<TextArea
+												bind:value={item[col]}
+												onValueChange={(val) => handleCellChange(item, col, val)}
+											/>
+										{:else}
+												<TextInput
+												bind:value={item[col]}
+												type={columnTypes[col].type}
+												min={columnTypes[col].min}
+												max={columnTypes[col].max}
+												step={columnTypes[col].step}
+												onValueChange={(val) => handleCellChange(item, col, val)}
+											/>
+										{/if}												
+										{:else}
+										<span class="text-gray-700">
+											{item[col]} 
 										</span>
-									{:else}
-										{item[col]}
-									{/if}
+										{/if}
+									
 								</td>
 							{/each}
 							<td class="px-4 py-3 whitespace-nowrap">
 								<div class="flex justify-center gap-3" role="group" aria-label="Row actions">
-									<!-- Edit Button -->
 									<button
 										class="text-gray-500 hover:text-blue-600"
 										title="Edit"
@@ -79,8 +120,6 @@
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m2 0h.01M7 5h.01M3 21h18M12 17v-5m0 0l-2-2m2 2l2-2" />
 										</svg>
 									</button>
-
-									<!-- Delete Button -->
 									<button
 										class="text-gray-500 hover:text-red-600"
 										title="Delete"

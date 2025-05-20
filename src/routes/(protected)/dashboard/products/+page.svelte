@@ -7,7 +7,7 @@
     import Button from '$lib/components/utilities/Button/Button.svelte';
     import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
     import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
-    import NumberInput from '$lib/components/utilities/Form/NumberInput.svelte';
+   
 
     const { data } = $props();
     let productsCopy = $state([...data.products]);
@@ -67,8 +67,8 @@
     <Table
         columns={['code', 'name', 'price', 'unit', 'active']}
         items={filteredProducts()}
-        on:rowClick={(e) => goToProductDetails(e.detail)}
-        on:delete={(e) => handleDelete(e.detail.id)}
+        onRowClick={(id) => goToProductDetails(id)}
+        onEdit={(id) => handleDelete(id)}
     />
 
     {#if showDrawer}
@@ -82,7 +82,7 @@
           <TextInput label="Product Name" name="name" placeholder="Enter product name" required />
           <TextInput label="Product Code" name="code" placeholder="Enter product code" required />
           <TextInput label="Description" name="description" placeholder="Enter product description" />
-          <NumberInput label="Price" name="price" min={0} placeholder="Enter product price" required />
+          <TextInput label="Price" name="price" type="number" min={0} placeholder="Enter product price" required />
           <TextInput label="Unit" name="unit" placeholder="e.g. piece, kg, box" />
           <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" />
           <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" />

@@ -1,25 +1,41 @@
 <script lang="ts">
-	export let items: any[] = [];
-	export let value: string = '';
-	export let searchQuery: string = '';
-	export let label: string;
-	export let name: string;
-	export let required: boolean = false;
-	export let placeholder: string = 'Search...';
-	export let disabled: boolean = false;
+	let {
+		items = [],
+		label,
+		name,
+		required = false,
+		placeholder = 'Search...',
+		disabled = false,
+		value = $bindable<string>(),
+		searchQuery = $bindable<string>(),
+		onValueChange
+	} = $props<{
+		items?: any[];
+		label?: string;
+		name?: string;
+		required?: boolean;
+		placeholder?: string;
+		disabled?: boolean;
+		value?: string;
+		searchQuery?: string;
+		onValueChange?: (item: any) => void;
+	}>();
 
-	let open = false;
+	let open = $state(false);
 
-	$: filteredItems = searchQuery.length === 0
-		? items
-		: items.filter((item) =>
-				(item.name || item.title || '').toLowerCase().includes(searchQuery.toLowerCase())
-			);
+	let filteredItems = $derived(() =>
+		searchQuery.length === 0
+			? items
+			: items.filter((item: any) =>
+					(item.name || item.title || '').toLowerCase().includes(searchQuery.toLowerCase())
+				)
+	);
 
 	function handleSelect(item: any) {
 		value = item.name || item.title;
 		searchQuery = value;
 		open = false;
+		onValueChange?.(item);
 	}
 </script>
 
@@ -49,10 +65,10 @@
 			{disabled}
 		/>
 
-		{#if open && filteredItems.length > 0}
+		{#if open && filteredItems().length > 0}
 			<div class="absolute z-[101] mt-1 w-full overflow-hidden rounded-xl border border-brand-300 bg-white shadow-lg">
 				<ul class="max-h-60 overflow-auto py-1">
-					{#each filteredItems as item, i}
+					{#each filteredItems() as item, i}
 						<li>
 							{#if i !== 0}
 								<div class="flex justify-center">
