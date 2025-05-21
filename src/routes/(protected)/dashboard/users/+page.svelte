@@ -66,17 +66,6 @@
 		<div class="w-full md:flex-1">
 			<SearchBar bind:search={search} placeholder="Search by name, role..." />
 		</div>
-		<div class="-mt-6 flex w-full justify-end md:w-auto">
-			<Button
-				type="button"
-				variant="primary"
-				size="md"
-				extraStyles="font-semibold text-sm rounded-md shadow transition hover:brightness-95 hover:shadow-lg"
-				onclick={() => openDrawer()}
-			>
-				+ Add Role
-			</Button>
-		</div>
 	</div>
 
 	<!-- TABLE -->
@@ -85,12 +74,6 @@
 		items={filteredUsers()}
 		onRowClick={(id) => goToDetails(id)}
 		onDelete={(item) => handleDelete(item.id)}
-		columnTypes={{
-			role: {
-				type: 'select',
-				options: roles.map(r => ({ id: r.id, name: r.name }))
-			}
-		}}
 	/>
 
 	<!-- DRAWER -->
