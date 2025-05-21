@@ -55,14 +55,14 @@ export async function deleteInventoryEntry(id: string) {
 	await repoDeleteInventoryItem(id);
 }
 
-export async function getCategories(id: string) {
+export async function getCategorie(id: string) {
 	return await getCategoriesById(id);
 }
 
-export async function getSuppliers(id: string) {
+export async function getSupplier(id: string) {
 	return await getSuppliersById(id);
 }
 
-export async function getManufacturers(id: string) {
+export async function getManufacturer(id: string) {
 	return await getManufacturersById(id);
 }

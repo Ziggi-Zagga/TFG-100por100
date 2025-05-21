@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import {
 	getInventoryData,
 	createInventoryEntry,
-	deleteInventoryEntry
+	deleteInventoryEntry,
 } from '$lib/server/services/inventory.service';
 import { basicErrorHandler } from '$lib/utils/errors/errors';
 
