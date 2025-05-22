@@ -56,7 +56,7 @@
 				'disabled:cursor-not-allowed disabled:opacity-50',
 				{
 					'py-0.5 px-2 text-xs h-7': size === 'sm',
-					'py-1.5 px-3 text-sm h-9': size === 'md',
+					'py-1.5 px-3 text-base h-9': size === 'md',
 					'py-2 px-4 text-base h-11': size === 'lg'
 				},
 				extraStyles,

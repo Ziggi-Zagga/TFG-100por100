@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 	import Select from '$lib/components/utilities/Form/Select.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+	import { formatDate } from '$lib/utils/dateFormat';
 
 	const {
 	columns = [],
 	items = [],
-	highlightQuantity = false,
 	columnTypes = {},
 	onCellChange = () => {},
 	onRowClick = () => {},
@@ -17,7 +15,6 @@
 } = $props<{
 	columns?: string[];
 	items?: any[];
-	highlightQuantity?: boolean;
 	columnTypes?: {
 		[type: string]: {
 			type: 'input' | 'select' | 'textarea';
@@ -32,11 +29,6 @@
 	onEdit?: (item: any) => void;
 	onDelete?: (item: any) => void;
 }>();
-
-
-	function handleRowClick(id: string) {
-	onRowClick(id);
-}
 
 function handleCellChange(item: any, column: string, value: any) {
 	item[column] = value;
@@ -56,58 +48,74 @@ function formatHeader(header: string): string {
 	return header.charAt(0).toUpperCase() + header.slice(1);
 }
 
+function isDateColumn(columnName: string): boolean {
+	const dateColumns = ['date', 'fecha', 'createdAt', 'updatedAt', 'orderDate', 'expectedArrival', 'deliveryDate'];
+	return dateColumns.some(dateCol => columnName.toLowerCase().includes(dateCol));
+}
+
+function formatDateValue(value: any): string {
+	if (!value) return '';
+	const date = new Date(value);
+	return isNaN(date.getTime()) ? value : formatDate(date, 'd MMM yyyy');
+}
+
 
 </script>
 
-<div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-7xl mx-auto">
-	<div class="overflow-x-auto">
-		<div class="max-h-[calc(100vh-250px)] overflow-y-auto">
-			<table class="w-full text-sm text-gray-700 rounded-xl overflow-hidden shadow-sm">
-					<colgroup>
-					{#each columns as _}
-						<col class="w-auto min-w-[100px]">
-					{/each}
-					<col class="w-24">
-					</colgroup>
-				<thead class="sticky top-0 bg-indigo-50 border-b border-gray-200 text-gray-500 z-10">
-					<tr>
-						{#each columns as col}
-							<th class="px-4 py-3 text-center font-semibold whitespace-nowrap">{formatHeader(col)}</th>
-						{/each}
-						<th class="px-4 py-3 text-center font-semibold"></th>
-					</tr>
-				</thead>
+<div class="bg-white max-w-screen shadow-lg rounded-2xl p-6 w-full">
+    <div class="w-full max-w-screen overflow-x-auto">
+        <div class="max-w-screen w-full">
+            <table class="w-full max-w-screen text-sm text-gray-700">
+                <colgroup>
+                    {#each columns as _}
+                        <col class="min-w-[10px] max-w-[100px] w-auto">
+                    {/each}
+                    <col class="">
+                </colgroup>
+                <thead class="sticky top-0 bg-indigo-50 border-b border-gray-200 text-gray-500 z-10">
+                    <tr>
+                        {#each columns as col}
+                            <th class="px-4 py-3 text-center max-w-[100px] font-semibold whitespace-nowrap">{formatHeader(col)}</th>
+                        {/each}
+                        <th class="px-4 py-3 text-center font-semibold"></th>
+                    </tr>
+                </thead>
 				<tbody class="bg-white divide-y divide-gray-200">
 					{#each items as item (item.id)}
 						<tr
-							class="hover:bg-gray-50 transition cursor-pointer"
-							transition:slide={{
-								duration: 300,
-								easing: quintOut,
-								delay: 0
+							class="group relative border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+							onclick={(e: MouseEvent) => {
+								const target = e.target as HTMLElement;
+								const isInteractive = target.closest('select, input, button, [role="button"], [role="combobox"], [contenteditable]');
+								if (!isInteractive && onRowClick) {
+									onRowClick(item);
+								}
 							}}
-							onclick={() => onRowClick(item.id)}
 						>
 							{#each columns as col}
-								<td class="px-4 py-4 text-center whitespace-nowrap w-full h-9">
+								<td class="px-4 py-4 text-center whitespace-nowrap h-9 max-w-[100px] overflow-hidden text-ellipsis align-middle">
 									{#if columnTypes[col]}
 										{#if columnTypes[col].type === 'select'}
-										<div class="w-full">
-											<Select
-												bind:value={item[col]}
-												size="sm"
-												options={columnTypes[col].options}
-												onValueChange={(val) => handleCellChange(item, col, val)}
-												extraClass="w-full"
-											/>
-										</div>
+										<div class="w-full" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
+										tabindex="0" role="button">
+										<Select
+											bind:value={item[col]}
+											size="md"
+											options={columnTypes[col].options}
+											onValueChange={(val) => handleCellChange(item, col, val)}								
+										/>
+									</div>
 										{:else if columnTypes[col].type === 'textarea'}
+										<div class="w-full" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
+											tabindex="0" role="button">
 											<TextArea
 												bind:value={item[col]}
 												onValueChange={(val) => handleCellChange(item, col, val)}
 											/>
+										</div>
 										{:else}
-											<div class="w-full">
+											<div class="w-full" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
+												tabindex="0" role="button">
 												<TextInput
 													bind:value={item[col]}
 													size="sm"
@@ -121,17 +129,11 @@ function formatHeader(header: string): string {
 											</div>
 										{/if}												
 										{:else}
-										<span
-											class="block max-w-[180px] truncate text-gray-700 cursor-text"
-											title={item[col]}
-											role="button"
-											aria-label={`Copy ${item[col]} to clipboard`}
-											tabindex="0"
-											ondblclick={() => navigator.clipboard.writeText(item[col])}
-											onkeydown={(e) => e.key === 'Enter' && navigator.clipboard.writeText(item[col])}
-										>
-											{item[col]}
-										</span>
+											<div class="w-full h-full flex items-center justify-center">
+												<span class="truncate text-gray-700">
+													{isDateColumn(col) ? formatDateValue(item[col]) : item[col]}
+												</span>
+											</div>
 
 										{/if}
 									

@@ -1,6 +1,5 @@
 <script lang="ts">
-	export let search: string;
-	export let placeholder: string = 'Search...';
+	let { search = $bindable<string>(), placeholder = 'Search...' } = $props();
 </script>
 
 <div class="flex justify-between items-center mb-6">

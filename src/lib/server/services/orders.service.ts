@@ -157,10 +157,9 @@ export const updateOrderWithItems = async (orderId: string, updates: {
 
     // Si hay ítems para actualizar
     if (updates.items && updates.items.length > 0) {
-        // Primero eliminamos los ítems existentes
+        // Primero eliminamos los ítems existentes  
         await orderRepo.deleteOrderItems(orderId);
         
-        // Luego creamos los nuevos ítems
         const orderItems = updates.items.map(item => ({
             id: item.id || crypto.randomUUID(),
             orderId,
@@ -179,12 +178,10 @@ export const updateOrderWithItems = async (orderId: string, updates: {
     return { id: orderId };
 };
 
-// Obtener todos los proveedores
 export const getSuppliers = async () => {
     return await supplierRepo.getAllSuppliers();
 };
 
-// Obtener productos por proveedor
 export const getProductsBySupplierId = async (supplierId: string) => {
     if (!supplierId) {
         throw new Error('Supplier ID is required');
