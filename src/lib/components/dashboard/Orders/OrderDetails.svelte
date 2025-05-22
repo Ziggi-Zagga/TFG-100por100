@@ -10,7 +10,6 @@
 
   $effect (() => {
     if (order) {
-      // Asegurarse de que los productos sean un array
       if (order.products && !Array.isArray(order.products)) {
         order.products = [order.products];
       }
