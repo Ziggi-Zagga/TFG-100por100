@@ -3,6 +3,7 @@
 	import Select from '$lib/components/utilities/Form/Select.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import { formatDate } from '$lib/utils/dateFormat';
+	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 
 	const {
 	columns = [],
@@ -142,26 +143,22 @@ function formatDateValue(value: any): string {
 							<td class="px-4 py-3  whitespace-nowrap">
 								<div class="flex justify-center gap-3" role="group" aria-label="Row actions">
 									<button
-										class="text-gray-500 hover:text-blue-600"
+										class="text-gray-500 hover:text-blue-600 p-1"
 										title="Edit"
 										aria-label="Edit"
 										type="button"
 										onclick={(e) => handleEdit(e, item)}
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m2 0h.01M7 5h.01M3 21h18M12 17v-5m0 0l-2-2m2 2l2-2" />
-										</svg>
+										<Icon icon="edit" size={20} />
 									</button>
 									<button
-										class="text-gray-500 hover:text-red-600"
+										class="text-gray-500 hover:text-red-600 p-1"
 										title="Delete"
 										aria-label="Delete"
 										type="button"
 										onclick={(e) => handleDelete(e, item)}
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-										</svg>
+										<Icon icon="delete" size={20} />
 									</button>
 								</div>
 							</td>
