@@ -10,6 +10,7 @@
 	import Select from '$lib/components/utilities/Form/Select.svelte';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
+	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 
 	const { data } = $props();
 	let id = $state(get(page).params.id);
@@ -56,10 +57,6 @@
 		showConfirm = false;
 	}
 
-	function goBack() {
-		history.back();
-	}
-
 	function closeDrawer() {
 		isEditing = false;
 	}
@@ -99,10 +96,13 @@
 		<div class="flex flex-col gap-12 md:flex-row">
 			<div class="flex w-full justify-center md:w-1/3">
 				<div
-					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-2 shadow-md"
+					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md"
 				>
+				
+				<!-- Atribuir imagen de usuario -->
+				<!-- <a href="https://www.freepik.es/icono/usuario_7945130#fromView=search&page=1&position=8&uuid=6165784a-4191-45e9-a686-fe87b81b772e">Icono de adrianadam</a> -->
 					<img
-						src="https://via.placeholder.com/300x300.png?text=User+Avatar"
+						src="/icons/png/userIcon.png"
 						alt="User Avatar"
 						class="w-full rounded-lg object-cover"
 					/>
@@ -110,7 +110,8 @@
 			</div>
 
 			<div class="flex w-full flex-col gap-6 md:w-2/3">
-				{#if isEditing}
+					{#if isEditing}
+					<Modal title="Edit User" onClose={closeDrawer}>
 					<form
 						method="POST"
 						action="?/update"
@@ -156,13 +157,14 @@
 							</Button>
 						</div>
 					</form>
-				{:else}
-					<h2 class="text-4xl font-bold text-gray-800">{user.username}</h2>
+				</Modal>
+				{/if}
+
+				<h2 class="text-4xl font-bold text-gray-800">{user.username}</h2>
 					<p class="text-2xl text-indigo-600">{user.email}</p>
 
 					<ShowText label="Role" value={roles.find(role => role.id === user.roleId)?.name || 'Role not found'} />
 					<ShowText label="Created At" value={new Date(user.createdAt).toLocaleDateString()} />
-				{/if}
 			</div>
 		</div>
 
