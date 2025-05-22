@@ -17,8 +17,8 @@
 	let roles = $state([...data.roles]);
 	let totalUsers = $derived(() => users.length);
 
-	function goToDetails(id: string) {
-		goto(`/dashboard/users/${id}`);
+	function goToDetails(item: string) {
+		goto(`/dashboard/users/${item.id}`);
 	}
 
 	function openDrawer() {
@@ -72,7 +72,7 @@
 	<Table
 		columns={['username', 'email', 'role', 'lastLogin']}
 		items={filteredUsers()}
-		onRowClick={(id) => goToDetails(id)}
+		onRowClick={(item) => goToDetails(item)}
 		onDelete={(item) => handleDelete(item.id)}
 	/>
 
