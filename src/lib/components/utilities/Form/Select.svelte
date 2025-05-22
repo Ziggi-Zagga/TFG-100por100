@@ -48,7 +48,7 @@
 			{required}
 			{...rest}
 			class={cn(
-				'w-full rounded border border-brand-300 bg-white/50',
+				'w-full rounded-lg border border-brand-300 bg-white/50',
 				'font-inter text-brand-700 placeholder:text-brand-400/70',
 				'transition-all duration-300',
 				'hover:border-purple-600',

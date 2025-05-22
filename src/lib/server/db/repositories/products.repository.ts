@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { products, suppliers, manufacturers, categories } from '$lib/server/db/schema';
+
 import { eq, or, ilike } from 'drizzle-orm';
 
 // Obtener productos filtrados por proveedor

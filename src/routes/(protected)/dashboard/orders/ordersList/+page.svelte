@@ -3,11 +3,11 @@
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
-	import { goto } from '$app/navigation';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
-	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import Modal from '$lib/components/utilities/Modal/Modal.svelte';	
+	import OrderDetails from '$lib/components/dashboard/Orders/OrderDetails.svelte';
 	import ProductsInfoModal from '$lib/components/dashboard/Products/ProductsInfoModal.svelte';
 	import { onMount } from 'svelte';
 
@@ -17,9 +17,11 @@
 	let products = $state([...data.products]);
 
 	let showDrawer = $state(false);
+let showOrderDetails = $state(false);
 	let search = $state('');
 	let selectedProducts = $state<any[]>([]);
 	let selectedSupplier = $state<{id: string, name: string} | null>(null);
+	let selectedOrder = $state<any>(null);
 	let formData = $state({
     orderNumber: '',
     supplierId: '',
@@ -46,9 +48,8 @@
 		)
 	);
 
-	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total', 'actions'];
+	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
 
-	// Extender el tipo de columnTypes para incluir acciones
 	const productColumnTypes: Record<string, any> = {
 		quantity: { type: 'input' as const, inputType: 'number', min: 1, step: 1 },
 		discount: { type: 'input' as const, inputType: 'number', min: 0, max: 100, step: 1 },
@@ -56,8 +57,8 @@
 			type: 'actions' as const,
 			actions: [
 				{
-					label: 'Editar',
-					onClick: (item: any) => handleEditProduct(item.id)
+					label: 'Delete',
+					onClick: (item: any) => handleDeleteProduct(item.id)
 				}
 			]
 		}
@@ -66,7 +67,15 @@
 	const ordersColumns = ['orderNumber', 'status', 'orderDate'];
 
 	const ordersColumnTypes = {
-		status: { type: 'select' as const, options: ['pending', 'completed', 'cancelled'], inputType: 'text' }
+		status: { 
+			type: 'select' as const, 
+			options: [
+				{ id: 'pending', name: 'Pending' },
+				{ id: 'completed', name: 'Completed' },
+				{ id: 'cancelled', name: 'Cancelled' }
+			],
+			extraStyles: 'w-full',
+		}
 	};
 
 
@@ -87,8 +96,13 @@
 		search = '';
 	}
 
-	function goToOrderDetails(id: string) {
-		goto(`/dashboard/orders/${id}`);
+	function goToOrderDetails(order: any) {
+		selectedOrder = order;
+		showOrderDetails = true;
+	}
+
+	function onClose() {
+		showOrderDetails = false;
 	}
 
 	async function handleDelete(orderId: string) {
@@ -194,7 +208,7 @@
 		columns={ordersColumns}
 		columnTypes={ordersColumnTypes}
 		items={filteredOrders()}
-		onRowClick={(id) => goToOrderDetails(id)}
+		onRowClick={(item) => goToOrderDetails(item)}
 		onDelete={(item) => handleDelete(item.id)}
 	/>
 
@@ -202,10 +216,10 @@
 	{#if showDrawer}
 	<Modal title="➕ Create New Order" onClose={closeDrawer} size="lg">
 		<form 
-  method="POST" 
-  action="?/create" 
-  class="space-y-4"
-  onsubmit={handleSubmit}
+		method="POST" 
+		action="?/create" 
+		class="space-y-4"
+		onsubmit={handleSubmit}
 >
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<!-- Primera fila -->
@@ -293,5 +307,8 @@
 				</div>
 		</form>
 	</Modal>
+	{/if}
+	{#if showOrderDetails}
+	<OrderDetails bind:isOpen={showOrderDetails} order={selectedOrder} onClose={onClose} />
 	{/if}
 </section>

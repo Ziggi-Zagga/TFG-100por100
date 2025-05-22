@@ -63,12 +63,12 @@ function formatHeader(header: string): string {
 	<div class="overflow-x-auto">
 		<div class="max-h-[calc(100vh-250px)] overflow-y-auto">
 			<table class="w-full text-sm text-gray-700 rounded-xl overflow-hidden shadow-sm">
-				<colgroup>
+					<colgroup>
 					{#each columns as _}
 						<col class="w-auto min-w-[100px]">
 					{/each}
 					<col class="w-24">
-				</colgroup>
+					</colgroup>
 				<thead class="sticky top-0 bg-indigo-50 border-b border-gray-200 text-gray-500 z-10">
 					<tr>
 						{#each columns as col}
@@ -86,9 +86,10 @@ function formatHeader(header: string): string {
 								easing: quintOut,
 								delay: 0
 							}}
+							onclick={() => onRowClick(item.id)}
 						>
 							{#each columns as col}
-								<td class="px-4 py-1 text-center whitespace-nowrap">
+								<td class="px-4 py-4 text-center whitespace-nowrap w-full h-9">
 									{#if columnTypes[col]}
 										{#if columnTypes[col].type === 'select'}
 										<div class="w-full">
