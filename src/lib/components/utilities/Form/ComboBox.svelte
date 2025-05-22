@@ -8,7 +8,9 @@
 		disabled = false,
 		value = $bindable<string>(),
 		searchQuery = $bindable<string>(),
-		onValueChange
+		onValueChange,
+		quickSearch = false,
+		onQuickSelect
 	} = $props<{
 		items?: any[];
 		label?: string;
@@ -19,23 +21,33 @@
 		value?: string;
 		searchQuery?: string;
 		onValueChange?: (item: any) => void;
+		quickSearch?: boolean;
+		onQuickSelect?: (item: any) => void;
 	}>();
 
 	let open = $state(false);
 
-	let filteredItems = $derived(() =>
-		searchQuery.length === 0
+	let filteredItems = $derived(() => {
+		if (!items) return [];
+		const search = (searchQuery || '').toLowerCase();
+		return search === ''
 			? items
 			: items.filter((item: any) =>
 					(item.name || item.title || '').toLowerCase().includes(searchQuery.toLowerCase())
 				)
-	);
+	});
 
 	function handleSelect(item: any) {
-		value = item.name || item.title;
-		searchQuery = value;
+		if (quickSearch) {
+			onQuickSelect?.(item);
+			searchQuery = '';
+			value = '';
+		} else {
+			value = item.name || item.title;
+			searchQuery = value;
+			onValueChange?.(item);
+		}
 		open = false;
-		onValueChange?.(item);
 	}
 </script>
 

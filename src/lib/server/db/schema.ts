@@ -154,7 +154,7 @@ export const orderItems = sqliteTable('orderItems', {
   productId: text('productId').notNull().references(() => products.id),
   quantity: real('quantity').notNull(),
   price: real('price').notNull(),
-  status: text('status'),
+  discount: real('discount'),
   createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 });

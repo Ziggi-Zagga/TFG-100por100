@@ -2,12 +2,14 @@
 	import PageHeader from '$lib/components/utilities/Header/Header.svelte';
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
-	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import { goto } from '$app/navigation';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
+	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import ProductsInfoModal from '$lib/components/dashboard/Products/ProductsInfoModal.svelte';
+	import { onMount } from 'svelte';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
@@ -17,6 +19,25 @@
 	let showDrawer = $state(false);
 	let search = $state('');
 	let selectedProducts = $state<any[]>([]);
+	let selectedSupplier = $state<{id: string, name: string} | null>(null);
+	let formData = $state({
+    orderNumber: '',
+    supplierId: '',
+    orderDate: '',
+    expectedArrival: '',
+    notes: ''
+});
+
+	function handleSupplierSelect(supplierName: string) {
+		const supplier = suppliers.find(s => s.name === supplierName);
+		if (supplier) {
+			selectedSupplier = supplier;
+			formData.supplierId = supplier.id;
+		} else {
+			selectedSupplier = null;
+			formData.supplierId = '';
+		}
+	}
 
 	const filteredOrders = $derived(() =>
 		orders.filter((order) =>
@@ -25,12 +46,29 @@
 		)
 	);
 
-	const productColumns = ['name', 'price', 'quantity', 'discount', 'total'];
+	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total', 'actions'];
 
-	const productColumnTypes = {
-		quantity: { type: 'input' as const, min: 1, step: 1 },
-		discount: { type: 'input' as const, min: 0, max: 100, step: 1 }
+	// Extender el tipo de columnTypes para incluir acciones
+	const productColumnTypes: Record<string, any> = {
+		quantity: { type: 'input' as const, inputType: 'number', min: 1, step: 1 },
+		discount: { type: 'input' as const, inputType: 'number', min: 0, max: 100, step: 1 },
+		actions: { 
+			type: 'actions' as const,
+			actions: [
+				{
+					label: 'Editar',
+					onClick: (item: any) => handleEditProduct(item.id)
+				}
+			]
+		}
 	};
+
+	const ordersColumns = ['orderNumber', 'status', 'orderDate'];
+
+	const ordersColumnTypes = {
+		status: { type: 'select' as const, options: ['pending', 'completed', 'cancelled'], inputType: 'text' }
+	};
+
 
 	function openDrawer() {
 		showDrawer = true;
@@ -38,6 +76,15 @@
 
 	function closeDrawer() {
 		showDrawer = false;
+		formData = {
+			orderNumber: '',
+			supplierId: '',
+			orderDate: '',
+			expectedArrival: '',
+			notes: ''
+		};
+		selectedProducts = [];
+		search = '';
 	}
 
 	function goToOrderDetails(id: string) {
@@ -60,6 +107,10 @@
 		}
 	}
 
+	async function handleDeleteProduct(productId: string) {
+		selectedProducts = selectedProducts.filter(p => p.id !== productId);
+	}
+
 	function handleProductSelect(productId: string) {
 		const product = products.find(p => p.id === productId);
 		if (!product) return;
@@ -70,6 +121,7 @@
 			...selectedProducts,
 			{
 				id: product.id,
+				code: product.code,
 				name: product.name,
 				price: product.price,
 				quantity: 1,
@@ -82,8 +134,45 @@
 	}
 
 	function handleProductChange(item: any, column: string, value: number) {
-		item[column] = Number(value);
-		selectedProducts = [...selectedProducts];
+		const newValue = Number(value);
+		if (item[column] === newValue) return;
+		
+		selectedProducts = selectedProducts.map(p => 
+			p.id === item.id 
+				? { ...p, [column]: newValue }
+				: p
+		);
+	}
+
+	async function handleSubmit(event: Event) {
+		event.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
+		
+		// Agregar los productos seleccionados al formData
+		const items = selectedProducts.map(p => ({
+			productId: p.id,
+			quantity: p.quantity,
+			price: p.price,
+			discount: p.discount || 0
+		}));
+		
+		formData.set('items', JSON.stringify(items));
+		
+		try {
+			const response = await fetch(form.action, {
+				method: 'POST',
+				body: formData
+			});
+			
+			if (response.redirected) {
+				window.location.href = response.url;
+			} else if (!response.ok) {
+				console.error('Error al crear la orden');
+			}
+		} catch (error) {
+			console.error('Error al enviar el formulario:', error);
+		}
 	}
 </script>
 
@@ -102,53 +191,107 @@
 	</div>
 
 	<Table
-		columns={['orderNumber', 'status', 'orderDate']}
+		columns={ordersColumns}
+		columnTypes={ordersColumnTypes}
 		items={filteredOrders()}
 		onRowClick={(id) => goToOrderDetails(id)}
 		onDelete={(item) => handleDelete(item.id)}
 	/>
 
+
 	{#if showDrawer}
-	<Drawer title="➕ Create New Order" onClose={closeDrawer}>
-		<form method="POST" action="?/create" class="space-y-4">
-			<TextInput name="orderNumber" required placeholder="Order Number" />
-			<ComboBox
-				name="supplierId"
-				label="Supplier"
-				items={suppliers}
-				required
+	<Modal title="➕ Create New Order" onClose={closeDrawer} size="lg">
+		<form 
+  method="POST" 
+  action="?/create" 
+  class="space-y-4"
+  onsubmit={handleSubmit}
+>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<!-- Primera fila -->
+				<div class="space-y-4">
+					<TextInput 
+						name="orderNumber" 
+						label="Order Number"
+						bind:value={formData.orderNumber}
+						required 
+						placeholder="Order Number" 
+					/>
+				</div>
+				<div class="space-y-4">
+					<ComboBox
+						name="supplierName"
+						label="Supplier"
+						items={suppliers || []}
+						bind:value={formData.supplierId}
+						onValueChange={(supplier) => handleSupplierSelect(supplier.name)}
+						required
+					/>
+					<input type="hidden" name="supplierId" value={formData.supplierId} />
+					{#if suppliers && suppliers.length === 0}
+						<p class="text-sm text-red-500">No hay proveedores disponibles. Por favor, añade proveedores primero.</p>
+					{/if}
+				</div>
+
+				<!-- Segunda fila -->
+				<div class="space-y-4">
+					<TextInput 
+						name="orderDate" 
+						bind:value={formData.orderDate}
+						label="Order Date" 
+						type="datetime-local" 
+						required 
+					/>
+				</div>
+				<div class="space-y-4">
+					<TextInput 
+						name="expectedArrival" 
+						bind:value={formData.expectedArrival}
+						label="Expected Arrival" 
+						type="datetime-local" 
+						required 
+					/>
+				</div>
+			</div>
+			<TextArea 
+				name="notes" 
+				bind:value={formData.notes}
+				label="Notes" 
+				rows={4} 
+				placeholder="Enter any additional notes..." 
 			/>
-			<TextInput name="orderDate" label="Order Date" type="datetime-local" required />
-			<TextInput name="expectedArrival" label="Expected Arrival" type="datetime-local" required />
-			<TextArea name="notes" label="Notes" rows={4} placeholder="Enter any additional notes..." />
 
 			<ComboBox
-			label="Products"
-			items={products}
-			bind:value
-			onValueChange={(item) => {
-				handleProductSelect(item.id);
-				products = products.filter(p => p.id !== item.id); 
-			}}
-		/>
-
+				label="Products"
+				items={products}
+				quickSearch={true}
+				bind:searchQuery={search}
+				onQuickSelect={(item) => {
+					handleProductSelect(item.id);
+				}}
+				placeholder="Search products..."
+			/>
 
 			<Table
 				columns={productColumns}
 				items={selectedProducts}
 				columnTypes={productColumnTypes}
 				onCellChange={handleProductChange}
+				onDelete={(item) => handleDeleteProduct(item.id)}
 			/>
 
-			<div class="mt-6 flex justify-end gap-4">
-				<button type="button" onclick={closeDrawer} class="rounded-xl bg-gray-200 px-6 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-300">
-					Cancel
-				</button>
-				<button type="submit" class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600">
-					Create
-				</button>
-			</div>
+				<!-- Campo oculto para los ítems del pedido -->
+				<input type="hidden" name="items" value={JSON.stringify(selectedProducts)} />
+				
+				<div class="mt-6 flex justify-end gap-4">
+					<button type="button" onclick={closeDrawer} class="rounded-xl bg-gray-200 px-6 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-300">
+						Cancel
+					</button>
+					<button type="submit" class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600">
+						Create
+					</button>
+				</div>
 		</form>
-	</Drawer>
+	</Modal>
 	{/if}
 </section>
