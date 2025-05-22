@@ -79,7 +79,7 @@
 		class="w-full max-w-7xl space-y-12 rounded-2xl bg-white px-6 py-6 shadow-xl md:px-10 md:py-8"
 	>
 		<div class="flex items-center justify-between">
-			<button onclick={goBack} class="text-2xl text-indigo-600 hover:text-indigo-800"> ← </button>
+			<button onclick={() => goto('/dashboard/users')} class="text-2xl text-indigo-600 hover:text-indigo-800"> ← </button>
 			<div class="flex gap-4">
 				<button
 					onclick={toggleEdit}
