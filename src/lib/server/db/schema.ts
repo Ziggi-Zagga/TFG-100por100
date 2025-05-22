@@ -137,7 +137,7 @@ export const movementItems = sqliteTable('movementItems', {
 
 export const orders = sqliteTable('orders', {
   id: text('id').primaryKey(),
-  orderNumber: text('orderNumber', { length: 50 }).notNull().unique(),
+  orderNumber: text('orderNumber', { length: 100 }).notNull().unique(),
   supplierId: text('supplierId').notNull().references(() => suppliers.id),
   userId: text('userId').notNull().references(() => users.id),
   orderDate: integer('orderDate', { mode: 'timestamp' }).notNull(),

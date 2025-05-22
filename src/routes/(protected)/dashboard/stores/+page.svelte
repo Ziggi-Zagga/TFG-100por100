@@ -66,8 +66,8 @@
 	<Table
 		columns={['name', 'location']}
 		items={filteredStores()}
-		on:rowClick={(e) => goToStoreDetails(e.detail)}
-		on:delete={(e) => handleDelete(e.detail.id)}
+		onRowClick={(item) => goToStoreDetails(item)}
+		onDelete={(item) => handleDelete(item.id)}
 	/>
 
 	{#if showDrawer}

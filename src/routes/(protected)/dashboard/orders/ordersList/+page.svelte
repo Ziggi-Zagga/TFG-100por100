@@ -8,16 +8,13 @@
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 	import Modal from '$lib/components/utilities/Modal/Modal.svelte';	
 	import OrderDetails from '$lib/components/dashboard/Orders/OrderDetails.svelte';
-	import ProductsInfoModal from '$lib/components/dashboard/Products/ProductsInfoModal.svelte';
-	import { onMount } from 'svelte';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
 	let suppliers = $state([...data.suppliers]);
 	let products = $state([...data.products]);
-
 	let showDrawer = $state(false);
-let showOrderDetails = $state(false);
+	let showOrderDetails = $state(false);
 	let search = $state('');
 	let selectedProducts = $state<any[]>([]);
 	let selectedSupplier = $state<{id: string, name: string} | null>(null);
