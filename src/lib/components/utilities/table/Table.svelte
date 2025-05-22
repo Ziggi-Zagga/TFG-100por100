@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 	import Select from '$lib/components/utilities/Form/Select.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
@@ -60,54 +62,82 @@ function formatHeader(header: string): string {
 <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-7xl mx-auto">
 	<div class="overflow-x-auto">
 		<div class="max-h-[calc(100vh-250px)] overflow-y-auto">
-			<table class="w-full table-auto text-sm text-gray-700 min-w-[800px] rounded-xl overflow-hidden shadow-sm">
+			<table class="w-full text-sm text-gray-700 rounded-xl overflow-hidden shadow-sm">
+					<colgroup>
+					{#each columns as _}
+						<col class="w-auto min-w-[100px]">
+					{/each}
+					<col class="w-24">
+					</colgroup>
 				<thead class="sticky top-0 bg-indigo-50 border-b border-gray-200 text-gray-500 z-10">
 					<tr>
 						{#each columns as col}
-							<th class="px-4 py-3 text-left font-semibold">{formatHeader(col)}</th>
+							<th class="px-4 py-3 text-center font-semibold whitespace-nowrap">{formatHeader(col)}</th>
 						{/each}
 						<th class="px-4 py-3 text-center font-semibold"></th>
 					</tr>
 				</thead>
 				<tbody class="bg-white divide-y divide-gray-200">
-					{#each items as item}
+					{#each items as item (item.id)}
 						<tr
 							class="hover:bg-gray-50 transition cursor-pointer"
-							onclick={() => handleRowClick(item.id)}
+							transition:slide={{
+								duration: 300,
+								easing: quintOut,
+								delay: 0
+							}}
+							onclick={() => onRowClick(item.id)}
 						>
 							{#each columns as col}
-								<td class="px-4 py-3 whitespace-nowrap">
+								<td class="px-4 py-4 text-center whitespace-nowrap w-full h-9">
 									{#if columnTypes[col]}
 										{#if columnTypes[col].type === 'select'}
-										<Select
-										bind:value={item[col]}
-										options={columnTypes[col].options}
-										onValueChange={(val) => handleCellChange(item, col, val)}
-									/>
+										<div class="w-full">
+											<Select
+												bind:value={item[col]}
+												size="sm"
+												options={columnTypes[col].options}
+												onValueChange={(val) => handleCellChange(item, col, val)}
+												extraClass="w-full"
+											/>
+										</div>
 										{:else if columnTypes[col].type === 'textarea'}
 											<TextArea
 												bind:value={item[col]}
 												onValueChange={(val) => handleCellChange(item, col, val)}
 											/>
 										{:else}
+											<div class="w-full">
 												<TextInput
-												bind:value={item[col]}
-												type={columnTypes[col].type}
-												min={columnTypes[col].min}
-												max={columnTypes[col].max}
-												step={columnTypes[col].step}
-												onValueChange={(val) => handleCellChange(item, col, val)}
-											/>
+													bind:value={item[col]}
+													size="sm"
+													type={columnTypes[col].inputType || columnTypes[col].type || 'text'}
+													min={columnTypes[col].min}
+													max={columnTypes[col].max}
+													step={columnTypes[col].step}
+													onValueChange={(val) => handleCellChange(item, col, val)}
+													extraClass="w-full"
+												/>
+											</div>
 										{/if}												
 										{:else}
-										<span class="text-gray-700">
-											{item[col]} 
+										<span
+											class="block max-w-[180px] truncate text-gray-700 cursor-text"
+											title={item[col]}
+											role="button"
+											aria-label={`Copy ${item[col]} to clipboard`}
+											tabindex="0"
+											ondblclick={() => navigator.clipboard.writeText(item[col])}
+											onkeydown={(e) => e.key === 'Enter' && navigator.clipboard.writeText(item[col])}
+										>
+											{item[col]}
 										</span>
+
 										{/if}
 									
 								</td>
 							{/each}
-							<td class="px-4 py-3 whitespace-nowrap">
+							<td class="px-4 py-3  whitespace-nowrap">
 								<div class="flex justify-center gap-3" role="group" aria-label="Row actions">
 									<button
 										class="text-gray-500 hover:text-blue-600"

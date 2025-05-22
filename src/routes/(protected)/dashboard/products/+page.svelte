@@ -8,10 +8,10 @@
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Select from '$lib/components/utilities/Form/Select.svelte';
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
-  import type { Supplier, Manufacturer, Category } from '$lib/types/products.types';
+  import type { Supplier, Manufacturer, Category, Product } from '$lib/types/products.types';
 
   const { data } = $props();
-  let productsCopy = $state([...data.products]);
+  let productsCopy = $state<Product[]>([...data.products]);
   let suppliers = $state<Supplier[]>([...data.suppliers]);
   let manufacturers = $state<Manufacturer[]>([...data.manufacturers]);
   let categories = $state<Category[]>([...data.categories]);
@@ -89,8 +89,8 @@
     columns={['code', 'name', 'price', 'unit', 'active']}
     items={filteredProducts()}
     onRowClick={(id) => goToProductDetails(id, '')}
-    onEdit={(e) => goToProductDetails(e.detail.id, '?edit=true')}
-    onDelete={(e) => askDelete(e.detail.id, e.detail.name)}
+    onEdit={(item) => goToProductDetails(item.id, '?edit=true')}
+    onDelete={(item) => askDelete(item.id, item.name)}
   />
 
   {#if showDrawer}

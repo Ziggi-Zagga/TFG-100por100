@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	let {
 		label,
@@ -12,10 +11,12 @@
 		disabled = false,
 		error = '',
 		extraStyles = '',
+		size = 'md',
 		min,
 		max,
 		step,
 		onValueChange,
+		extraClass,
 		...rest
 	}: {
 		label?: string;
@@ -27,11 +28,13 @@
 		disabled?: boolean;
 		error?: string;
 		extraStyles?: string;
+		size?: 'sm' | 'md' | 'lg';
 		min?: number;
 		max?: number;
 		step?: number;
 		onValueChange?: (val: string | number) => void;
-	} & HTMLInputAttributes = $props();
+		extraClass?: string;
+	} = $props();
 	
 	$effect(() => onValueChange?.(value));
 </script>
@@ -63,6 +66,12 @@
 				'hover:border-purple-600',
 				'focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/20',
 				'disabled:cursor-not-allowed disabled:opacity-50',
+				{
+					'py-1 px-1 text-sm h-9': size === 'sm',
+					'py-2.5 px-3 text-sm h-11': size === 'md',
+					'py-3 px-4 text-base h-14': size === 'lg'
+				},
+				type === 'number' && 'text-right',	
 				extraStyles,
 				error && 'border-error-500',
 				disabled && 'bg-gray-100'

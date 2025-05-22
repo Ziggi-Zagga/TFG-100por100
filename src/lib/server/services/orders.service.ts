@@ -1,169 +1,194 @@
-import * as repo from '../db/repositories/orders.repository';
-import { getAllSuppliers } from '../db/repositories/supplier.repository';
-import { getProductsBySupplier } from '../db/repositories/products.repository';
+import * as orderRepo from '../db/repositories/orders.repository';
+import * as supplierRepo from '../db/repositories/supplier.repository';
+import * as productRepo from '../db/repositories/products.repository';
 import crypto from 'crypto';
-import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
-import type { orders, orderItems } from '$lib/server/db/schema';
+import type { orderItems } from '$lib/server/db/schema';
 
+// Obtener todas las órdenes
 export const getOrders = async () => {
-	return await repo.getAllOrders();
+    return await orderRepo.getAllOrders();
 };
 
+// Obtener una orden con sus ítems
 export const getOrderWithItems = async (orderId: string) => {
-	if (!orderId) {
-		throw new ServiceError('Order ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'orderId' });
-	}
-	return await repo.getItemsByOrderId(orderId);
+    if (!orderId) {
+        throw new Error('Order ID is required');
+    }
+    return await orderRepo.getOrderWithItems(orderId);
 };
 
-export const createOrderWithItems = async ({
-	supplierId,
-	userId,
-	orderDate,
-	expectedArrival,
-	status,
-	notes,
-	items
-}: {
-	supplierId: string;
-	userId: string;
-	orderDate: number;
-	expectedArrival?: number;
-	status: string;
-	notes?: string;
-	items: { productId: string; quantity: number; price: number; status?: string }[];
+// Crear una nueva orden con ítems
+export const createOrderWithItems = async (orderData: {
+    supplierId: string;
+    userId: string;
+    items: Array<{
+        productId: string;
+        quantity: number;
+        price: number;
+        discount?: number;
+    }>;
+    orderDate?: Date | string | number;
+    expectedArrival?: Date | string | number;
+    status?: string;
+    notes?: string;
 }) => {
-		
-	if (!supplierId) {
-		throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'supplierId' });
-	}
-	if (!userId) {
-		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'userId' });
-	}
-	if (!orderDate) {
-		throw new ServiceError('Order date is required', ERROR_TYPES.VALIDATION, 400, { field: 'orderDate' });
-	}
-	if (!status) {
-		throw new ServiceError('Status is required', ERROR_TYPES.VALIDATION, 400, { field: 'status' });
-	}
-	if (!items || items.length === 0) {
-		throw new ServiceError('At least one item is required', ERROR_TYPES.VALIDATION, 400, { field: 'items' });
-	}
+    // Validar datos básicos
+    if (!orderData.supplierId) {
+        throw new Error('Supplier ID is required');
+    }
+    
+    if (!orderData.userId) {
+        throw new Error('User ID is required');
+    }
+    
+    if (!orderData.items || orderData.items.length === 0) {
+        throw new Error('At least one item is required');
+    }
 
-	const now = Date.now();
-	if (orderDate > now) {
-		throw new ServiceError('Order date cannot be in the future', ERROR_TYPES.VALIDATION, 400, { field: 'orderDate' });
-	}
-	if (expectedArrival && expectedArrival < orderDate) {
-		throw new ServiceError('Expected arrival must be after order date', ERROR_TYPES.VALIDATION, 400, { field: 'expectedArrival' });
-	}
+    // Validar items
+    for (const item of orderData.items) {
+        if (!item.productId) {
+            throw new Error('Product ID is required for each item');
+        }
+        if (item.quantity <= 0) {
+            throw new Error('Quantity must be greater than 0');
+        }
+        if (item.price <= 0) {
+            throw new Error('Price must be greater than 0');
+        }
+    }
 
-	// Validar items
-	for (const item of items) {
-		if (!item.productId) {
-			throw new ServiceError('Product ID is required for each item', ERROR_TYPES.VALIDATION, 400, { field: 'productId' });
-		}
-		if (item.quantity <= 0) {
-			throw new ServiceError('Quantity must be greater than 0', ERROR_TYPES.VALIDATION, 400, { field: 'quantity' });
-		}
-		if (item.price <= 0) {
-			throw new ServiceError('Price must be greater than 0', ERROR_TYPES.VALIDATION, 400, { field: 'price' });
-		}
-	}
+    // Generar número de orden
+    const lastOrderNumber = await orderRepo.getLastOrderNumber();
+    const nextOrderNumber = lastOrderNumber ? 
+        Number(lastOrderNumber.replace('ORD-', '')) + 1 : 1;
+    const orderNumber = `ORD-${nextOrderNumber.toString().padStart(6, '0')}`;
 
-	const lastOrderNumber = await repo.getLastOrderNumber();
-	const nextOrderNumber = lastOrderNumber ? 
-		Number(lastOrderNumber.replace('ORD-', '')) + 1 :
-		1;
-	
-	const orderNumber = `ORD-${nextOrderNumber.toString().padStart(6, '0')}`;
-	
-	const orderId = crypto.randomUUID();
+    // Crear la orden
+    const orderId = crypto.randomUUID();
+    const now = new Date();
+    
+    const order = {
+        id: orderId,
+        orderNumber,
+        supplierId: orderData.supplierId,
+        userId: orderData.userId,
+        orderDate: orderData.orderDate ? new Date(orderData.orderDate) : now,
+        expectedArrival: orderData.expectedArrival ? new Date(orderData.expectedArrival) : null,
+        status: orderData.status || 'pending',
+        notes: orderData.notes || '',
+        createdAt: now,
+        updatedAt: now
+    };
 
-	await repo.insertOrder({
-		id: orderId,
-		orderNumber,
-		supplierId,
-		userId,
-		orderDate: new Date(orderDate),
-		expectedArrival: expectedArrival ? new Date(expectedArrival) : null,
-		status,
-		notes,
-		createdAt: new Date(),
-		updatedAt: new Date()
-	});
+    // Crear los ítems de la orden
+    const orderItems = orderData.items.map(item => ({
+        id: crypto.randomUUID(),
+        orderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        discount: item.discount || 0,
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now
+    }));
 
-	const itemsWithIds: typeof orderItems.$inferInsert[] = items.map((item) => ({
-		id: crypto.randomUUID(),
-		orderId,
-		productId: item.productId,
-		quantity: item.quantity,
-		price: item.price,
-		status: item.status ?? 'pending',
-		createdAt: new Date(),
-		updatedAt: new Date()
-	}));
+    // Guardar en la base de datos
+    await orderRepo.insertOrder(order);
+    await orderRepo.insertOrderItems(orderItems);
 
-	await repo.insertOrderItems(itemsWithIds);
-
-	return { id: orderId };
+    return { id: orderId, orderNumber };
 };
 
+// Eliminar una orden por ID
 export const deleteOrderById = async (orderId: string) => {
-	if (!orderId) {
-		throw new ServiceError('Order ID is required', ERROR_TYPES.VALIDATION, 400);
-	}
-	await repo.removeOrderItemsByOrderId(orderId);
-	await repo.removeOrder(orderId);
+    if (!orderId) {
+        throw new Error('Order ID is required');
+    }
+    
+    // Primero eliminamos los ítems de la orden
+    await orderRepo.deleteOrderItems(orderId);
+    
+    // Luego eliminamos la orden
+    await orderRepo.deleteOrder(orderId);
+    
+    return { success: true };
 };
 
-export const updateOrderWithItems = async ({
-	orderId,
-	supplierId,
-	userId,
-	orderDate,
-	expectedArrival,
-	status,
-	notes,
-
-}: {
-	orderId: string;
-	supplierId?: string;
-	userId?: string;
-	orderDate?: number;
-	expectedArrival?: number;
-	status?: string;
-	notes?: string;
+// Actualizar una orden existente
+export const updateOrderWithItems = async (orderId: string, updates: {
+    supplierId?: string;
+    userId?: string;
+    orderDate?: Date | string | number;
+    expectedArrival?: Date | string | number | null;
+    status?: string;
+    notes?: string;
+    items?: Array<{
+        id?: string;
+        productId: string;
+        quantity: number;
+        price: number;
+        discount?: number;
+        status?: string;
+    }>;
 }) => {
-	if (!orderId) {
-		throw new ServiceError('Order ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'orderId' });
-	}
+    if (!orderId) {
+        throw new Error('Order ID is required');
+    }
 
-	if (supplierId && !userId) {
-		throw new ServiceError('User ID is required when updating supplier', ERROR_TYPES.VALIDATION, 400, { field: 'userId' });
-	}
-	if (orderDate) {
-		const now = Date.now();
-		if (orderDate > now) {
-			throw new ServiceError('Order date cannot be in the future', ERROR_TYPES.VALIDATION, 400, { field: 'orderDate' });
-		}
-	}
-	if (expectedArrival && orderDate && expectedArrival < orderDate) {
-		throw new ServiceError('Expected arrival must be after order date', ERROR_TYPES.VALIDATION, 400, { field: 'expectedArrival' });
-	}
+    const now = new Date();
+    const orderUpdates: any = {
+        updatedAt: now
+    };
 
-	// Validar productos
-	if (!supplierId) {
-		throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'supplierId' });
-	}
-	const products = await getProductsBySupplier(supplierId);
-	
-	await repo.updateOrder(orderId, {
-		
-	});
+    // Actualizar campos básicos de la orden
+    if (updates.supplierId) orderUpdates.supplierId = updates.supplierId;
+    if (updates.userId) orderUpdates.userId = updates.userId;
+    if (updates.orderDate) orderUpdates.orderDate = new Date(updates.orderDate);
+    if (updates.expectedArrival !== undefined) {
+        orderUpdates.expectedArrival = updates.expectedArrival ? new Date(updates.expectedArrival) : null;
+    }
+    if (updates.status) orderUpdates.status = updates.status;
+    if (updates.notes !== undefined) orderUpdates.notes = updates.notes;
+
+    // Actualizar la orden
+    await orderRepo.updateOrder(orderId, orderUpdates);
+
+    // Si hay ítems para actualizar
+    if (updates.items && updates.items.length > 0) {
+        // Primero eliminamos los ítems existentes
+        await orderRepo.deleteOrderItems(orderId);
+        
+        // Luego creamos los nuevos ítems
+        const orderItems = updates.items.map(item => ({
+            id: item.id || crypto.randomUUID(),
+            orderId,
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+            discount: item.discount || 0,
+            status: item.status || 'pending',
+            createdAt: now,
+            updatedAt: now
+        }));
+
+        await orderRepo.insertOrderItems(orderItems);
+    }
+
+    return { id: orderId };
 };
 
+// Obtener todos los proveedores
 export const getSuppliers = async () => {
-	return await getAllSuppliers();
+    return await supplierRepo.getAllSuppliers();
+};
+
+// Obtener productos por proveedor
+export const getProductsBySupplierId = async (supplierId: string) => {
+    if (!supplierId) {
+        throw new Error('Supplier ID is required');
+    }
+    return await productRepo.getProductsBySupplier(supplierId);
 };
 
