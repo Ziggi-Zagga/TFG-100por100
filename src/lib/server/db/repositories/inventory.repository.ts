@@ -15,13 +15,15 @@ export async function repoGetInventoryView() {
             lastCount: table.inventory.lastCount,
             location: table.storeGaps.name,
             supplier: table.suppliers.name,
-            category: table.categories.name
+            category: table.categories.name,
+            manufacturer: table.manufacturers.name
         })
         .from(table.products)
         .innerJoin(table.inventory, eq(table.products.id, table.inventory.productId))
         .innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
         .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
         .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
+        .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
         .where(eq(table.products.active, true));
 }
 
@@ -33,11 +35,13 @@ export async function repoGetAvailableProducts() {
             name: table.products.name,
             code: table.products.code,
             category: table.categories.name,
-            supplier: table.suppliers.name
+            supplier: table.suppliers.name,
+            manufacturer: table.manufacturers.name
         })
         .from(table.products)
         .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
         .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
+        .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
         .where(
             and(
                 eq(table.products.active, true),
@@ -53,7 +57,8 @@ export async function repoGetAvailableProducts() {
     return result.map((p) => ({
         ...p,
         category: p.category ?? undefined,
-        supplier: p.supplier ?? undefined
+        supplier: p.supplier ?? undefined,
+        manufacturer: p.manufacturer ?? undefined
     }));
 }
 

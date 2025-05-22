@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts"> 
 	import { fly } from 'svelte/transition';
 
 	const { title, onClose, children } = $props<{
@@ -29,6 +29,7 @@
 	in:fly={{ x: 0, duration: 300 }}
 	out:fly={{ x: 300, duration: 200 }}
 >
+	<!-- Título del Drawer -->
 	<h2 class="mb-8 text-3xl font-bold text-blue-800">{title}</h2>
 	{@render children?.()}
 </div>

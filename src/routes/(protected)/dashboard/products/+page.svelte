@@ -98,8 +98,7 @@
       <form 
         method="POST"
         action="?/create"
-        class="fixed top-0 right-0 z-50 h-full w-full max-w-3xl space-y-4 overflow-y-auto rounded-l-3xl border-l border-blue-100 bg-white p-10 shadow-2xl"
-      >
+  >
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <TextInput label="Product Name" name="name" placeholder="Enter product name" required />
           <TextInput label="Product Code" name="code" placeholder="Enter product code" required />
