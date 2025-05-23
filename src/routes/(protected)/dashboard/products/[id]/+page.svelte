@@ -10,6 +10,7 @@
   import Select from '$lib/components/utilities/Form/Select.svelte';
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
   import { goto } from '$app/navigation';
+  import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 
   const { data } = $props();
   let id: string;
@@ -116,7 +117,8 @@
 
       <div class="w-full md:w-2/3 flex flex-col gap-6">
         {#if isEditing}
-          <form method="POST" action="?/update" class="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md">
+        <Modal title="➕ Edit Product" onClose={closeDrawer}>
+          <form method="POST" action="?/update" class="space-y-6 p-6 mt-4">
             <input type="hidden" name="id" value={product.id} />
             <TextInput label="Product Name" name="name" placeholder="Enter product name" value={product.name} required />
             <TextInput label="Product Code" name="code" placeholder="Enter product code" value={product.code} required />
@@ -141,7 +143,8 @@
               </Button> 
             </div>
           </form>
-        {:else}
+        </Modal>
+        {/if}
           <h2 class="text-4xl font-bold text-gray-800">{product.name}</h2>
           <p class="text-indigo-600 text-2xl mt-1">${product.price?.toFixed(2) ?? 'N/A'}</p>
           <ShowText label="Description" value={product.description} />
@@ -156,7 +159,6 @@
             <ShowText label="Supplier" value={data.supplierName[0].name} />
             <ShowText label="Category" value={data.categoryName[0].name} />
           </div>
-        {/if}
       </div>
     </div>
 

@@ -88,7 +88,7 @@
   <Table
     columns={['code', 'name', 'price', 'unit', 'active']}
     items={filteredProducts()}
-    onRowClick={(id) => goToProductDetails(id, '')}
+    onRowClick={(item) => goToProductDetails(item.id, '')}
     onEdit={(item) => goToProductDetails(item.id, '?edit=true')}
     onDelete={(item) => askDelete(item.id, item.name)}
   />
