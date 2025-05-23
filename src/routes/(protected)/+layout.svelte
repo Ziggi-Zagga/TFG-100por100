@@ -64,9 +64,16 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
           <img src="/icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Products</span>{/if}
         </a>
+
+        <a href="/dashboard/suppliers" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
+          <!-- DAR CREDITO POR ICONO-->
+          <!--<a href="https://www.freepik.es/icono/convenio_6400287#fromView=search&page=1&position=10&uuid=cbf1714f-be3b-4c77-b38e-e1a3a02526f6">Icono de juicy_fish</a>-->
+          <img src="/icons/png/suppliers.png" class="w-8 h-8" alt="Logo" />
+          {#if !collapsed}<span class="ml-3 text-sm font-medium">Suppliers</span>{/if}
+        </a>
       </nav>
     </div>
-    <!-- Orders (desplegable) -->
+    <!-- Orders (desplegable)-->
 <div class="px-4">
   <div
     role="button"
@@ -121,6 +128,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
       <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Settings</div>
       <nav class="mt-2 flex flex-col gap-1">
         <a href="/dashboard/users" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
+          <!-- DAR CREDITO POR ICONO -->
           <img src="/icons/png/users.png" class="w-8 h-8" alt="Logo" />
           {#if !collapsed}<span class="ml-3 text-sm font-medium">Users</span>{/if}
         </a>
