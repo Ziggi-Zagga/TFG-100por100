@@ -12,23 +12,29 @@
 	onCellChange = () => {},
 	onRowClick = () => {},
 	onEdit = () => {},
-	onDelete = () => {}
+	onDelete = () => {},
+	ifEdit = () => true,
+	ifDelete = () => true
 } = $props<{
 	columns?: string[];
 	items?: any[];
 	columnTypes?: {
 		[type: string]: {
-			type: 'input' | 'select' | 'textarea';
+			type: 'input' | 'select' | 'textarea' | 'icon';
 			options?: any[];
 			min?: number;
 			max?: number;
 			step?: number;
+			icon?: string | ((item: any) => { icon: string; color: string });
+			extraStyles?: string;
 		};
 	};
 	onCellChange?: (item: any, column: string, value: any) => void;
 	onRowClick?: (id: string) => void;
 	onEdit?: (item: any) => void;
 	onDelete?: (item: any) => void;
+	ifEdit?: (item: any) => boolean;
+	ifDelete?: (item: any) => boolean;
 }>();
 
 function handleCellChange(item: any, column: string, value: any) {
@@ -50,7 +56,7 @@ function formatHeader(header: string): string {
 }
 
 function isDateColumn(columnName: string): boolean {
-	const dateColumns = ['date', 'fecha', 'createdAt', 'updatedAt', 'orderDate', 'expectedArrival', 'deliveryDate'];
+	const dateColumns = ['date', 'fecha', 'createdAt', 'updatedAt', 'orderDate', 'expectedArrival', 'deliveryDate','lastLogin'];
 	return dateColumns.some(dateCol => columnName.toLowerCase().includes(dateCol));
 }
 
@@ -114,7 +120,7 @@ function formatDateValue(value: any): string {
 												onValueChange={(val) => handleCellChange(item, col, val)}
 											/>
 										</div>
-										{:else}
+										{:else if columnTypes[col].type === 'input'}
 											<div class="w-full" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 												tabindex="0" role="button">
 												<TextInput
@@ -128,20 +134,37 @@ function formatDateValue(value: any): string {
 													extraClass="w-full"
 												/>
 											</div>
-										{/if}												
+										{:else if columnTypes[col].type === 'icon'}
+									<div class="w-full max-w-[30px] h-full flex items-center justify-center">
+										{#if typeof columnTypes[col].icon === 'function'}
+											{@const iconData = columnTypes[col].icon(item)}
+											<Icon 
+												icon={iconData.icon}
+												size={20}
+												extraStyles={`${columnTypes[col].extraStyles} ${iconData.color}`}
+											/>
+										{:else}
+										<Icon 
+											icon={columnTypes[col].icon}
+											size={20}
+											extraStyles={columnTypes[col].extraStyles}
+										/>
+									{/if}
+								</div>
+																		{/if}
 										{:else}
 											<div class="w-full h-full flex items-center justify-center">
 												<span class="truncate text-gray-700">
 													{isDateColumn(col) ? formatDateValue(item[col]) : item[col]}
 												</span>
 											</div>
-
 										{/if}
 									
 								</td>
 							{/each}
 							<td class="px-4 py-3  whitespace-nowrap">
 								<div class="flex justify-center gap-3" role="group" aria-label="Row actions">
+									{#if ifEdit(item)}
 									<button
 										class="text-gray-500 hover:text-blue-600 p-1"
 										title="Edit"
@@ -151,6 +174,8 @@ function formatDateValue(value: any): string {
 									>
 										<Icon icon="edit" size={20} />
 									</button>
+									{/if}
+									{#if ifDelete(item)}
 									<button
 										class="text-gray-500 hover:text-red-600 p-1"
 										title="Delete"
@@ -160,6 +185,7 @@ function formatDateValue(value: any): string {
 									>
 										<Icon icon="delete" size={20} />
 									</button>
+									{/if}
 								</div>
 							</td>
 						</tr>

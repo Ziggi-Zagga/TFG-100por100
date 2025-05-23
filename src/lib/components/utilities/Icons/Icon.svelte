@@ -22,6 +22,7 @@
 	import CheckIcon from './CheckIcon.svelte';
 	import SpaceIcon from './SpaceIcon.svelte';
 	import TodoIcon from './TodoIcon.svelte';
+	import CancelledIcon from './CancelledIcon.svelte';
 	
 	const {
 		icon,
@@ -98,4 +99,7 @@
 {/if}
 {#if icon === 'todo'}
 	<TodoIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'cancelled'}
+	<CancelledIcon {size} {extraStyles} />
 {/if}

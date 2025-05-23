@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+  import Table from '$lib/components/utilities/table/Table.svelte';
 
   let { isOpen = $bindable<boolean>(), order, onClose } = $props<{
     isOpen?: boolean;
@@ -10,9 +11,20 @@
 
   $effect (() => {
     if (order) {
-      if (order.products && !Array.isArray(order.products)) {
+      if (!order.products) {
+        order.products = [];
+      } else if (!Array.isArray(order.products)) {
         order.products = [order.products];
       }
+      
+      order.products = order.products.map((product: any) => ({
+        code: product.code || '',
+        name: product.name || product.product?.name || 'Producto desconocido',
+        quantity: product.quantity || 1,
+        price: product.price || product.product?.price || 0,
+        discount: product.discount || 0,
+        total: product.total || 0
+      }));
     }
   });
 
@@ -28,6 +40,32 @@
     });
   }
 
+  function hasDiscounts(products: any[]) {
+    if (!products || !products.length) return false;
+    return products.some(item => parseFloat(item.discount || 0) > 0);
+  }
+
+  function calculateSubtotal(products: any[]) {
+    if (!products || !products.length) return 0;
+    return products.reduce((total: number, item: any) => {
+      const price = parseFloat(item.price || 0);
+      const quantity = parseFloat(item.quantity || 0);
+      return total + (price * quantity);
+    }, 0).toFixed(2);
+  }
+
+  function calculateDiscounts(products: any[]) {
+    if (!products || !products.length) return 0;
+    return products.reduce((total: number, item: any) => {
+      const price = parseFloat(item.price || 0);
+      const quantity = parseFloat(item.quantity || 0);
+      const discount = parseFloat(item.discount || 0);
+      const subtotal = price * quantity;
+      const discountAmount = subtotal * (discount / 100);
+      return total + discountAmount;
+    }, 0).toFixed(2);
+  }
+
   function calculateTotal(products: any[]) {
     if (!products || !products.length) return 0;
     return products.reduce((total: number, item: any) => {
@@ -39,12 +77,57 @@
       return total + (subtotal - discountAmount);
     }, 0).toFixed(2);
   }
+
+  // Configuración de columnas para la tabla de productos
+  const productColumns = ['code', 'name', 'quantity', 'price', 'discount', 'total'];
+
+  // Tipos de columnas para la tabla
+  const productColumnTypes = {
+    price: { type: 'text' as const, extraStyles: 'text-right' },
+    discount: { type: 'text' as const, extraStyles: 'text-center' },
+    total: { type: 'text' as const, extraStyles: 'text-right font-medium' },
+    quantity: { type: 'text' as const, extraStyles: 'text-center' }
+  };
+
+  // Preparar los datos para la tabla
+  let productItems = $state<any[]>([]);
+  
+  $effect(() => {
+    if (!order?.products?.length) {
+      productItems = [];
+      return;
+    }
+    
+    productItems = order.products.map((product: any) => {
+      const price = parseFloat(product.price || 0);
+      const quantity = parseInt(product.quantity || 0);
+      const discount = parseFloat(product.discount || 0);
+      const total = (price * quantity * (1 - discount / 100)).toFixed(2);
+      
+      return {
+        ...product,
+        code: product.code || 'N/A',
+        name: product.name || 'Producto sin nombre',
+        price: price.toFixed(2) + ' €',
+        quantity: quantity.toString(),
+        discount: discount > 0 ? `${discount}%` : '0%',
+        total: total + ' €',
+        // Clases personalizadas para las celdas
+        _rowClass: 'hover:bg-gray-50',
+        _cellClass: {
+          price: 'font-mono',
+          discount: 'font-mono',
+          total: 'font-mono font-semibold',
+          quantity: 'font-mono'
+        }
+      };
+    });
+  });
 </script>
 
-<Modal title="Detalles del Pedido" size="md" onClose={onClose}>
+<Modal title="Detalles del Pedido" size="lg" onClose={onClose}>
   {#if order}
     <div class="space-y-6">
-      <!-- Información general del pedido -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="bg-gray-50 p-4 rounded-lg">
           <h3 class="text-sm font-medium text-gray-500">Número de Pedido</h3>
@@ -100,47 +183,40 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Productos</h3>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Descuento</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              {#if order.products && order.products.length > 0}
-                {#each order.products as product}
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.code || 'N/A'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.name || 'N/A'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{parseFloat(product.price || 0).toFixed(2)} €</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{product.quantity || 0}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{parseFloat(product.discount || 0).toFixed(0)}%</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                      {((parseFloat(product.price || 0) * parseFloat(product.quantity || 0)) * (1 - (parseFloat(product.discount || 0) / 100))).toFixed(2)} €
-                    </td>
-                  </tr>
-                {/each}
-              {:else}
-                <tr>
-                  <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No hay productos en este pedido</td>
-                </tr>
-              {/if}
-            </tbody>
-            <tfoot class="bg-gray-50">
-              <tr>
-                <td colspan="5" class="px-6 py-3 text-right text-sm font-medium text-gray-500">Total:</td>
-                <td class="px-6 py-3 text-right text-sm font-medium text-gray-900">
-                  {calculateTotal(order.products)} €
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        <div class="p-4">
+          {#if order.products && order.products.length > 0}
+            <Table
+              columns={productColumns}
+               items={productItems}
+              onRowClick={() => {}}
+            />
+            
+            <!-- Totales -->
+            <div class="mt-4 border-t border-gray-200 pt-4">
+              <div class="flex justify-end">
+                <div class="w-full max-w-md">
+                  <div class="flex justify-between py-1">
+                    <span class="text-sm font-medium text-gray-700">Subtotal:</span>
+                    <span class="text-sm text-gray-900">{calculateSubtotal(order.products)} €</span>
+                  </div>
+                  {#if hasDiscounts(order.products)}
+                    <div class="flex justify-between py-1">
+                      <span class="text-sm font-medium text-gray-700">Descuentos:</span>
+                      <span class="text-sm text-red-600">-{calculateDiscounts(order.products)} €</span>
+                    </div>
+                  {/if}
+                  <div class="flex justify-between pt-2 mt-2 border-t border-gray-200">
+                    <span class="text-base font-semibold text-gray-900">Total:</span>
+                    <span class="text-base font-semibold text-gray-900">{calculateTotal(order.products)} €</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {:else}
+            <div class="text-center py-4 text-sm text-gray-500">
+              No hay productos en este pedido
+            </div>
+          {/if}
         </div>
       </div>
 

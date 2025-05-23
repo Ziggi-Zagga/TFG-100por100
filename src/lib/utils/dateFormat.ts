@@ -19,7 +19,7 @@ const formatMap: Record<string, Intl.DateTimeFormatOptions> = {
     'm':            { minute: 'numeric' },
     'ss':           { second: '2-digit' },
     's':            { second: 'numeric' },
-    'a':            { hour: 'numeric', hour12: true },  // para extraer am/pm
+    'a':            { hour: 'numeric', hour12: true }, 
     'A':            { hour: 'numeric', hour12: true }
   };
   

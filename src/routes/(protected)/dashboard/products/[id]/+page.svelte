@@ -167,7 +167,7 @@
     </Header>
 
     {#if selectedOption === 'orders'}
-      <Table columns={["order_id", "date", "quantity", "customer"]} items={[]} />
+      <Table columns={["order_id", "date", "quantity", "customer"]} items={[]}  />
     {:else if selectedOption === 'inventory'}
       <Table columns={["movement_id", "date", "stock_change", "location"]} items={[]} />
     {/if}
