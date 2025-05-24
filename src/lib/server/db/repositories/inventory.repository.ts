@@ -62,17 +62,6 @@ export async function repoGetAvailableProducts() {
     }));
 }
 
-
-export async function repoGetStoreGaps() {
-    return db
-        .select({
-            id: table.storeGaps.id,
-            name: table.storeGaps.name
-        })
-        .from(table.storeGaps);
-}
-
-
 export async function repoInsertInventoryItem({
     productId,
     storeGapId,

@@ -1,11 +1,10 @@
 import {
 	repoGetInventoryView,
 	repoGetAvailableProducts,
-	repoGetStoreGaps,
 	repoInsertInventoryItem,
 	repoDeleteInventoryItem
 } from '$lib/server/db/repositories/inventory.repository';
-
+import { getFullStoresTree } from '$lib/server/db/repositories/stores.repository';
 import { getCategoriesById } from '$lib/server/db/repositories/category.repository';
 import { getSuppliersById } from '$lib/server/db/repositories/supplier.repository';
 import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.repository';
@@ -15,12 +14,12 @@ import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 export async function getInventoryData() {
 	const items = await repoGetInventoryView();
 	const safeAvailableProducts = await repoGetAvailableProducts();
-	const locations = await repoGetStoreGaps();
-
+	const fullStoreTree = await getFullStoresTree();
+	
 	return {
-		items,
-		safeAvailableProducts,
-		locations,
+		inventoryItems: items,
+		availableProducts: safeAvailableProducts,
+		fullStoreTree: fullStoreTree,
 		totalProducts: items.length
 	};
 }
@@ -66,3 +65,4 @@ export async function getSupplier(id: string) {
 export async function getManufacturer(id: string) {
 	return await getManufacturersById(id);
 }
+

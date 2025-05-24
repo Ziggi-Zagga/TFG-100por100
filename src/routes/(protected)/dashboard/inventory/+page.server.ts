@@ -1,10 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import {
-	getInventoryData,
-	createInventoryEntry,
-	deleteInventoryEntry,
-} from '$lib/server/services/inventory.service';
+import { getInventoryData, createInventoryEntry, deleteInventoryEntry } from '$lib/server/services/inventory.service';
 import { basicErrorHandler } from '$lib/utils/errors/errors';
 
 export const load: PageServerLoad = async () => {
