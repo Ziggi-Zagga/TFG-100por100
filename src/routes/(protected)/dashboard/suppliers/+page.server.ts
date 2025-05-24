@@ -1,61 +1,77 @@
-import { getUsers, createUser, deletePermanently, getRoles, createRole } from '$lib/server/services/users.service';
+import { getAllSuppliers, createSupplier, deleteSupplier, updateSupplier } from '$lib/server/services/suppliers.service';
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-    const users = await getUsers();
-    const roles = await getRoles();
-    return { users, roles };
+    const suppliers = await getAllSuppliers();
+    return { suppliers };
 };
-
 
 
 export const actions: Actions = {
     create: async ({ request }) => {
         const formData = await request.formData();
-        const username = formData.get('username')?.toString() ?? '';
-        const passwordHash = formData.get('password_hash')?.toString() ?? '';
+        const name = formData.get('name')?.toString() ?? '';
+        const contactPerson = formData.get('contactPerson')?.toString() ?? '';
         const email = formData.get('email')?.toString() ?? '';
-        const roleId = formData.get('rol')?.toString() ?? '';
+        const phone = formData.get('phone')?.toString() ?? '';
+        const website = formData.get('website')?.toString() ?? '';
+        const notes = formData.get('notes')?.toString() ?? '';
 
-        await createUser({ username, passwordHash, email, roleId });
-        throw redirect(303, '/dashboard/users');
+        try {
+            await createSupplier({
+                name,
+                contactPerson,
+                email,
+                phone,
+                website,
+                notes
+            });
+            throw redirect(303, '/dashboard/suppliers');
+        } catch (error) {
+            console.error(error);
+            return fail(500, { message: 'Failed to create supplier' });
+        }
     },
 
     delete: async ({ request }) => {
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
-        if (!id) return fail(400, { message: 'Missing user ID' });
+        if (!id) return fail(400, { message: 'Missing supplier ID' });
 
         try {
-            await deletePermanently(id);
+            await deleteSupplier(id);
             return { success: true };
         } catch (error) {
             console.error(error);
-            return fail(500, { message: 'Failed to delete user' });
+            return fail(500, { message: 'Failed to delete supplier' });
         }
     },
-
-    createRole: async ({ request }) => {
+    update: async ({ request }) => {
         const formData = await request.formData();
-        const name = formData.get('role_name')?.toString() ?? '';
-        const description = formData.get('role_description')?.toString() ?? '';
-        const permission = formData.get('permissions')?.toString() ?? '';
+        const id = formData.get('id')?.toString();
+        const name = formData.get('name')?.toString() ?? '';
+        const contactPerson = formData.get('contactPerson')?.toString() ?? '';
+        const email = formData.get('email')?.toString() ?? '';
+        const phone = formData.get('phone')?.toString() ?? '';
+        const website = formData.get('website')?.toString() ?? '';
+        const notes = formData.get('notes')?.toString() ?? '';
 
-        if (!name) {
-            return fail(400, { message: 'Role name is required' });
-        }
+        if (!id) return fail(400, { message: 'Missing supplier ID' });
 
         try {
-            await createRole({
+            await updateSupplier(id, {
                 name,
-                description,
-                permissions: permission
+                contactPerson,
+                email,
+                phone,
+                website,
+                notes
             });
-            throw redirect(303, '/dashboard/users');
+            return { success: true };
         } catch (error) {
             console.error(error);
-            return fail(500, { message: 'Failed to create role' });
+            return fail(500, { message: 'Failed to update supplier' });
         }
     }
 };
