@@ -13,3 +13,26 @@ export const getIdNameCategory = async () => {
 export const getCategoriesById = async (id: string) => {
     return await db.select().from(categories).where(eq(categories.id, id));
 }
+
+export const insertCategory = async ({
+    id,
+    name,
+    description,
+    parentId
+}: {
+    id: string;
+    name: string;
+    description: string;
+    parentId: string;
+}) => {
+    await db.insert(categories).values({
+        id,
+        name,
+        description,
+        parentId
+    });
+};
+
+export const repoDeleteCategory = async (id: string) => {
+    await db.delete(categories).where(eq(categories.id, id));
+};

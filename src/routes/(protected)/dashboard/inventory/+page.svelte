@@ -40,6 +40,13 @@
 		showDrawer = false;
 	}
 
+	const filteredInventory = $derived(() =>
+		inventoryItems.filter((p) =>
+			p.name.toLowerCase().includes(search.toLowerCase()) ||
+			(p.code ?? '').toLowerCase().includes(search.toLowerCase())
+		)
+	);
+
 	function handleProductChange(product: any) {
 		selectedProduct = product.name;
 		selectedProductId = product.id;
@@ -160,7 +167,7 @@
 
 	<Table
 		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
-		items={inventoryItems}
+		items={filteredInventory()}
 		onDelete={(item) => askDelete(item.id)}
 	/>
 
