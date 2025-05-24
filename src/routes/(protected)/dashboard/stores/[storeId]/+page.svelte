@@ -48,7 +48,7 @@
 </script>
 
 <section class="min-h-screen w-full p-8" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<PageHeader title={data.store.name} subtitle="sections" count={sections.length}>
+	<PageHeader title={data.store.name} subtitle={`${sections.length} sections`}>
 		<div class="flex items-center gap-4">
 			<Breadcrumb segments={[
 				{ name: 'Stores', href: '/dashboard/stores' },
@@ -71,7 +71,7 @@
 	<Table
 		columns={['name']}
 		items={filteredSections()}
-		onRowClick={(item) => goToSection(item)}
+		onRowClick={(item) => goToSection(item.id)}
 		onDelete={(item) => handleDelete(item.id)}
 	/>
 

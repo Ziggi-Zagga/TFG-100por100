@@ -43,7 +43,7 @@
 </script>
 
 <section class="p-8 w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-  <PageHeader title={data.row.name} countLabel="gaps" totalCount={gaps.length}>
+  <PageHeader title={data.row.name} subtitle={`${gaps.length} gaps`}>
     <div class="flex items-center gap-4">
       <Breadcrumb segments={[
         { name: 'Stores', href: '/dashboard/stores' },
@@ -68,8 +68,8 @@
   <Table
   columns={["name", "capacity"]}
   items={filteredGaps()}
-  on:rowClick={(e) => goToGap(e.detail)}
-  on:delete={(e) => handleDelete(e.detail.id)}
+  onRowClick={(item) => goToGap(item.id)}
+  onDelete={(item) => handleDelete(item.id)}
 />
 
   {#if showDrawer}
