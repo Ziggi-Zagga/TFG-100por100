@@ -48,15 +48,6 @@
 		showDrawer = false;
 	}
 
-	function clearStores() {
-		selectedStore = "";
-		selectedSection = "";
-		selectedRow = "";
-		selectedGap = "";
-		selectedGapId = "";
-		selectedGapName = "";
-	}
-
 	//FORM FILTERS
 	function handleProductChange(product: any) {
 		selectedProduct = product.name;
@@ -104,7 +95,7 @@
 			).values()
 		)
 		: []
-);
+	);
 
 	const rows = $derived(() =>
 		selectedSection
@@ -178,20 +169,18 @@
 					<TextInput label="Minimum Quantity" name="minQuantity" type="number" min={0} placeholder="Minimum quantity before restock" required />
 					<TextInput label="Reorder Quantity" name="reorderQuantity" type="number" min={0} placeholder="Default reorder amount" required />
 
-					<div class="col-span-1 sm:col-span-2 lg:col-span-3">
+					<h1>Location</h1>
+					<div class="col-span-1 sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<ComboBox label="Store" items={stores()} onValueChange={handleStoreChange} value={selectedStore} />
 						<ComboBox label="Section" items={sections()} onValueChange={handleSectionChange} value={selectedSection} />
 						<ComboBox label="Row" items={rows()} onValueChange={handleRowChange} value={selectedRow} />
-						<ComboBox label="Gap" items={gaps()} onValueChange={handleGapChange} value={selectedGapName} required />
+						<ComboBox label="Gap" name="gapId" items={gaps()} onValueChange={handleGapChange} value={selectedGapName} required />
 					</div>
 
 					<input type="hidden" name="storeGapId" value={selectedGapId} />
 				</div>
 
 				<div class="mt-6 flex justify-end gap-4">
-					<Button onclick={clearStores} variant="secondary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">Clear Stores</span>'}
-					</Button>
 					<Button onclick={closeDrawer} variant="secondary" size="md" extraStyles="w-full md:w-auto">
 						{@html '<span class="hidden md:inline">Cancel</span>'}
 					</Button>
