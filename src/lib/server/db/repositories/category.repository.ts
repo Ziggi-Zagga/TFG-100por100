@@ -36,3 +36,22 @@ export const insertCategory = async ({
 export const repoDeleteCategory = async (id: string) => {
     await db.delete(categories).where(eq(categories.id, id));
 };
+
+export const repoUpdateCategory = async ({
+    id,
+    name,
+    description,
+    parentId
+}: {
+    id: string;
+    name: string;
+    description: string;
+    parentId: string;
+}) => {
+    await db.update(categories).set({
+        name,
+        description,
+        parentId
+    }).where(eq(categories.id, id));
+};
+

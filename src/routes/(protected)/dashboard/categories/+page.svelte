@@ -8,6 +8,7 @@
     import type { Category } from "$lib/types/products.types";
 	import Select from "$lib/components/utilities/Form/Select.svelte";
     import SearchBar from "$lib/components/utilities/SearchBar/SearchBar.svelte";
+    import Modal from "$lib/components/utilities/Modal/Modal.svelte";
 
     const { data } = $props();
     let showDrawer = $state(false);
@@ -17,6 +18,12 @@
     let showConfirm = $state(false);
     let categoryToDelete = $state<string | null>(null);
     let categoryIdToDelete = $state<string | null>(null);
+    let isEditing = $state(false);
+
+    let editId = $state('');
+    let editName = $state('');
+    let editDescription = $state('');
+    let editParentId = $state<string | null>(null);
 
 	function openDrawer() {
 		showDrawer = true;
@@ -25,6 +32,18 @@
 	function closeDrawer() {
 		showDrawer = false;
 	}
+
+    function openEdit(item: Category) {
+        isEditing = true;
+        editId = item.id;
+        editName = item.name;
+        editDescription = item.description ?? '';
+        editParentId = item.parentId ?? null;
+    }
+
+    function closeEdit() {
+        isEditing = false;
+    }
 
     const filteredCategories = $derived(() =>
         categoriesCopy.filter((c) =>
@@ -79,7 +98,27 @@
         columns={['name', 'description']}
         items={filteredCategories()}
         onDelete={(item) => askDelete(item.id, item.name)}
+        onEdit={(item) => openEdit(item)}
     />
+
+    {#if isEditing}
+    <Modal title="➕ Edit Category" onClose={closeEdit}>
+        <form method="POST" action="?/update">
+            <input type="hidden" name="id" value={editId} />
+            <TextInput label="Name" name="name" value={editName} required />
+            <TextInput label="Description" name="description" value={editDescription} />
+            <Select label="Parent Category" name="parentId" options={data.categories} value={editParentId ?? undefined} />
+            <div class="mt-6 flex justify-end gap-4">
+                <Button onclick={cancelDeletion} variant="secondary" size="md" extraStyles="w-full md:w-auto">
+                    {@html '<span class="hidden md:inline">Cancel</span>'}
+                </Button>
+                <Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+                    {@html '<span class="hidden md:inline">Update Category</span>'}
+                </Button>
+            </div>
+        </form>
+    </Modal>
+    {/if}
 
     {#if showDrawer}
         <Drawer title="➕ Add Category" onClose={closeDrawer}>
