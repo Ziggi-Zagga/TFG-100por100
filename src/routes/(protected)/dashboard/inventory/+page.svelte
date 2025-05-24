@@ -6,39 +6,31 @@
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
+	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 
-	// GET ALL THE INFORMATION
 	const { data } = $props();
-	const inventoryItems = $state([...data.inventoryItems]);
-	const availableProducts = $state([...data.availableProducts]);
-	const fullStoreTree = $state([...data.fullStoreTree]);
-	const totalProducts = $state(data.totalProducts);
+	let inventoryItems = $state([...data.inventoryItems]);
+	let availableProducts = $state([...data.availableProducts]);
+	let fullStoreTree = $state([...data.fullStoreTree]);
+	let totalProducts = $state(data.totalProducts);
 
-	// FORM VARIABLES
 	let showDrawer = $state(false);
 	let search = $state('');
 	let selectedSupplier = $state('');
 	let selectedManufacturer = $state('');
 	let selectedCategory = $state('');
 	let selectedProduct = $state('');
-	
-		//STORE
-	let selectedStore = $state("");
-	let selectedSection = $state("");
-	let selectedRow = $state("");
-	let selectedGap = $state("");
+	let selectedProductId = $state('');
+
+	let selectedStore = $state('');
+	let selectedSection = $state('');
+	let selectedRow = $state('');
+	let selectedGap = $state('');
 	let selectedGapId = $state('');
 	let selectedGapName = $state('');
 
-	console.log('%c[Inventory] inventoryItems:', 'color: green; font-weight: bold;');
-	console.table(inventoryItems);
-
-	console.log('%c[Inventory] availableProducts:', 'color: blue; font-weight: bold;');
-	console.table(availableProducts);
-
-	console.log('%c[Inventory] fullStoreTree:', 'color: purple; font-weight: bold;');
-	console.table(fullStoreTree);
-
+	let showConfirm = $state(false);
+	let inventoryIdToDelete = $state<string | null>(null);
 
 	function openDrawer() {
 		showDrawer = true;
@@ -48,94 +40,113 @@
 		showDrawer = false;
 	}
 
-	//FORM FILTERS
 	function handleProductChange(product: any) {
 		selectedProduct = product.name;
+		selectedProductId = product.id;
 		selectedCategory = product.category ?? '';
 		selectedSupplier = product.supplier ?? '';
 		selectedManufacturer = product.manufacturer ?? '';
 	}
 
-	function handleStoreChange(store: any){
+	function handleStoreChange(store: any) {
 		selectedStore = store.name;
-		selectedSection = "";
-		selectedRow = "";
-		selectedGap = "";
+		selectedSection = '';
+		selectedRow = '';
+		selectedGap = '';
 	}
 
-	function handleSectionChange(section: any){
+	function handleSectionChange(section: any) {
 		selectedSection = section.name;
-		selectedRow = "";
-		selectedGap = "";
+		selectedRow = '';
+		selectedGap = '';
 	}
 
-	function handleRowChange(row: any){
+	function handleRowChange(row: any) {
 		selectedRow = row.name;
-		selectedGap = "";
+		selectedGap = '';
 	}
 
-	function handleGapChange(gap: any){
+	function handleGapChange(gap: any) {
 		selectedGapId = gap.id;
 		selectedGapName = gap.name;
 	}
 
-	//FILTERS
 	const stores = $derived(() =>
-	Array.from(
-		new Map(fullStoreTree.map(i => [i.storeId, { id: i.storeId, name: i.storeName }])).values()
-	));
+		Array.from(
+			new Map(fullStoreTree.map(i => [i.storeId, { id: i.storeId, name: i.storeName }])).values()
+		)
+	);
 
 	const sections = $derived(() =>
-	selectedStore
-		? Array.from(
-			new Map(
-				fullStoreTree
-					.filter(i => i.storeId && i.storeName === selectedStore && i.sectionId)
-					.map(i => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
-			).values()
-		)
-		: []
+		selectedStore
+			? Array.from(
+					new Map(
+						fullStoreTree
+							.filter(i => i.storeId && i.storeName === selectedStore && i.sectionId)
+							.map(i => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
+					).values()
+			  )
+			: []
 	);
 
 	const rows = $derived(() =>
 		selectedSection
 			? Array.from(
-				new Map(
-					fullStoreTree
-					.filter(i => i.sectionName === selectedSection && i.rowId)
-					.map(i => [i.rowId, { id: i.rowId, name: i.rowName }])
-			).values()
-		) : []
+					new Map(
+						fullStoreTree
+							.filter(i => i.sectionName === selectedSection && i.rowId)
+							.map(i => [i.rowId, { id: i.rowId, name: i.rowName }])
+					).values()
+			  )
+			: []
 	);
 
 	const gaps = $derived(() =>
 		selectedRow
 			? Array.from(
-				new Map(
-					fullStoreTree
-					.filter(i => i.rowName === selectedRow && i.gapId)
-					.map(i => [i.gapId, { id: i.gapId, name: i.gapName }])
-			).values()
-		) : []
+					new Map(
+						fullStoreTree
+							.filter(i => i.rowName === selectedRow && i.gapId)
+							.map(i => [i.gapId, { id: i.gapId, name: i.gapName }])
+					).values()
+			  )
+			: []
 	);
 
-	//DELETE
-	async function deleteProductFromInventory(id: string, name: string) {
-		const confirmed = confirm(`Do you want to delete "${name}" from the inventory?`);
-		if (!confirmed) return;
+	function askDelete(id: string) {
+		inventoryIdToDelete = id;
+		showConfirm = true;
+	}
+
+	async function confirmDeletion() {
+		if (!inventoryIdToDelete) return;
+
+		const formData = new FormData();
+		formData.append('id', inventoryIdToDelete);
+
 		try {
-			const res = await fetch('/dashboard/inventory', {
+			const res = await fetch('?/delete', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ id })
+				body: formData
 			});
-			const result = await res.json();
-			if (!res.ok || !result.success) throw new Error('Deletion failed');
-			location.reload();
+
+			if (res.ok) {
+				inventoryItems = inventoryItems.filter(item => item.id !== inventoryIdToDelete);
+				totalProducts = inventoryItems.length;
+				inventoryIdToDelete = null;
+				showConfirm = false;
+			} else {
+				alert('Failed to delete product.');
+			}
 		} catch (error) {
-			alert('Error deleting product from inventory.');
-			console.error(error);
+			console.error('Error deleting inventory item:', error);
+			alert('Error deleting product.');
 		}
+	}
+
+	function cancelDeletion() {
+		inventoryIdToDelete = null;
+		showConfirm = false;
 	}
 </script>
 
@@ -148,9 +159,9 @@
 	</InventoryHeader>
 
 	<Table
-		columns={[ 'code', 'name', 'category', 'quantity', 'supplier', 'location' ]}
+		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
 		items={inventoryItems}
-		onDelete={(item) => deleteProductFromInventory(item.id, item.name)}
+		onDelete={(item) => askDelete(item.id)}
 	/>
 
 	{#if showDrawer}
@@ -158,7 +169,7 @@
 			<form method="POST" action="?/create">
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					<div class="col-span-1 sm:col-span-2 lg:col-span-3">
-						<ComboBox label="Product" name="productId" items={availableProducts} onValueChange={handleProductChange} value={selectedProduct} />
+						<ComboBox label="Product" items={availableProducts} onValueChange={handleProductChange} value={selectedProduct} />
 					</div>
 
 					<TextInput label="Category" name="category" value={selectedCategory} disabled />
@@ -177,6 +188,7 @@
 						<ComboBox label="Gap" name="gapId" items={gaps()} onValueChange={handleGapChange} value={selectedGapName} required />
 					</div>
 
+					<input type="hidden" name="productId" value={selectedProductId} />
 					<input type="hidden" name="storeGapId" value={selectedGapId} />
 				</div>
 
@@ -191,4 +203,11 @@
 			</form>
 		</ProductDrawer>
 	{/if}
+
+	<ConfirmDialog
+		show={showConfirm}
+		message={`Are you sure you want to delete this item?`}
+		onConfirm={confirmDeletion}
+		onCancel={cancelDeletion}
+	/>
 </section>

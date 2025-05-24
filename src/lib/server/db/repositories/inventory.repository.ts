@@ -3,10 +3,11 @@ import * as table from '$lib/server/db/schema';
 import { eq, and, notExists } from 'drizzle-orm';
 
 
-export async function repoGetInventoryView() {
-    return db
+export const repoGetInventoryView = async () => {
+    return await db
         .select({
-            id: table.products.id,
+            id: table.inventory.id,
+            productId: table.products.id,
             name: table.products.name,
             code: table.products.code,
             price: table.products.price,
@@ -28,7 +29,7 @@ export async function repoGetInventoryView() {
 }
 
 
-export async function repoGetAvailableProducts() {
+export const repoGetAvailableProducts = async () => {
     const result = await db
         .select({
             id: table.products.id,
@@ -62,28 +63,38 @@ export async function repoGetAvailableProducts() {
     }));
 }
 
-export async function repoInsertInventoryItem({
+export const repoInsertInventoryItem = async ({
     productId,
     storeGapId,
-    stock
+    stock,
+    minQuantity,
+    reorderQuantity,
+    lastCount,
+    createdAt,
+    updatedAt
 }: {
     productId: string;
     storeGapId: string;
     stock: number;
-}) {
+    minQuantity: number;
+    reorderQuantity: number;
+    lastCount?: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
+}) => {
     return db.insert(table.inventory).values({
         id: crypto.randomUUID(),
         productId,
         storeGapId,
         quantity: stock,
-        minQuantity: 0,
-        reorderQuantity: 0,
-        lastCount: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        minQuantity: minQuantity ?? 0,
+        reorderQuantity: reorderQuantity ?? 0,
+        lastCount: lastCount ?? new Date(),
+        createdAt: createdAt ?? new Date(),
+        updatedAt: updatedAt ?? new Date(),
     });
 }
 
-export async function repoDeleteInventoryItem(id: string) {
+export const repoDeleteInventoryItem = async (id: string) => {
     return db.delete(table.inventory).where(eq(table.inventory.id, id));
 }
