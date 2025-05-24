@@ -25,6 +25,7 @@
   // Confirm dialog
   let showConfirm = $state(false);
   let productToDelete = $state<string | null>(null);
+  let productIdToDelete = $state<string | null>(null);
 
   function goToProductDetails(id: string, queryParams: string) {
     goto(`./products/${id}${queryParams}`);
@@ -47,13 +48,14 @@
 
   function askDelete(productId: string, productName: string) {
     productToDelete = productName;
+    productIdToDelete = productId;
     showConfirm = true;
   }
 
   async function confirmDeletion() {
-    if (!productToDelete) return;
+    if (!productIdToDelete) return;
     const formData = new FormData();
-    formData.append('id', productToDelete);
+    formData.append('id', productIdToDelete);
 
     const res = await fetch('/dashboard/products?/delete', {
       method: 'POST',
@@ -63,8 +65,8 @@
     showConfirm = false;
 
     if (res.ok) {
-      productsCopy = productsCopy.filter((p) => p.id !== productToDelete);
-      productToDelete = null;
+      productsCopy = productsCopy.filter((p) => p.id !== productIdToDelete);
+      productIdToDelete = null;
     } else {
       console.error('Failed to delete store');
     }
@@ -72,7 +74,7 @@
 
   function cancelDeletion() {
     showConfirm = false;
-    productToDelete = null;
+    productIdToDelete = null;
   }
 </script>
 
