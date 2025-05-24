@@ -4,7 +4,6 @@ import * as categories from '../db/repositories/category.repository';
 import * as supp from '../db/repositories/supplier.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
-import type { Product } from '$lib/types/products.types';
 
 export const getAllProducts = async () => {
     return await prod.getAllProducts();
@@ -105,7 +104,7 @@ export const createProduct = async ({
 		dimensions,
 		material,
 		specifications,
-		active: false,
+		active: true,
 		createdAt,
 		updatedAt
 	});

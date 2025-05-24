@@ -86,7 +86,7 @@
   </InventoryHeader>
 
   <Table
-    columns={['code', 'name', 'price', 'unit', 'active']}
+    columns={['code', 'name', 'price', 'unit', 'material']}
     items={filteredProducts()}
     onRowClick={(item) => goToProductDetails(item.id, '')}
     onEdit={(item) => goToProductDetails(item.id, '?edit=true')}
@@ -108,9 +108,9 @@
           <TextInput label="Dimensions" name="dimensions" placeholder="e.g. 10x20x5 cm" />
           <TextInput label="Material" name="material" placeholder="e.g. plastic, metal" />
           <TextInput label="Specifications" name="specifications" placeholder="Enter technical specs" />
-          <Select label="Supplier" name="supplierId" options={suppliers} placeholder={selectedSupplier?.name ?? undefined} />
-          <Select label="Manufacturer" name="manufacturerId" options={manufacturers} placeholder={selectedManufacturer?.name ?? undefined} />
-          <Select label="Category" name="categoryId" options={categories} placeholder={selectedCategory?.name ?? undefined} />
+          <Select label="Supplier" name="supplierId" options={suppliers} placeholder={selectedSupplier?.name ?? undefined} required/>
+          <Select label="Manufacturer" name="manufacturerId" options={manufacturers} placeholder={selectedManufacturer?.name ?? undefined} required/>
+          <Select label="Category" name="categoryId" options={categories} placeholder={selectedCategory?.name ?? undefined} required/>
         </div>
 
         <div class="mt-6 flex justify-end gap-4">

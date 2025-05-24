@@ -105,7 +105,7 @@ export const insertProduct = async ({
     dimensions: dimensions ?? null,
     material: material ?? null,
     specifications: specifications ?? null,
-    active: active ?? false,
+    active: active ?? true,
     createdAt: createdAt ?? new Date(),
     updatedAt: updatedAt ?? new Date(), 
   });
@@ -123,7 +123,7 @@ export const insertProduct = async ({
     dimensions,
     material,
     specifications,
-    active: active ?? false,
+    active: active ?? true,
     createdAt,
     updatedAt,
   };
@@ -178,7 +178,7 @@ export const updateProduct = async ({
       dimensions: dimensions ?? null,
       material: material ?? null,
       specifications: specifications ?? null,
-      active: active ?? false,
+      active: active ?? true,
       updatedAt: updatedAt ?? new Date(),
     })
     .where(eq(products.id, id));
@@ -196,7 +196,7 @@ export const updateProduct = async ({
     dimensions,
     material,
     specifications,
-    active: active ?? false,
+    active: active ?? true,
     updatedAt,
   };
 };
