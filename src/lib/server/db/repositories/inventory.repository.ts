@@ -95,6 +95,37 @@ export const repoInsertInventoryItem = async ({
     });
 }
 
+export const repoUpdateInventoryItem = async ({
+    id,
+    stock,
+    minQuantity,
+    reorderQuantity,
+    storeGapId,
+    lastCount,
+    updatedAt
+}: {
+    id: string;
+    stock: number;
+    minQuantity: number;
+    reorderQuantity: number;
+    storeGapId: string;
+    lastCount?: Date;
+    updatedAt?: Date;
+}) => {
+    return db.update(table.inventory).set({
+        quantity: stock,
+        minQuantity: minQuantity ?? 0,
+        reorderQuantity: reorderQuantity ?? 0,
+        storeGapId: storeGapId,
+        lastCount: lastCount ?? new Date(),
+        updatedAt: updatedAt ?? new Date(),
+    }).where(eq(table.inventory.id, id));
+}
+
 export const repoDeleteInventoryItem = async (id: string) => {
     return db.delete(table.inventory).where(eq(table.inventory.id, id));
+}
+
+export const repoGetInventoryById = async (id: string) => {
+    return db.select().from(table.inventory).where(eq(table.inventory.id, id));
 }

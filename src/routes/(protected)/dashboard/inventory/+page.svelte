@@ -7,6 +7,7 @@
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
+	import { goto } from '$app/navigation';
 
 	const { data } = $props();
 	let inventoryItems = $state([...data.inventoryItems]);
@@ -46,6 +47,10 @@
 			(p.code ?? '').toLowerCase().includes(search.toLowerCase())
 		)
 	);
+
+	function goToInventoryDeatils(id: string, queryParams: string) {
+		goto(`/dashboard/inventory/${id}${queryParams}`);
+	}
 
 	function handleProductChange(product: any) {
 		selectedProduct = product.name;
@@ -168,6 +173,8 @@
 	<Table
 		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
 		items={filteredInventory()}
+		onRowClick={(item) => goToInventoryDeatils(item.id, '')}
+		onEdit={(item) => goToInventoryDeatils(item.id, '?edit=true')}
 		onDelete={(item) => askDelete(item.id)}
 	/>
 

@@ -138,3 +138,23 @@ export const removeRow = async (id: string) => {
 export const removeGap = async (id: string) => {
 	await db.delete(storeGaps).where(eq(storeGaps.id, id));
 };
+
+export const repoGetTreeFromGapId = async (gapId: string) => {
+	return await db
+		.select({
+			storeId: stores.id,
+			storeName: stores.name,
+			storeLocation: stores.location,
+			sectionId: sections.id,
+			sectionName: sections.name,
+			rowId: storeRows.id,
+			rowName: storeRows.name,
+			gapId: storeGaps.id,
+			gapName: storeGaps.name
+		})
+		.from(stores)
+		.innerJoin(sections, eq(sections.storeId, stores.id))
+		.innerJoin(storeRows, eq(storeRows.sectionId, sections.id))
+		.innerJoin(storeGaps, eq(storeGaps.rowId, storeRows.id))
+		.where(eq(storeGaps.id, gapId));
+};

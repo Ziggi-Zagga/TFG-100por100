@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
   import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
@@ -11,6 +10,7 @@
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
   import { goto } from '$app/navigation';
   import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 
   const { data } = $props();
   let id: string;
@@ -25,14 +25,14 @@
   let showConfirm = $state(false);
 
   onMount(() => {
-  id = get(page).params.id;
-  activeText = product.active ? 'Yes' : 'No';
+    id = page.params.id;
+    activeText = product.active ? 'Yes' : 'No';
 
-  const urlParams = new URLSearchParams(get(page).url.search);
-  if (urlParams.get('edit') === 'true') {
-    isEditing = true;
-  }
-});
+    const urlParams = new URLSearchParams(page.url.search);
+    if (urlParams.get('edit') === 'true') {
+        isEditing = true;
+      }
+  });
 
   function toggleEdit() {
     isEditing = !isEditing;
@@ -80,10 +80,6 @@
     { id: 'inventory', name: 'Inventory History' }
   ];
 
-  function handleSelectChange(e: Event) {
-    const target = e.target as HTMLSelectElement;
-    selectedOption = target.value as 'orders' | 'inventory';
-  }
 </script>
 
 {#if product}
@@ -96,10 +92,10 @@
       </button>
       <div class="flex gap-4">
         <button onclick={toggleEdit} class="hover:scale-110 transition text-yellow-500 hover:text-yellow-600 text-2xl">
-          {isEditing ? '✖️' : '✏️'}
+          <Icon icon="edit" size={30} />
         </button>
         <button onclick={handleDelete} class="hover:scale-110 transition text-red-500 hover:text-red-600 text-2xl">
-          🗑️
+          <Icon icon="delete" size={30} />
         </button>
       </div>
     </div>
