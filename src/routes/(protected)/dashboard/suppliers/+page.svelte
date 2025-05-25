@@ -9,6 +9,8 @@
 	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 	import type { Supplier } from '$lib/types/products.types.js';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
+	import { fail } from '@sveltejs/kit';
+	import { goto } from '$app/navigation';
 
 	const { data } = $props();
 
@@ -75,7 +77,7 @@
 
 		if (existingSupplier) {
 			wrongName = true;
-			return;
+			return fail(400, { message: 'Supplier with this name already exists' });
 		}
 
 		wrongName = false;
@@ -87,6 +89,7 @@
 
 		if (res.ok) {
 			closeDrawer();
+			location.reload();
 		} else {
 			const error = await res.json();
 			console.error('Error creating supplier:', error);

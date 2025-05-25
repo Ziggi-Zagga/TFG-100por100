@@ -24,10 +24,6 @@ export const getSuppliersById = async (id: string) => {
     return await db.select().from(suppliers).where(eq(suppliers.id, id));
 }
 
-export const getSupplierByName = async (name: string) => {
-    return await db.select().from(suppliers).where(eq(suppliers.name, name));
-}
-
 export const createSupplier = async (supplier: Omit<Supplier, 'id'>) => {
     const result = await db.insert(suppliers).values({
         id: crypto.randomUUID(),

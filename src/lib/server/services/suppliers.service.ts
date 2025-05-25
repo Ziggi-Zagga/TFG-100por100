@@ -31,12 +31,6 @@ export const createSupplier = async ({
         throw new ServiceError('Supplier name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
     }
 
-    // Check if supplier with the same name already exists
-    const existingSupplier = await repo.getSupplierByName(name);
-    if (existingSupplier) {
-        throw new ServiceError('Supplier with this name already exists', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
-    }
-
     return await repo.createSupplier({
         name,
         contactPerson,
