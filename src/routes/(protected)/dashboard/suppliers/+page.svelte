@@ -173,7 +173,7 @@
 						{@html '<span class="hidden md:inline">Cancel</span>'}
 					</Button>
 					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">Update Category</span>'}
+						{@html '<span class="hidden md:inline">Update Supplier</span>'}
 					</Button>
 				</div>
 			</form>
