@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { enhance } from '$app/forms';
 	import Header from '$lib/components/utilities/Header/Header.svelte';
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
@@ -8,17 +6,55 @@
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
+	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import type { Supplier } from '$lib/types/products.types.js';
+	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 
 	const { data } = $props();
 
 	let showDrawer = $state(false);
+	let isEditing = $state(false);
 	let search = $state('');
 	let suppliers = $state([...data.suppliers]);
 	let totalSuppliers = $derived(() => suppliers.length);
 	let wrongName = $state(false);
+	let showConfirm = $state(false);
+	let supplierToDelete = $state<string | null>(null);
+	let supplierIdToDelete = $state<string | null>(null);
 
-	function goToDetails(item: string) {
-		goto(`/dashboard/suppliers/${item.id}`);
+	let editId = $state('');
+	let editName = $state('');
+	let editEmail = $state('');
+	let editContactPerson = $state('');
+	let editWebsite = $state('');
+	let editPhone = $state('');
+	let editNotes = $state('');
+
+	function openEdit(item: Supplier) {
+		isEditing = true;
+		editId = item.id;
+		editName = item.name;
+		editEmail = item.email ?? '';
+		editContactPerson = item.contactPerson ?? '';
+		editWebsite = item.website ?? '';
+		editPhone = item.phone ?? '';
+		editNotes = item.notes ?? '';
+	}
+
+	function closeEdit() {
+		isEditing = false;
+	}
+
+	function askDelete(supplierId: string, supplierName: string) {
+		supplierToDelete = supplierName;
+		supplierIdToDelete = supplierId;
+		showConfirm = true;
+	}
+
+	function cancelDeletion() {
+		showConfirm = false;
+		supplierToDelete = null;
+		supplierIdToDelete = null;
 	}
 
 	function openDrawer() {
@@ -30,32 +66,32 @@
 	}
 
 	async function handleCreate(event: Event) {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
-    
-    const name = formData.get('name')?.toString() ?? '';
-    const existingSupplier = suppliers.find(s => s.name === name);
-    
-    if (existingSupplier) {
-        wrongName = true;
-        return;
-    }
+		event.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
 
-    wrongName = false;
-    
-    const res = await fetch('?/create', {
-        method: 'POST',
-        body: formData
-    });
+		const name = formData.get('name')?.toString() ?? '';
+		const existingSupplier = suppliers.find((s) => s.name === name);
 
-    if (res.ok) {
-        closeDrawer();
-    } else {
-        const error = await res.json();
-        console.error('Error creating supplier:', error);
-    }
-}
+		if (existingSupplier) {
+			wrongName = true;
+			return;
+		}
+
+		wrongName = false;
+
+		const res = await fetch('?/create', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.ok) {
+			closeDrawer();
+		} else {
+			const error = await res.json();
+			console.error('Error creating supplier:', error);
+		}
+	}
 
 	const filteredSuppliers = $derived(() =>
 		suppliers.filter(
@@ -66,23 +102,25 @@
 		)
 	);
 
-	async function handleDelete(supplierId: string) {
+	async function confirmDeletion() {
+		if (!supplierIdToDelete) return;
 		const formData = new FormData();
-		formData.append('id', supplierId);
+		formData.append('id', supplierIdToDelete);
 
-		const res = await fetch('?/delete', {
+		const res = await fetch('/dashboard/suppliers?/delete', {
 			method: 'POST',
 			body: formData
 		});
 
+		showConfirm = false;
+
 		if (res.ok) {
-			suppliers = suppliers.filter((s) => s.id !== supplierId);
+			suppliers = suppliers.filter((s) => s.id !== supplierIdToDelete);
+			supplierIdToDelete = null;
 		} else {
 			console.error('Failed to delete supplier');
 		}
 	}
-
-	
 </script>
 
 <section
@@ -107,9 +145,40 @@
 	<Table
 		columns={['name', 'email', 'contactPerson', 'website', 'phone']}
 		items={filteredSuppliers()}
-		onRowClick={(item) => goToDetails(item)}
-		onDelete={(item) => handleDelete(item.id)}
+		onEdit={(item) => openEdit(item)}
+		onDelete={(item) => askDelete(item.id, item.name)}
 	/>
+
+	<!-- MODAL -->
+	{#if isEditing}
+		<Modal title="➕ Edit Supplier" onClose={closeEdit}>
+			<form method="POST" action="?/update">
+				<input type="hidden" name="id" value={editId} />
+				<TextInput label="Name" name="name" value={editName} required />
+				{#if wrongName}
+					<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
+				{/if}
+				<TextInput label="Email" name="email" value={editEmail} />
+				<TextInput label="Contact Person" name="contactPerson" value={editContactPerson} />
+				<TextInput label="Website" name="website" value={editWebsite} />
+				<TextInput label="Phone" name="phone" value={editPhone} />
+				<TextArea label="Notes" name="notes" value={editNotes} />
+				<div class="mt-6 flex justify-end gap-4">
+					<Button
+						onclick={cancelDeletion}
+						variant="secondary"
+						size="md"
+						extraStyles="w-full md:w-auto"
+					>
+						{@html '<span class="hidden md:inline">Cancel</span>'}
+					</Button>
+					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+						{@html '<span class="hidden md:inline">Update Category</span>'}
+					</Button>
+				</div>
+			</form>
+		</Modal>
+	{/if}
 
 	<!-- DRAWER -->
 	{#if showDrawer}
@@ -117,17 +186,20 @@
 			<form onsubmit={handleCreate} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>
-					<TextInput name="name" placeholder="Enter supplier name" extraStyles="w-full" required/>
+					<TextInput name="name" placeholder="Enter supplier name" extraStyles="w-full" required />
 					{#if wrongName}
-						<p class="pt-2 text-sm text-red-500">
-							Name can not be the same as another supplier
-						</p>
+						<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
 					{/if}
 				</div>
 
 				<div>
 					<label class="font-semibold">Email</label>
-					<TextInput name="email" placeholder="Enter supplier email" type="email" extraStyles="w-full" />
+					<TextInput
+						name="email"
+						placeholder="Enter supplier email"
+						type="email"
+						extraStyles="w-full"
+					/>
 				</div>
 
 				<div>
@@ -176,4 +248,11 @@
 			</form>
 		</Drawer>
 	{/if}
+
+	<ConfirmDialog
+		show={showConfirm}
+		message={`Are you sure you want to delete supplier: ${supplierToDelete}?`}
+		onConfirm={confirmDeletion}
+		onCancel={cancelDeletion}
+	/>
 </section>
