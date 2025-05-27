@@ -4,24 +4,26 @@ import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 import Table from '$lib/components/utilities/table/Table.svelte';
+import type { Product, Supplier } from '$lib/types/products.types';
 
-const { 
-  isOpen = $bindable(false), 
+let { 
+  isOpen = false, 
   onClose = () => {}, 
   onSubmit = () => {}, 
   suppliers = [], 
   products = [] 
-} = $props();
+} = $props<{isOpen?: boolean, onClose?: () => void, onSubmit?: (data: any) => Promise<void>, suppliers?: Supplier[], products?: Product[]}>();
 
 let formData = $state({
   supplierId: '',
-  orderDate: new Date().toISOString().slice(0, 16),
+  orderDate: '',
   expectedArrival: '',
   notes: ''
 });
 
 let selectedProducts = $state<any[]>([]);
-let search = $state('');
+let supplierSearch = $state('');
+let productSearch = $state('');
 
 const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
 
@@ -43,55 +45,117 @@ function handleProductSelect(productId: string) {
   const product = products.find((p: any) => p.id === productId);
   if (!product) return;
 
-  // Check if product is already in the list
-  const existingProduct = selectedProducts.find(p => p.id === productId);
-  if (existingProduct) {
-    // Update quantity if product already exists
-    handleProductChange(existingProduct, 'quantity', existingProduct.quantity + 1);
-    return;
-  }
-
-
-  selectedProducts = [
-    ...selectedProducts,
-    {
+  const updatedProducts = [...selectedProducts];
+  const existingIndex = updatedProducts.findIndex(p => p.id === productId);
+  
+  if (existingIndex !== -1) {
+    const existingProduct = updatedProducts[existingIndex];
+    const newQuantity = existingProduct.quantity + 1;
+    const price = existingProduct.price || 0;
+    const discount = existingProduct.discount || 0;
+    
+    updatedProducts[existingIndex] = {
+      ...existingProduct,
+      quantity: newQuantity,
+      total: (price * newQuantity) * (1 - (discount / 100))
+    };
+  } else {
+    const newProduct = {
       ...product,
       quantity: 1,
-      discount: 0,
-      total: product.price
-    }
-  ];
+      price: product.price || 0,
+      discount: 0, // Inicializar descuento en 0
+      total: product.price || 0
+    };
+    updatedProducts.push(newProduct);
+  }
 
-  search = '';
+  selectedProducts = updatedProducts;
+  productSearch = ''; // Limpiar la búsqueda de productos después de agregar uno
+ 
+
 }
 
 function handleProductChange(item: any, field: string, value: any) {
-  selectedProducts = selectedProducts.map((p) => {
-    if (p.id === item.id) {
-      const updated = { ...p, [field]: parseFloat(value) };
-      updated.total = updated.quantity * updated.price * (1 - (updated.discount || 0) / 100);
-      return updated;
-    }
-    return p;
-  });
+  const itemIndex = selectedProducts.findIndex(p => p.id === item.id);
+  if (itemIndex === -1) return;
+
+ 
+  const numValue = parseFloat(value);
+  if (isNaN(numValue) && field !== 'discount') return; 
+
+ 
+  const updatedProducts = [...selectedProducts];
+  const updatedItem = { ...updatedProducts[itemIndex] };
+
+ 
+  const oldValue = updatedItem[field];
+  
+
+  // Actualizar el valor del campo
+  updatedItem[field] = value;
+
+  // Si es un campo numérico, asegurarse de que sea un número
+  if (field === 'quantity' || field === 'price' || field === 'discount') {
+    const numValue = parseFloat(value);
+    updatedItem[field] = isNaN(numValue) ? 0 : numValue;
+  }
+
+  // Calcular el total basado en cantidad, precio y descuento
+  const quantity = field === 'quantity' ? updatedItem[field] : updatedItem.quantity;
+  const price = field === 'price' ? updatedItem[field] : updatedItem.price;
+  const discount = field === 'discount' ? updatedItem[field] : (updatedItem.discount || 0);
+  
+  updatedItem.total = (quantity * price) * (1 - (discount / 100));
+  updatedItem.total = parseFloat(updatedItem.total.toFixed(2)); // Redondear a 2 decimales
+
+  if (oldValue === updatedItem[field] && 
+      (!updatedProducts[itemIndex].total || 
+       Math.abs(updatedProducts[itemIndex].total - (updatedItem.total || 0)) < 0.01)) {
+    return; 
+  }
+
+  updatedProducts[itemIndex] = updatedItem;
+  selectedProducts = [...updatedProducts]; // Forzar la reactividad
 }
 
 function handleDeleteProduct(productId: string) {
   selectedProducts = selectedProducts.filter((p) => p.id !== productId);
 }
 
-function handleSubmit(e: Event) {
+async function handleSubmit(e: SubmitEvent) {
   e.preventDefault();
-  const orderData = {
-    ...formData,
-    items: selectedProducts.map((p) => ({
-      productId: p.id,
-      quantity: p.quantity,
-      discount: p.discount,
-      price: p.price
-    }))
-  };
-  onSubmit(orderData);
+  
+  // Validate required fields
+  if (!formData.supplierId) {
+    alert('Please select a supplier');
+    return;
+  }
+  
+  if (selectedProducts.length === 0) {
+    alert('Please add at least one product');
+    return;
+  }
+  
+  try {
+    // Prepare the order data
+    const orderData = {
+      ...formData,
+      items: selectedProducts.map(p => ({
+        productId: p.id,
+        quantity: p.quantity,
+        price: p.price,
+        discount: p.discount || 0
+      }))
+    };
+    
+    // Call the parent's onSubmit with the order data
+    await onSubmit(orderData);
+    
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    alert('Error submitting form. Please try again.');
+  }
 }
 
 function closeModal() {
@@ -110,49 +174,34 @@ function closeModal() {
       <div class="relative w-full max-w-4xl rounded-xl bg-white p-6 shadow-2xl">
         <div class="mb-6 flex items-center justify-between">
           <h2 class="text-2xl font-bold">➕ Create New Order</h2>
-          <button
-            onclick={closeModal}            class="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Close modal"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
         </div>
 
-        <form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }} class="space-y-6">
+        <form onsubmit={handleSubmit} class="space-y-6" method="POST">
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div class="space-y-4">
-              <ComboBox
-                name="supplierName"
-                label="Supplier"
-                items={suppliers}
-                bind:value={formData.supplierId}
-                onSelect={(supplier) => {
-                  formData.supplierId = supplier.id;
-                }}
-                displayField="name"
-                required
-                searchQuery={formData.supplierId}
-                placeholder="Search suppliers..."
-              />
-              <input type="hidden" name="supplierId" value={formData.supplierId} />
-              {#if suppliers && suppliers.length === 0}
-                <p class="text-sm text-red-500">
-                  No suppliers available. Please add suppliers first.
-                </p>
-              {/if}
+              <div class="relative">
+                <ComboBox
+                  name="supplierSearch"
+                  label="Supplier"
+                  items={suppliers}
+                  bind:value={supplierSearch}
+                  searchQuery={supplierSearch}
+                  onSelect={(supplier) => {
+                    formData.supplierId = supplier.id;
+                    supplierSearch = supplier.name; 
+                  }}
+                  displayField="name"
+                  placeholder="Search suppliers..."
+                />
+                <input 
+                  type="hidden" 
+                  name="supplierId" 
+                  value={formData.supplierId} 
+                  required
+                  aria-label="Supplier ID"
+                />
+               
+              </div>
             </div>
 
             <TextInput
@@ -186,15 +235,15 @@ function closeModal() {
             name="productSearch"
             label="Add Products"
             items={products}
-            bind:value={search}
-            onSelect={(item) => {
+            searchQuery={productSearch}
+            value={productSearch}
+            onSelect={(item: any) => {
               handleProductSelect(item.id);
-              search = ''; // Clear search after selection
             }}
             displayField="name"
             placeholder="Search products..."
             filterInternally={true}
-            searchQuery={search}
+            quickSearch={true}
           />
 
           <Table
@@ -203,6 +252,7 @@ function closeModal() {
             columnTypes={productColumnTypes}
             onCellChange={handleProductChange}
             onDelete={(item) => handleDeleteProduct(item.id)}
+            ifEdit={(item) => false}
           />
 
           <div class="flex justify-end gap-4 pt-4">
@@ -211,7 +261,7 @@ function closeModal() {
               onclick={closeModal}
               variant="secondary"
               size="md"
-              class="w-full md:w-auto"
+              extraStyles="w-full md:w-auto"
             >
               Cancel
             </Button>
@@ -220,6 +270,7 @@ function closeModal() {
               variant="primary"
               size="md"
               extraStyles="w-full md:w-auto"
+              
               disabled={!formData.supplierId || selectedProducts.length === 0}
             >
               Create Order

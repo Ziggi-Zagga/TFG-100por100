@@ -14,7 +14,7 @@
   function formatDate(dateString: string) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
+    return date.toLocaleDateString('es-GB', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -91,7 +91,7 @@
       return {
         ...item,
         code: item.code || 'N/A',
-        name: item.name || 'Producto sin nombre',
+        name: item.name || 'Unnamed Product',
         price: price.toFixed(2) + ' €',
         quantity: quantity.toString(),
         discount: discount > 0 ? `${discount}%` : '0%',
@@ -109,16 +109,16 @@
   
 </script>
 
-<Modal title="Detalles del Pedido" size="lg" onClose={onClose}>
+<Modal title="Order Details" size="lg" onClose={onClose}>
   {#if order}
     <div class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="text-sm font-medium text-gray-500">Número de Pedido</h3>
+          <h3 class="text-sm font-medium text-gray-500">Order Number</h3>
           <p class="mt-1 text-lg font-semibold">{order.orderNumber || 'N/A'}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="text-sm font-medium text-gray-500">Estado</h3>
+          <h3 class="text-sm font-medium text-gray-500">Status</h3>
           <div class="mt-1">
             <span class="px-3 py-1 text-sm rounded-full" 
                   class:bg-green-100={order.status === 'completed'}
@@ -129,62 +129,62 @@
                   class:text-red-800={order.status === 'cancelled'}
                   class:bg-gray-100={!['completed', 'pending', 'cancelled'].includes(order.status)}
                   class:text-gray-800={!['completed', 'pending', 'cancelled'].includes(order.status)}>
-              {order.status || 'N/A'}
+              {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'N/A'}
             </span>
           </div>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="text-sm font-medium text-gray-500">Fecha de Pedido</h3>
+          <h3 class="text-sm font-medium text-gray-500">Order Date</h3>
           <p class="mt-1">{formatDate(order.orderDate)}</p>
         </div>
       </div>
 
-      <!-- Información del proveedor -->
+      <!-- Supplier Information -->
       <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Información del Proveedor</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Supplier Information</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Nombre</h4>
+            <h4 class="text-sm font-medium text-gray-500">Name</h4>
             <p>{supplier?.name || 'N/A'}</p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Contacto</h4>
+            <h4 class="text-sm font-medium text-gray-500">Contact Person</h4>
             <p>{supplier?.contactPerson || 'N/A'}</p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Teléfono</h4>
+            <h4 class="text-sm font-medium text-gray-500">Phone</h4>
             <p>{supplier?.phone || 'N/A'}</p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Correo Electrónico</h4>
+            <h4 class="text-sm font-medium text-gray-500">Email</h4>
             <p>{supplier?.email || 'N/A'}</p>
           </div>
         </div>
       </div>
-       <!-- Notas -->
+       <!-- Notes -->
        {#if order.notes}
        <div class="bg-white shadow rounded-lg p-6">
-         <h3 class="text-lg font-medium text-gray-900 mb-2">Notas</h3>
+         <h3 class="text-lg font-medium text-gray-900 mb-2">Notes</h3>
          <p class="text-gray-600 whitespace-pre-line">{order.notes}</p>
        </div>
      {/if}
 
-      <!-- Productos del pedido -->
+      <!-- Order Products -->
       <div class="bg-white shadow rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Productos</h3>
+          <h3 class="text-lg font-medium text-gray-900">Products</h3>
         </div>
         <div class="p-4">
           {#if order.products && order.products.length > 0}
             <Table
               columns={productColumns}
-               items={productItems}
+              items={productItems}
               onRowClick={() => {}}
               ifEdit={() => false}
               ifDelete={() => false}
             />
             
-            <!-- Totales -->
+            <!-- Totals -->
             <div class="mt-4 border-t border-gray-200 pt-4">
               <div class="flex justify-end">
                 <div class="w-full max-w-md">
@@ -194,7 +194,7 @@
                   </div>
                   {#if hasDiscounts(order.products)}
                     <div class="flex justify-between py-1">
-                      <span class="text-sm font-medium text-gray-700">Descuentos:</span>
+                      <span class="text-sm font-medium text-gray-700">Discounts:</span>
                       <span class="text-sm text-red-600">-{calculateDiscounts(order.products)} €</span>
                     </div>
                   {/if}

@@ -4,9 +4,9 @@
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import OrderDetails from '$lib/components/dashboard/Orders/OrderDetails.svelte';
-	import OrderModal from '$lib/components/dashboard/Orders/OrderModal.svelte';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import type { Supplier } from '$lib/types/products.types';
+	import CreateOrders from '$lib/components/dashboard/Orders/CreateOrders.svelte';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
@@ -29,22 +29,7 @@
 		notes: ''
 	});
 
-	let supplierDisplayValue = $state('');
-	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
-
-	const productColumnTypes: Record<string, any> = {
-		quantity: { type: 'input' as const, inputType: 'number', min: 1, step: 1 },
-		discount: { type: 'input' as const, inputType: 'number', min: 0, max: 100, step: 1 },
-		actions: {
-			type: 'actions' as const,
-			actions: [
-				{
-					label: 'Delete',
-					onClick: (item: any) => handleDeleteProduct(item.id)
-				}
-			]
-		}
-	};
+	
 
 	const ordersColumns = ['', 'orderNumber', 'status', 'orderDate'];
 
@@ -172,17 +157,6 @@
 		}
 	}
 
-	function handleSupplierSelect(supplierName: string) {
-		const supplier = suppliers.find((s) => s.name === supplierName);
-		if (supplier) {
-			currentSupplier = supplier;
-			formData.supplierId = supplier.id;
-		} else {
-			currentSupplier = null;
-			formData.supplierId = '';
-		}
-	}
-
 	// Open delete confirmation dialog
 	function confirmDelete(order: { id: string, orderNumber: string }) {
 		orderToDelete = order;
@@ -221,67 +195,83 @@
 		}
 	}
 
-	async function handleDeleteProduct(productId: string) {
-		selectedProducts = selectedProducts.filter((p) => p.id !== productId);
-	}
 
-	function handleProductSelect(productId: string) {
-		const product = products.find((p) => p.id === productId);
-		if (!product) return;
-
-		if (selectedProducts.some((p) => p.id === productId)) return;
-
-		selectedProducts = [
-			...selectedProducts,
-			{
-				id: product.id,
-				code: product.code,
-				name: product.name,
-				price: product.price,
-				quantity: 1,
-				discount: 0,
-				get total() {
-					return this.price * this.quantity * (1 - this.discount / 100);
-				}
-			}
-		];
-	}
-
-	function handleProductChange(item: any, column: string, value: number) {
-		const newValue = Number(value);
-		if (item[column] === newValue) return;
-
-		selectedProducts = selectedProducts.map(p => 
-			p.id === item.id ? { ...p, [column]: newValue } : p
-		);
-	}
-
-	async function handleSubmit(event: Event) {
-		event.preventDefault();
-		const form = event.target as HTMLFormElement;
-		const formData = new FormData(form);
-
-		formData.set('items', JSON.stringify(selectedProducts.map(p => ({
-			productId: p.id,
-			quantity: p.quantity,
-			price: p.price,
-			discount: p.discount || 0
-		}))));
-
+	async function handleOrderSubmit(event: CustomEvent) {
 		try {
-			const response = await fetch(form.action, {
+			// The event detail contains the form data from CreateOrders component
+			const formData = event.detail;
+			
+			// Here you would typically send the data to your API
+			const response = await fetch('?/create', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				throw new Error('Error al crear el pedido');
+			}
+
+			const result = await response.json();
+			if (result.error) {
+				throw new Error(result.message || 'Error al crear el pedido');
+			}
+
+			// Add the new order to the orders list
+			orders = [result.data, ...orders];
+			
+			// Close the drawer
+			showDrawer = false;
+			
+			// Show success message or redirect
+			alert('Pedido creado exitosamente');
+		} catch (error) {
+			console.error('Error creating order:', error);
+			alert('Error al crear el pedido: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+		}
+	}
+
+	async function handleSubmit(orderData: any) {
+		try {
+			const formData = new FormData();
+			
+			// Add all form fields to formData
+			Object.entries(orderData).forEach(([key, value]) => {
+				if (key === 'items') {
+					formData.set('items', JSON.stringify(value));
+				} else if (value !== null && value !== undefined) {
+					formData.set(key, String(value));
+				}
+			});
+
+			// Add the current user ID to the form data
+			if (data.user?.id) {
+				formData.set('userId', data.user.id);
+			}
+
+			const response = await fetch('?/create', {
 				method: 'POST',
 				body: formData
 			});
 
 			if (response.ok) {
-				closeDrawer();
+				const result = await response.json();
+				if (result.error) {
+					throw new Error(result.message || 'Error creating order');
+				}
+				
+				// Refresh the page to show the new order
 				window.location.reload();
 			} else {
-				console.error('Error al crear la orden');
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.message || 'Error creating order');
 			}
 		} catch (error) {
-			console.error('Error al enviar el formulario:', error);
+			console.error('Error creating order:', error);
+			alert(`Error creating order: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw error; // Re-throw to let the form handle it
 		}
 	}
 </script>
@@ -311,23 +301,13 @@
 		
 	/>
 
-	{#if showDrawer}
-		<OrderModal
-			suppliers={suppliers}
-			products={products}
-			selectedProducts={selectedProducts}
-			formData={formData}
-			supplierDisplayValue={supplierDisplayValue}
-			search={search}
-			productColumns={productColumns}
-			productColumnTypes={productColumnTypes}
-			onClose={closeDrawer}
-			onProductSelect={handleProductSelect}
-			onProductDelete={handleDeleteProduct}
-			onProductChange={handleProductChange}
-			onSubmit={handleSubmit}
-		/>
-	{/if}
+	<CreateOrders
+		isOpen={showDrawer}
+		suppliers={suppliers}
+		products={products}
+		onClose={closeDrawer}
+		onSubmit={handleSubmit}
+	/>
 	{#if showOrderDetails}
 		<OrderDetails
 			bind:isOpen={showOrderDetails}
