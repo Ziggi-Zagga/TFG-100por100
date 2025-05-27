@@ -31,6 +31,7 @@
 	};
 	onCellChange?: (item: any, column: string, value: any) => void;
 	onRowClick?: (item: any) => void;
+	onRowClick?: (item: any) => void;
 	onEdit?: (item: any) => void;
 	onDelete?: (item: any) => void;
 	ifEdit?: (item: any) => boolean;

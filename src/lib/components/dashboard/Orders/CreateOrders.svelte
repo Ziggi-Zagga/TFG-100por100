@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 import Button from '$lib/components/utilities/Button/Button.svelte';
 import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
