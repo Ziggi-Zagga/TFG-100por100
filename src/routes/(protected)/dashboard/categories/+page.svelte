@@ -5,7 +5,7 @@
 	import TextInput from "$lib/components/utilities/Form/TextInput.svelte";
     import Table from "$lib/components/utilities/table/Table.svelte";
     import ConfirmDialog from "$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte";
-    import type { Category } from "$lib/types/products.types";
+    import type { Category } from "$lib/types/products.types.js";
 	import Select from "$lib/components/utilities/Form/Select.svelte";
     import SearchBar from "$lib/components/utilities/SearchBar/SearchBar.svelte";
     import Modal from "$lib/components/utilities/Modal/Modal.svelte";

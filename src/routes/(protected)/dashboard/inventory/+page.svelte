@@ -8,6 +8,7 @@
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
+	import type { Store, Section, Row, Gap } from '$lib/types/stores.types';
 
 	const { data } = $props();
 	let inventoryItems = $state([...data.inventoryItems]);
@@ -23,12 +24,10 @@
 	let selectedProduct = $state('');
 	let selectedProductId = $state('');
 
-	let selectedStore = $state('');
-	let selectedSection = $state('');
-	let selectedRow = $state('');
-	let selectedGap = $state('');
-	let selectedGapId = $state('');
-	let selectedGapName = $state('');
+	let selectedStore = $state<Store | null>(null);
+	let selectedSection = $state<Section | null>(null);
+	let selectedRow = $state<Row | null>(null);
+	let selectedGap = $state<Gap | null>(null);
 
 	let showConfirm = $state(false);
 	let inventoryIdToDelete = $state<string | null>(null);
@@ -60,27 +59,26 @@
 		selectedManufacturer = product.manufacturer ?? '';
 	}
 
-	function handleStoreChange(store: any) {
-		selectedStore = store.name;
-		selectedSection = '';
-		selectedRow = '';
-		selectedGap = '';
+	function handleStoreChange(store: Store) {
+		selectedStore = store;
+		selectedSection = null;
+		selectedRow = null;
+		selectedGap = null;
 	}
 
-	function handleSectionChange(section: any) {
-		selectedSection = section.name;
-		selectedRow = '';
-		selectedGap = '';
+	function handleSectionChange(section: Section) {
+		selectedSection = section;
+		selectedRow = null;
+		selectedGap = null;
 	}
 
-	function handleRowChange(row: any) {
-		selectedRow = row.name;
-		selectedGap = '';
+	function handleRowChange(row: Row) {
+		selectedRow = row;
+		selectedGap = null;
 	}
 
-	function handleGapChange(gap: any) {
-		selectedGapId = gap.id;
-		selectedGapName = gap.name;
+	function handleGapChange(gap: Gap) {
+		selectedGap = gap;
 	}
 
 	const stores = $derived(() =>
@@ -94,7 +92,7 @@
 			? Array.from(
 					new Map(
 						fullStoreTree
-							.filter(i => i.storeId && i.storeName === selectedStore && i.sectionId)
+							.filter(i => i.storeId === selectedStore?.id && i.sectionId)
 							.map(i => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
 					).values()
 			  )
@@ -106,7 +104,7 @@
 			? Array.from(
 					new Map(
 						fullStoreTree
-							.filter(i => i.sectionName === selectedSection && i.rowId)
+							.filter(i => i.sectionId === selectedSection?.id && i.rowId)
 							.map(i => [i.rowId, { id: i.rowId, name: i.rowName }])
 					).values()
 			  )
@@ -118,7 +116,7 @@
 			? Array.from(
 					new Map(
 						fullStoreTree
-							.filter(i => i.rowName === selectedRow && i.gapId)
+							.filter(i => i.rowId === selectedRow?.id && i.gapId)
 							.map(i => [i.gapId, { id: i.gapId, name: i.gapName }])
 					).values()
 			  )
@@ -183,7 +181,14 @@
 			<form method="POST" action="?/create">
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					<div class="col-span-1 sm:col-span-2 lg:col-span-3">
-						<ComboBox label="Product" items={availableProducts} onValueChange={handleProductChange} value={selectedProduct} />
+						<ComboBox 
+							label="Product" 
+							searchQuery={selectedProduct} 
+							items={availableProducts} 
+							onSelect={(item) => handleProductChange(item?.id || item)} 
+							value={selectedProduct} 
+							name="productId"
+							displayField="name"/>
 					</div>
 
 					<TextInput label="Category" name="category" value={selectedCategory} disabled />
@@ -195,15 +200,15 @@
 					<TextInput label="Reorder Quantity" name="reorderQuantity" type="number" min={0} placeholder="Default reorder amount" required />
 
 					<h1>Location</h1>
-					<div class="col-span-1 sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<ComboBox label="Store" items={stores()} onValueChange={handleStoreChange} value={selectedStore} />
-						<ComboBox label="Section" items={sections()} onValueChange={handleSectionChange} value={selectedSection} />
-						<ComboBox label="Row" items={rows()} onValueChange={handleRowChange} value={selectedRow} />
-						<ComboBox label="Gap" name="gapId" items={gaps()} onValueChange={handleGapChange} value={selectedGapName} required />
+					<div class="col-span-1 sm:col-span-2 lg:grid-cols-3 gap-4">
+						<ComboBox label="Store" name="storeId" items={stores()} onSelect={handleStoreChange} value={selectedStore?.name || ''} searchQuery={selectedStore?.name || ''} displayField="name" />
+						<ComboBox label="Section" name="sectionId" items={sections()} onSelect={handleSectionChange} value={selectedSection?.name || ''} searchQuery={selectedSection?.name || ''} displayField="name" />
+						<ComboBox label="Row" name="rowId" items={rows()} onSelect={handleRowChange} value={selectedRow?.name || ''} searchQuery={selectedRow?.name || ''} displayField="name" />
+						<ComboBox label="Gap" name="gapId" items={gaps()} onSelect={handleGapChange} value={selectedGap?.name || ''} searchQuery={selectedGap?.name || ''} displayField="name" required />
 					</div>
 
 					<input type="hidden" name="productId" value={selectedProductId} />
-					<input type="hidden" name="storeGapId" value={selectedGapId} />
+					<input type="hidden" name="storeGapId" value={selectedGap?.id || ''} />
 				</div>
 
 				<div class="mt-6 flex justify-end gap-4">

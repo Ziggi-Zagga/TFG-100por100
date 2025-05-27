@@ -1,45 +1,59 @@
-<!-- Toast.svelte -->
 <script lang="ts">
-  import { fade, fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
+  import { fly } from 'svelte/transition';
 
-  export let message: string;
-  export let type: 'success' | 'error' | 'info' = 'info';
-  export let duration = 3000;
-
-  const dispatch = createEventDispatcher();
+  const { 
+    message, 
+    type = 'info', 
+    duration = 3000,
+    onClose
+  } = $props<{
+    message: string;
+    type?: 'success' | 'error' | 'info';
+    duration?: number;
+    onClose?: () => void;
+  }>();
   
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: NodeJS.Timeout | null = null;
+  let isVisible = $state(true);
 
-  $: bgColor = type === 'success' 
-    ? 'bg-green-500' 
-    : type === 'error' 
-    ? 'bg-red-500' 
-    : 'bg-blue-500';
-
+  const bgColor = $derived(
+    type === 'success' 
+      ? 'bg-green-500' 
+      : type === 'error' 
+      ? 'bg-red-500' 
+      : 'bg-blue-500'
+  );
 
   function close() {
-    dispatch('close');
+    isVisible = false;
+    onClose?.();
   }
 
-  $: if (duration) {
-    timeoutId = setTimeout(close, duration);
-  }
-
-  // Cleanup on component destroy
-  import { onDestroy } from 'svelte';
-  onDestroy(() => {
-    if (timeoutId) clearTimeout(timeoutId);
+  $effect(() => {
+    if (duration && duration > 0) {
+      timeoutId = setTimeout(close, duration);
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
+      };
+    }
+    return undefined;
   });
 </script>
 
-<div
-  class="fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-lg"
-  class:bg-red-500={type === 'error'}
-  class:bg-green-500={type === 'success'}
-  class:bg-blue-500={type === 'info'}
-  transition:fly={{ y: 50, duration: 300 }}
-  role="alert"
->
-  <p class="text-sm">{message}</p>
-</div>
+{#if isVisible}
+  <div
+    class="fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-lg {bgColor}"
+    transition:fly={{ y: 50, duration: 300 }}
+    role="alert"
+  >
+    <p class="text-sm font-medium">{message}</p>
+    <button 
+      type="button" 
+      class="ml-2 text-white hover:text-gray-200 focus:outline-none"
+      onclick={close}      
+      aria-label="Close"
+    >
+      <span class="text-xl">&times;</span>
+    </button>
+  </div>
+{/if}

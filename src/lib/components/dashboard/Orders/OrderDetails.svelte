@@ -2,31 +2,14 @@
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Modal from '$lib/components/utilities/Modal/Modal.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
+  import type { Supplier } from '$lib/types/products.types';
 
-  let { isOpen = $bindable<boolean>(), order, onClose } = $props<{
+  let { isOpen = $bindable<boolean>(), order, onClose, supplier } = $props<{
     isOpen?: boolean;
     order?: any;
     onClose?: () => void;
+    supplier?: Supplier;
   }>();
-
-  $effect (() => {
-    if (order) {
-      if (!order.products) {
-        order.products = [];
-      } else if (!Array.isArray(order.products)) {
-        order.products = [order.products];
-      }
-      
-      order.products = order.products.map((product: any) => ({
-        code: product.code || '',
-        name: product.name || product.product?.name || 'Producto desconocido',
-        quantity: product.quantity || 1,
-        price: product.price || product.product?.price || 0,
-        discount: product.discount || 0,
-        total: product.total || 0
-      }));
-    }
-  });
 
   function formatDate(dateString: string) {
     if (!dateString) return 'N/A';
@@ -78,10 +61,8 @@
     }, 0).toFixed(2);
   }
 
-  // Configuración de columnas para la tabla de productos
   const productColumns = ['code', 'name', 'quantity', 'price', 'discount', 'total'];
 
-  // Tipos de columnas para la tabla
   const productColumnTypes = {
     price: { type: 'text' as const, extraStyles: 'text-right' },
     discount: { type: 'text' as const, extraStyles: 'text-center' },
@@ -89,30 +70,32 @@
     quantity: { type: 'text' as const, extraStyles: 'text-center' }
   };
 
-  // Preparar los datos para la tabla
   let productItems = $state<any[]>([]);
   
   $effect(() => {
-    if (!order?.products?.length) {
+    const items = order?.items || order?.products || [];
+    
+    if (!items.length) {
       productItems = [];
       return;
     }
     
-    productItems = order.products.map((product: any) => {
-      const price = parseFloat(product.price || 0);
-      const quantity = parseInt(product.quantity || 0);
-      const discount = parseFloat(product.discount || 0);
-      const total = (price * quantity * (1 - discount / 100)).toFixed(2);
+    productItems = items.map((item: any) => {
+      const price = parseFloat(item.price || 0);
+      const quantity = parseFloat(item.quantity || 0);
+      const discount = parseFloat(item.discount || 0);
+      const subtotal = price * quantity;
+      const discountAmount = subtotal * (discount / 100);
+      const total = (subtotal - discountAmount).toFixed(2);
       
       return {
-        ...product,
-        code: product.code || 'N/A',
-        name: product.name || 'Producto sin nombre',
+        ...item,
+        code: item.code || 'N/A',
+        name: item.name || 'Producto sin nombre',
         price: price.toFixed(2) + ' €',
         quantity: quantity.toString(),
         discount: discount > 0 ? `${discount}%` : '0%',
         total: total + ' €',
-        // Clases personalizadas para las celdas
         _rowClass: 'hover:bg-gray-50',
         _cellClass: {
           price: 'font-mono',
@@ -123,6 +106,7 @@
       };
     });
   });
+  
 </script>
 
 <Modal title="Detalles del Pedido" size="lg" onClose={onClose}>
@@ -161,22 +145,29 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h4 class="text-sm font-medium text-gray-500">Nombre</h4>
-            <p>{order.supplier?.name || 'N/A'}</p>
+            <p>{supplier?.name || 'N/A'}</p>
           </div>
           <div>
             <h4 class="text-sm font-medium text-gray-500">Contacto</h4>
-            <p>{order.supplier?.contactPerson || 'N/A'}</p>
+            <p>{supplier?.contactPerson || 'N/A'}</p>
           </div>
           <div>
             <h4 class="text-sm font-medium text-gray-500">Teléfono</h4>
-            <p>{order.supplier?.phone || 'N/A'}</p>
+            <p>{supplier?.phone || 'N/A'}</p>
           </div>
           <div>
             <h4 class="text-sm font-medium text-gray-500">Correo Electrónico</h4>
-            <p>{order.supplier?.email || 'N/A'}</p>
+            <p>{supplier?.email || 'N/A'}</p>
           </div>
         </div>
       </div>
+       <!-- Notas -->
+       {#if order.notes}
+       <div class="bg-white shadow rounded-lg p-6">
+         <h3 class="text-lg font-medium text-gray-900 mb-2">Notas</h3>
+         <p class="text-gray-600 whitespace-pre-line">{order.notes}</p>
+       </div>
+     {/if}
 
       <!-- Productos del pedido -->
       <div class="bg-white shadow rounded-lg overflow-hidden">
@@ -189,6 +180,8 @@
               columns={productColumns}
                items={productItems}
               onRowClick={() => {}}
+              ifEdit={() => false}
+              ifDelete={() => false}
             />
             
             <!-- Totales -->
@@ -220,13 +213,7 @@
         </div>
       </div>
 
-      <!-- Notas -->
-      {#if order.notes}
-        <div class="bg-white shadow rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Notas</h3>
-          <p class="text-gray-600 whitespace-pre-line">{order.notes}</p>
-        </div>
-      {/if}
+     
     </div>
   {/if}
 

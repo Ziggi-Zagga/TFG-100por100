@@ -30,7 +30,7 @@
 		};
 	};
 	onCellChange?: (item: any, column: string, value: any) => void;
-	onRowClick?: (id: string) => void;
+	onRowClick?: (item: any) => void;
 	onEdit?: (item: any) => void;
 	onDelete?: (item: any) => void;
 	ifEdit?: (item: any) => boolean;
@@ -134,24 +134,16 @@ function formatDateValue(value: any): string {
 													extraClass="w-full"
 												/>
 											</div>
-										{:else if columnTypes[col].type === 'icon'}
-									<div class="w-full max-w-[30px] h-full flex items-center justify-center">
-										{#if typeof columnTypes[col].icon === 'function'}
-											{@const iconData = columnTypes[col].icon(item)}
+										{:else if columnTypes[col].type === 'icon' }
+										{@const iconData = columnTypes[col].icon(item)}
+									<div class="w-full  h-full flex items-center justify-center">														
 											<Icon 
 												icon={iconData.icon}
 												size={20}
 												extraStyles={`${columnTypes[col].extraStyles} ${iconData.color}`}
 											/>
-										{:else}
-										<Icon 
-											icon={columnTypes[col].icon}
-											size={20}
-											extraStyles={columnTypes[col].extraStyles}
-										/>
-									{/if}
-								</div>
-																		{/if}
+										</div>
+											{/if}
 										{:else}
 											<div class="w-full h-full flex items-center justify-center">
 												<span class="truncate text-gray-700">

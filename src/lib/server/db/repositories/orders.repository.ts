@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { orders, orderItems, products, suppliers, users } from '$lib/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 
 
 export const getAllOrders = async () => {
@@ -39,13 +39,29 @@ export const getOrderWithItems = async (orderId: string) => {
             discount: orderItems.discount,
             createdAt: orderItems.createdAt,
             updatedAt: orderItems.updatedAt,
-            productName: products.name
+            code: products.code,
+            name: products.name,
+            productPrice: products.price
         })
         .from(orderItems)
         .leftJoin(products, eq(orderItems.productId, products.id))
         .where(eq(orderItems.orderId, orderId));
 
-    return { ...order, items };
+    // Formatear los ítems para incluir la información del producto
+    const formattedItems = items.map(item => ({
+        ...item,
+        code: item.code || 'N/A',
+        name: item.name || 'Producto sin nombre',
+        price: item.price,
+        quantity: item.quantity,
+        discount: item.discount || 0
+    }));
+
+    return { 
+        ...order, 
+        items: formattedItems,
+        products: formattedItems // Mantener compatibilidad con el código existente
+    };
 };
 
 export const getItemsByOrderId = async (orderId: string) => {
@@ -72,15 +88,14 @@ export const deleteOrder = async (orderId: string) => {
     return deletedOrder;
 };
 
-export const removeOrder = deleteOrder; // Mantener compatibilidad hacia atrás
+export const removeOrder = deleteOrder; 
 
 
 export const deleteOrderItems = async (orderId: string) => {
     await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
 };
 
-export const removeOrderItemsByOrderId = deleteOrderItems; // Mantener compatibilidad hacia atrás
-
+export const removeOrderItemsByOrderId = deleteOrderItems; 
 
 export const updateOrder = async (
 	orderId: string,
@@ -98,11 +113,15 @@ export const updateOrderItems = async (
 
 export const getLastOrderNumber = async () => {
     const result = await db
-        .select({ orderNumber: orders.orderNumber })
+        .select({ 
+            orderNumber: orders.orderNumber,
+            num: sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`
+        })
         .from(orders)
-        .orderBy(desc(orders.createdAt))
+        .orderBy(desc(sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`))
         .limit(1);
-
+    
+    console.log('Último número de orden encontrado:', result[0]?.orderNumber);
     return result[0]?.orderNumber;
 };
 

@@ -193,10 +193,10 @@
 
             <Header title="Location" subtitle="" variant="compact"/>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-              <ComboBox label="Store" name="storeId" items={stores()} onValueChange={handleStoreChange} value={selectedStore} />
-              <ComboBox label="Section" name="sectionId" items={sections()} onValueChange={handleSectionChange} value={selectedSection} />
-              <ComboBox label="Row" name="rowId" items={rows()} onValueChange={handleRowChange} value={selectedRow} />
-              <ComboBox label="Gap" items={gaps()} onValueChange={handleGapChange} value={selectedGapName} required />
+              <ComboBox label="Store" name="storeId" items={stores()} searchQuery={selectedStore} onSelect={(item) => handleStoreChange(item.id)} value={selectedStore} />
+              <ComboBox label="Section" name="sectionId" items={sections()} searchQuery={selectedSection} onSelect={(item) => handleSectionChange(item.id)} value={selectedSection} />
+              <ComboBox label="Row" name="rowId" items={rows()} searchQuery={selectedRow} onSelect={(item) => handleRowChange(item.id)} value={selectedRow} />
+              <ComboBox label="Gap" name="gapId" items={gaps()} searchQuery={selectedGapName} onSelect={(item) => handleGapChange(item.id)} value={selectedGapName} required />
             </div>
 
             <div class="mt-6 flex justify-end gap-4">

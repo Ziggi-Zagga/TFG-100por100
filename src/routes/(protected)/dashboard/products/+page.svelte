@@ -8,7 +8,7 @@
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Select from '$lib/components/utilities/Form/Select.svelte';
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
-  import type { Supplier, Manufacturer, Category, Product } from '$lib/types/products.types';
+  import type { Supplier, Manufacturer, Category, Product } from '$lib/types/products.types.js';
 
   const { data } = $props();
   let productsCopy = $state<Product[]>([...data.products]);

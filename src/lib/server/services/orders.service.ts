@@ -2,11 +2,24 @@ import * as orderRepo from '../db/repositories/orders.repository';
 import * as supplierRepo from '../db/repositories/supplier.repository';
 import * as productRepo from '../db/repositories/products.repository';
 import crypto from 'crypto';
-import type { orderItems } from '$lib/server/db/schema';
+import { db } from '$lib/server/db';
+import { users, orders, orderItems } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-// Obtener todas las órdenes
+
 export const getOrders = async () => {
-    return await orderRepo.getAllOrders();
+    const orders = await orderRepo.getAllOrders();
+    
+    const ordersWithItems = await Promise.all(orders.map(async (order) => {
+        const { items } = await orderRepo.getItemsByOrderId(order.id);
+        return {
+            ...order,
+            items,
+            products: items
+        };
+    }));
+    
+    return ordersWithItems;
 };
 
 // Obtener una orden con sus ítems
@@ -32,23 +45,68 @@ export const createOrderWithItems = async (orderData: {
     status?: string;
     notes?: string;
 }) => {
+    console.log('=== Starting order creation ===');
+    console.log('Order data received:', JSON.stringify(orderData, null, 2));
     // Validar datos básicos
+    console.log('Validating order data...');
     if (!orderData.supplierId) {
-        throw new Error('Supplier ID is required');
+        const error = 'Supplier ID is required';
+        console.error('Validation error:', error);
+        throw new Error(error);
     }
     
     if (!orderData.userId) {
-        throw new Error('User ID is required');
+        const error = 'User ID is required';
+        console.error('Validation error:', error);
+        throw new Error(error);
     }
     
     if (!orderData.items || orderData.items.length === 0) {
-        throw new Error('At least one item is required');
+        const error = 'At least one item is required';
+        console.error('Validation error:', error);
+        throw new Error(error);
     }
 
-    // Validar items
-    for (const item of orderData.items) {
-        if (!item.productId) {
-            throw new Error('Product ID is required for each item');
+    // Verificar que el proveedor existe
+    console.log(`Checking if supplier exists: ${orderData.supplierId}`);
+    const supplier = await db.query.suppliers.findFirst({
+        where: (suppliers, { eq }) => eq(suppliers.id, orderData.supplierId)
+    });
+    if (!supplier) {
+        const error = `Supplier with ID ${orderData.supplierId} not found`;
+        console.error('Supplier error:', error);
+        throw new Error(error);
+    } else {
+        console.log('Supplier found:', JSON.stringify(supplier, null, 2));
+    }
+
+    // Verificar que el usuario existe
+    console.log(`Checking if user exists: ${orderData.userId}`);
+    const user = await db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, orderData.userId)
+    });
+    
+    if (!user) {
+        const error = `User with ID ${orderData.userId} not found`;
+        console.error('User error:', error);
+        throw new Error(error);
+    } else {
+        console.log('User found:', user.username);
+    }
+
+    // Verificar que los productos existen
+    console.log('Verifying products exist...');
+    for (const [index, item] of orderData.items.entries()) {
+        console.log(`Checking product ${index + 1}/${orderData.items.length}: ${item.productId}`);
+        const product = await db.query.products.findFirst({
+            where: (products, { eq }) => eq(products.id, item.productId)
+        });
+        if (!product) {
+            const error = `Product with ID ${item.productId} not found`;
+            console.error('Product error:', error);
+            throw new Error(error);
+        } else {
+            console.log(`Product ${item.productId} found:`, product.name);
         }
         if (item.quantity <= 0) {
             throw new Error('Quantity must be greater than 0');
@@ -65,40 +123,87 @@ export const createOrderWithItems = async (orderData: {
     const orderNumber = `ORD-${nextOrderNumber.toString().padStart(6, '0')}`;
 
     // Crear la orden
+    console.log('Preparing order data...');
     const orderId = crypto.randomUUID();
-    const now = new Date();
-    
-    const order = {
+    const orderToInsert = {
         id: orderId,
         orderNumber,
         supplierId: orderData.supplierId,
         userId: orderData.userId,
-        orderDate: orderData.orderDate ? new Date(orderData.orderDate) : now,
-        expectedArrival: orderData.expectedArrival ? new Date(orderData.expectedArrival) : null,
         status: orderData.status || 'pending',
         notes: orderData.notes || '',
-        createdAt: now,
-        updatedAt: now
+        orderDate: orderData.orderDate ? new Date(orderData.orderDate) : new Date(),
+        expectedArrival: orderData.expectedArrival ? new Date(orderData.expectedArrival) : null,
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
+    
+    console.log('Order data prepared:', JSON.stringify(orderToInsert, null, 2));
+    console.log('Preparing order items...');
+    
+    const itemsToInsert = orderData.items.map(item => {
+        const orderItem = {
+            id: crypto.randomUUID(),
+            orderId,
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+            discount: item.discount || 0,
+            status: 'pending',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        console.log('Order item prepared:', JSON.stringify(orderItem, null, 2));
+        return orderItem;
+    });
 
-    // Crear los ítems de la orden
-    const orderItems = orderData.items.map(item => ({
-        id: crypto.randomUUID(),
-        orderId,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        discount: item.discount || 0,
-        status: 'pending',
-        createdAt: now,
-        updatedAt: now
-    }));
+    // Insertar la orden y los ítems en una transacción
+    console.log('Starting database transaction...');
+    try {
+        await db.transaction(async (tx: any) => {  // Using any for tx as a quick fix, but should be properly typed in production
+            console.log('Inserting order...');
+            await tx.insert(orders).values(orderToInsert);
+            console.log('Order inserted successfully');
+            
+            if (itemsToInsert.length > 0) {
+                console.log(`Inserting ${itemsToInsert.length} order items...`);
+                await tx.insert(orderItems).values(itemsToInsert);
+                console.log('Order items inserted successfully');
+            } else {
+                console.log('No items to insert');
+            }
+        });
+        
+        console.log('Transaction completed successfully');
+    } catch (error: unknown) {
+        console.error('Error in transaction:');
+        
+        if (error instanceof Error) {
+            console.error('Error details:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
+        } else if (error && typeof error === 'object' && 'message' in error) {
+            
+            const err = error as { message: string, name?: string, code?: string, stack?: string };
+            console.error('Error details:', {
+                name: err.name || 'UnknownError',
+                message: err.message,
+                code: err.code,
+                stack: err.stack
+            });
+        } else {
+            console.error('Unknown error occurred:', error);
+        }
+        
+        throw error; // Re-lanzar el error para manejarlo en el controlador
+    }
 
-    // Guardar en la base de datos
-    await orderRepo.insertOrder(order);
-    await orderRepo.insertOrderItems(orderItems);
-
-    return { id: orderId, orderNumber };
+    const result = { ...orderToInsert, items: orderData.items };
+    console.log('Order creation completed successfully');
+    console.log('Result:', JSON.stringify(result, null, 2));
+    return result;
 };
 
 // Eliminar una orden por ID
@@ -186,6 +291,17 @@ export const getProductsBySupplierId = async (supplierId: string) => {
     if (!supplierId) {
         throw new Error('Supplier ID is required');
     }
+    // Verificar que el proveedor existe
+    console.log(`Checking if supplier exists: ${supplierId}`);
+    const supplier = await db.query.suppliers.findFirst({
+        where: (suppliers, { eq }) => eq(suppliers.id, supplierId)
+    });
+    if (!supplier) {
+        const error = `Supplier with ID ${supplierId} not found`;
+        console.error('Supplier error:', error);
+        throw new Error(error);
+    } else {
+        console.log('Supplier found:', JSON.stringify(supplier, null, 2));
+    }
     return await productRepo.getProductsBySupplier(supplierId);
 };
-
