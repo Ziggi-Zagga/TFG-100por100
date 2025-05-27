@@ -16,6 +16,7 @@
 
 	let showDrawer = $state(false);
 	let isEditing = $state(false);
+	let isSuppliers = $state(true);
 	let search = $state('');
 	let suppliers = $state([...data.suppliers]);
 	let totalSuppliers = $derived(() => suppliers.length);
@@ -130,6 +131,9 @@
 	class="min-h-screen w-full p-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 >
+
+<!-- SUPPLIERS -->
+{#if isSuppliers}
 	<!-- HEADER & SEARCHBAR -->
 	<Header title="Suppliers" subtitle={totalSuppliers().toString() + ' suppliers'} />
 
@@ -138,6 +142,11 @@
 			<SearchBar bind:search placeholder="Search by name, email, contact..." />
 		</div>
 		<div class="-mt-6 flex w-full justify-end md:w-auto">
+			<div class="px-5">
+				<Button onclick={() => (isSuppliers = false)} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					{@html '<span class="hidden md:inline">Manufacturers</span>'}
+				</Button>
+			</div>
 			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
 				{@html '<span class="hidden md:inline">Add Supplier</span>'}
 			</Button>
@@ -258,4 +267,140 @@
 		onConfirm={confirmDeletion}
 		onCancel={cancelDeletion}
 	/>
+	{:else}
+	<!-- MANUFACTURERS -->
+			<!-- HEADER & SEARCHBAR -->
+	<Header title="Manufacturers" subtitle={totalSuppliers().toString() + ' manufacturers'} />
+
+	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
+		<div class="w-full md:flex-1">
+			<SearchBar bind:search placeholder="Search by name, email, contact..." />
+		</div>
+		<div class="-mt-6 flex w-full justify-end md:w-auto">
+			<div class="px-5">
+				<Button onclick={() => (isSuppliers = true)} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					{@html '<span class="hidden md:inline">Suppliers</span>'}
+				</Button>
+			</div>
+			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+				{@html '<span class="hidden md:inline">Add Manufacturer</span>'}
+			</Button>
+		</div>
+	</div>
+
+	<!-- TABLE -->
+	<Table
+		columns={['name', 'email', 'contactPerson', 'website', 'phone']}
+		items={filteredSuppliers()}
+		onEdit={(item) => openEdit(item)}
+		onDelete={(item) => askDelete(item.id, item.name)}
+	/>
+
+	<!-- MODAL -->
+	{#if isEditing}
+		<Modal title="➕ Edit Supplier" onClose={closeEdit}>
+			<form method="POST" action="?/update">
+				<input type="hidden" name="id" value={editId} />
+				<TextInput label="Name" name="name" value={editName} required />
+				{#if wrongName}
+					<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
+				{/if}
+				<TextInput label="Email" name="email" value={editEmail} />
+				<TextInput label="Contact Person" name="contactPerson" value={editContactPerson} />
+				<TextInput label="Website" name="website" value={editWebsite} />
+				<TextInput label="Phone" name="phone" value={editPhone} />
+				<TextArea label="Notes" name="notes" value={editNotes} />
+				<div class="mt-6 flex justify-end gap-4">
+					<Button
+						onclick={cancelDeletion}
+						variant="secondary"
+						size="md"
+						extraStyles="w-full md:w-auto"
+					>
+						{@html '<span class="hidden md:inline">Cancel</span>'}
+					</Button>
+					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+						{@html '<span class="hidden md:inline">Update Supplier</span>'}
+					</Button>
+				</div>
+			</form>
+		</Modal>
+	{/if}
+
+	<!-- DRAWER -->
+	{#if showDrawer}
+		<Drawer title="➕ Add New Supplier" onClose={closeDrawer}>
+			<form onsubmit={handleCreate} class="flex flex-col gap-4">
+				<div>
+					<label class="font-semibold">Name</label>
+					<TextInput name="name" placeholder="Enter supplier name" extraStyles="w-full" required />
+					{#if wrongName}
+						<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
+					{/if}
+				</div>
+
+				<div>
+					<label class="font-semibold">Email</label>
+					<TextInput
+						name="email"
+						placeholder="Enter supplier email"
+						type="email"
+						extraStyles="w-full"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold">Contact Person</label>
+					<TextInput
+						name="contactPerson"
+						placeholder="Enter contact person name"
+						extraStyles="w-full"
+					/>
+				</div>
+
+				<div>
+					<label class="font-semibold">Website</label>
+					<TextInput name="website" placeholder="Enter website" type="url" extraStyles="w-full" />
+				</div>
+
+				<div>
+					<label class="font-semibold">Phone</label>
+					<TextInput name="phone" placeholder="Enter phone" type="tel" extraStyles="w-full" />
+				</div>
+
+				<div>
+					<label class="font-semibold">Notes</label>
+					<TextArea name="notes" placeholder="Enter notes" extraStyles="w-full" />
+				</div>
+
+				<div class="mt-4 flex justify-end gap-4">
+					<Button
+						type="button"
+						variant="secondary"
+						size="md"
+						class="rounded-md bg-gray-300 px-6 py-2 font-semibold text-gray-800 hover:bg-gray-400"
+						onclick={closeDrawer}
+					>
+						Cancel
+					</Button>
+					<Button
+						type="submit"
+						variant="primary"
+						size="md"
+						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
+					>
+						Create Supplier
+					</Button>
+				</div>
+			</form>
+		</Drawer>
+	{/if}
+
+	<ConfirmDialog
+		show={showConfirm}
+		message={`Are you sure you want to delete supplier: ${supplierToDelete}?`}
+		onConfirm={confirmDeletion}
+		onCancel={cancelDeletion}
+	/>
+	{/if}
 </section>
