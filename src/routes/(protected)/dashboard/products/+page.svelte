@@ -27,8 +27,8 @@
   let productToDelete = $state<string | null>(null);
   let productIdToDelete = $state<string | null>(null);
 
-  function goToProductDetails(id: string, queryParams: string) {
-    goto(`./products/${id}${queryParams}`);
+  function goToProductDetails(item: any, queryParams: string) {
+    goto(`./products/${item.id}${queryParams}`);
   }
 
   function openDrawer() {
@@ -90,8 +90,8 @@
   <Table
     columns={['code', 'name', 'price', 'unit', 'material']}
     items={filteredProducts()}
-    onRowClick={(item) => goToProductDetails(item.id, '')}
-    onEdit={(item) => goToProductDetails(item.id, '?edit=true')}
+    onRowClick={(item) => goToProductDetails(item, '')}
+    onEdit={(item) => goToProductDetails(item, '?edit=true')}
     onDelete={(item) => askDelete(item.id, item.name)}
   />
 

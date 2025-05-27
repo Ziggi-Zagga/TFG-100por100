@@ -48,8 +48,8 @@
 		)
 	);
 
-	function goToInventoryDeatils(id: string, queryParams: string) {
-		goto(`/dashboard/inventory/${id}${queryParams}`);
+	function goToInventoryDeatils(item: any, queryParams: string) {
+		goto(`./inventory/${item.id}${queryParams}`);
 	}
 
 	function handleProductChange(product: any) {
@@ -125,8 +125,8 @@
 			: []
 	);
 
-	function askDelete(id: string) {
-		inventoryIdToDelete = id;
+	function askDelete(item: any) {
+		inventoryIdToDelete = item.id;
 		showConfirm = true;
 	}
 
@@ -173,9 +173,9 @@
 	<Table
 		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
 		items={filteredInventory()}
-		onRowClick={(item) => goToInventoryDeatils(item.id, '')}
-		onEdit={(item) => goToInventoryDeatils(item.id, '?edit=true')}
-		onDelete={(item) => askDelete(item.id)}
+		onRowClick={(item) => goToInventoryDeatils(item, '')}
+		onEdit={(item) => goToInventoryDeatils(item, '?edit=true')}
+		onDelete={(item) => askDelete(item)}
 	/>
 
 	{#if showDrawer}
