@@ -185,9 +185,9 @@
 							label="Product" 
 							searchQuery={selectedProduct} 
 							items={availableProducts} 
-							onSelect={(item) => handleProductChange(item?.id || item)} 
+							onSelect={(item) => handleProductChange(item || item?.id)} 
 							value={selectedProduct} 
-							name="productId"
+							name="productName"
 							displayField="name"/>
 					</div>
 
@@ -198,18 +198,18 @@
 					<TextInput label="Stock" name="stock" type="number" min={0} placeholder="Stock quantity" required />
 					<TextInput label="Minimum Quantity" name="minQuantity" type="number" min={0} placeholder="Minimum quantity before restock" required />
 					<TextInput label="Reorder Quantity" name="reorderQuantity" type="number" min={0} placeholder="Default reorder amount" required />
-
-					<h1>Location</h1>
-					<div class="col-span-1 sm:col-span-2 lg:grid-cols-3 gap-4">
-						<ComboBox label="Store" name="storeId" items={stores()} onSelect={handleStoreChange} value={selectedStore?.name || ''} searchQuery={selectedStore?.name || ''} displayField="name" />
-						<ComboBox label="Section" name="sectionId" items={sections()} onSelect={handleSectionChange} value={selectedSection?.name || ''} searchQuery={selectedSection?.name || ''} displayField="name" />
-						<ComboBox label="Row" name="rowId" items={rows()} onSelect={handleRowChange} value={selectedRow?.name || ''} searchQuery={selectedRow?.name || ''} displayField="name" />
-						<ComboBox label="Gap" name="gapId" items={gaps()} onSelect={handleGapChange} value={selectedGap?.name || ''} searchQuery={selectedGap?.name || ''} displayField="name" required />
-					</div>
-
-					<input type="hidden" name="productId" value={selectedProductId} />
-					<input type="hidden" name="storeGapId" value={selectedGap?.id || ''} />
 				</div>
+
+				<h1>Location</h1>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<ComboBox label="Store" name="storeId" items={stores()} onSelect={handleStoreChange} value={selectedStore?.name || ''} searchQuery={selectedStore?.name || ''} displayField="name" />
+					<ComboBox label="Section" name="sectionId" items={sections()} onSelect={handleSectionChange} value={selectedSection?.name || ''} searchQuery={selectedSection?.name || ''} displayField="name" />
+					<ComboBox label="Row" name="rowId" items={rows()} onSelect={handleRowChange} value={selectedRow?.name || ''} searchQuery={selectedRow?.name || ''} displayField="name" />
+					<ComboBox label="Gap" name="gapId" items={gaps()} onSelect={handleGapChange} value={selectedGap?.name || ''} searchQuery={selectedGap?.name || ''} displayField="name" required />
+				</div>
+
+				<input type="hidden" name="productId" value={selectedProductId} />
+				<input type="hidden" name="storeGapId" value={selectedGap?.id || ''} />
 
 				<div class="mt-6 flex justify-end gap-4">
 					<Button onclick={closeDrawer} variant="secondary" size="md" extraStyles="w-full md:w-auto">
