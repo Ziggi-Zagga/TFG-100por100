@@ -24,7 +24,6 @@ export const actions: Actions = {
             await createCategory({ name, description, parentId });
             throw redirect(303, '/dashboard/categories');
         } catch (error) {
-            console.error('Create category failed:', error);
             return fail(500, { message: 'Failed to create category' });
         }
     },
@@ -32,13 +31,11 @@ export const actions: Actions = {
     delete: async ({ request }) => {
         const formData = await request.formData();
         const id = formData.get('id')?.toString() ?? '';
-        console.log(id);
         
         try {
             await deleteCategory(id);
             throw redirect(303, '/dashboard/categories');
         } catch (error) {
-            console.error('Delete category failed:', error);
             return fail(500, { message: 'Failed to delete category' });
         }
     },
@@ -54,7 +51,6 @@ export const actions: Actions = {
             await updateCategory({ id, name, description, parentId });
             throw redirect(303, '/dashboard/categories');
         } catch (error) {
-            console.error('Update category failed:', error);
             return fail(500, { message: 'Failed to update category' });
         }
     }

@@ -87,6 +87,31 @@ export const repoUpdateInventoryItem = async ({
     }).where(eq(table.inventory.id, id));
 }
 
+export const repoGetInventoryByProductId = async (productId: string) => {
+    return db.select().from(table.inventory).where(eq(table.inventory.productId, productId));
+}
+
+export const repoGetInventoryWithFullLocationByProductId = async (productId: string) => {
+    return await db
+      .select({
+        id: table.inventory.id,
+        productId: table.inventory.productId,
+        Stock: table.inventory.quantity,
+        Date: table.inventory.createdAt,
+        Gap: table.storeGaps.name,
+        Row: table.storeRows.name,
+        Section: table.sections.name,
+        Store: table.stores.name
+      })
+      .from(table.inventory)
+      .innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
+      .innerJoin(table.storeRows, eq(table.storeGaps.rowId, table.storeRows.id))
+      .innerJoin(table.sections, eq(table.storeRows.sectionId, table.sections.id))
+      .innerJoin(table.stores, eq(table.sections.storeId, table.stores.id))
+      .where(eq(table.inventory.productId, productId));
+  };
+  
+
 export const repoDeleteInventoryItem = async (id: string) => {
     return db.delete(table.inventory).where(eq(table.inventory.id, id));
 }
