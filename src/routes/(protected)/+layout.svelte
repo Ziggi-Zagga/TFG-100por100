@@ -69,7 +69,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
           <!-- DAR CREDITO POR ICONO-->
           <!--<a href="https://www.freepik.es/icono/convenio_6400287#fromView=search&page=1&position=10&uuid=cbf1714f-be3b-4c77-b38e-e1a3a02526f6">Icono de juicy_fish</a>-->
           <img src="/icons/png/suppliers.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Suppliers</span>{/if}
+          {#if !collapsed}<span class="ml-3 text-sm font-medium">Suppliers & <br> Manufacturers</span>{/if}
         </a>
       </nav>
     </div>

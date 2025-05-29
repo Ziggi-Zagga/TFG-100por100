@@ -11,6 +11,7 @@
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
 	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 
 	const { data } = $props();
 	let id = $state(get(page).params.id);
@@ -82,13 +83,17 @@
 					onclick={toggleEdit}
 					class="text-2xl text-yellow-500 transition hover:scale-110 hover:text-yellow-600"
 				>
-					{isEditing ? '✖️' : '✏️'}
+					{#if isEditing}
+						<Icon icon="close" size={30} />
+					{:else}
+						<Icon icon="edit" size={30} />
+					{/if}
 				</button>
 				<button
 					onclick={handleDelete}
 					class="text-2xl text-red-500 transition hover:scale-110 hover:text-red-600"
 				>
-					🗑️
+					<Icon icon="delete" size={30} />
 				</button>
 			</div>
 		</div>

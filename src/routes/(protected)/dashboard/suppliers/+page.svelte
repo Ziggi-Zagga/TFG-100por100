@@ -7,10 +7,9 @@
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
-	import type { Supplier } from '$lib/types/products.types.js';
+	import type { Manufacturer, Supplier } from '$lib/types/products.types.js';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { fail } from '@sveltejs/kit';
-	import { goto } from '$app/navigation';
 
 	const { data } = $props();
 
@@ -18,9 +17,13 @@
 	let isEditing = $state(false);
 	let isSuppliers = $state(true);
 	let search = $state('');
+	let searchManufacturers = $state('');
 	let suppliers = $state([...data.suppliers]);
+	let manufacturers = $state([...data.manufacturers]);
 	let totalSuppliers = $derived(() => suppliers.length);
+	let totalManufacturers = $derived(() => manufacturers.length);
 	let wrongName = $state(false);
+	let wrongNameManufacturer = $state(false);
 	let showConfirm = $state(false);
 	let supplierToDelete = $state<string | null>(null);
 	let supplierIdToDelete = $state<string | null>(null);
@@ -33,6 +36,18 @@
 	let editPhone = $state('');
 	let editNotes = $state('');
 
+	let isEditingManufacturer = $state(false);
+	let editIdManufacturer = $state('');
+	let editNameManufacturer = $state('');
+	let editDescriptionManufacturer = $state('');
+
+	let showConfirmManufacturer = $state(false);
+	let manufacturerToDelete = $state<string | null>(null);
+	let manufacturerIdToDelete = $state<string | null>(null);
+
+
+	
+
 	function openEdit(item: Supplier) {
 		isEditing = true;
 		editId = item.id;
@@ -42,6 +57,17 @@
 		editWebsite = item.website ?? '';
 		editPhone = item.phone ?? '';
 		editNotes = item.notes ?? '';
+	}
+
+	function openEditManufacturer(item: Manufacturer) {
+		isEditingManufacturer = true;
+		editIdManufacturer = item.id;
+		editNameManufacturer = item.name;
+		editDescriptionManufacturer = item.description ?? '';
+	}
+
+	function closeEditManufacturer() {
+		isEditingManufacturer = false;
 	}
 
 	function closeEdit() {
@@ -54,10 +80,22 @@
 		showConfirm = true;
 	}
 
+	function askDeleteManufacturer(manufacturerId: string, manufacturerName: string) {
+		manufacturerToDelete = manufacturerName;
+		manufacturerIdToDelete = manufacturerId;
+		showConfirmManufacturer = true;
+	}
+
 	function cancelDeletion() {
 		showConfirm = false;
 		supplierToDelete = null;
 		supplierIdToDelete = null;
+	}
+
+	function cancelDeletionManufacturer() {
+		showConfirmManufacturer = false;
+		manufacturerToDelete = null;
+		manufacturerIdToDelete = null;
 	}
 
 	function openDrawer() {
@@ -97,12 +135,49 @@
 		}
 	}
 
+	async function handleCreateManufacturer(event: Event) {
+		event.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
+
+		const name = formData.get('name')?.toString() ?? '';
+		const existingManufacturer = manufacturers.find((m) => m.name === name);
+
+		if (existingManufacturer) {
+			wrongNameManufacturer = true;
+			return fail(400, { message: 'Manufacturer with this name already exists' });
+		}
+
+		wrongNameManufacturer = false;
+
+		const res = await fetch('?/createManufacturer', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.ok) {
+			closeDrawer();
+			location.reload();
+			isSuppliers = false;
+		} else {
+			const error = await res.json();
+			console.error('Error creating manufacturer:', error);
+		}
+	}
+
 	const filteredSuppliers = $derived(() =>
 		suppliers.filter(
 			(supplier) =>
 				supplier.name.toLowerCase().includes(search.toLowerCase()) ||
 				(supplier.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
 				(supplier.contactPerson ?? '').toLowerCase().includes(search.toLowerCase())
+		)
+	);
+
+	const filteredManufacturers = $derived(() =>
+		manufacturers.filter(
+			(manufacturer) =>
+				manufacturer.name.toLowerCase().includes(search.toLowerCase())
 		)
 	);
 
@@ -123,6 +198,26 @@
 			supplierIdToDelete = null;
 		} else {
 			console.error('Failed to delete supplier');
+		}
+	}
+
+	async function confirmDeletionManufacturer() {
+		if (!manufacturerIdToDelete) return;
+		const formData = new FormData();
+		formData.append('id', manufacturerIdToDelete);
+
+		const res = await fetch('/dashboard/suppliers?/deleteManufacturer', {
+			method: 'POST',
+			body: formData
+		});
+
+		showConfirmManufacturer = false;
+
+		if (res.ok) {
+			manufacturers = manufacturers.filter((m) => m.id !== manufacturerIdToDelete);
+			manufacturerIdToDelete = null;
+		} else {
+			console.error('Failed to delete manufacturer');
 		}
 	}
 </script>
@@ -268,13 +363,16 @@
 		onCancel={cancelDeletion}
 	/>
 	{:else}
+
+
 	<!-- MANUFACTURERS -->
-			<!-- HEADER & SEARCHBAR -->
-	<Header title="Manufacturers" subtitle={totalSuppliers().toString() + ' manufacturers'} />
+
+	<!-- HEADER & SEARCHBAR -->
+	<Header title="Manufacturers" subtitle={totalManufacturers().toString() + ' manufacturers'} />
 
 	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
 		<div class="w-full md:flex-1">
-			<SearchBar bind:search placeholder="Search by name, email, contact..." />
+			<SearchBar bind:search placeholder="Search by name..." />
 		</div>
 		<div class="-mt-6 flex w-full justify-end md:w-auto">
 			<div class="px-5">
@@ -290,29 +388,26 @@
 
 	<!-- TABLE -->
 	<Table
-		columns={['name', 'email', 'contactPerson', 'website', 'phone']}
-		items={filteredSuppliers()}
-		onEdit={(item) => openEdit(item)}
-		onDelete={(item) => askDelete(item.id, item.name)}
+		columns={['name', 'description']}
+		items={filteredManufacturers()}
+		onEdit={(item) => openEditManufacturer(item)}
+		onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
 	/>
+	
 
 	<!-- MODAL -->
-	{#if isEditing}
-		<Modal title="➕ Edit Supplier" onClose={closeEdit}>
-			<form method="POST" action="?/update">
-				<input type="hidden" name="id" value={editId} />
-				<TextInput label="Name" name="name" value={editName} required />
-				{#if wrongName}
-					<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
+	{#if isEditingManufacturer}
+		<Modal title="➕ Edit Manufacturer" onClose={closeEditManufacturer}>
+			<form method="POST" action="?/updateManufacturer">
+				<input type="hidden" name="id" value={editIdManufacturer} />
+				<TextInput label="Name" name="name" value={editNameManufacturer} required />
+				{#if wrongNameManufacturer}
+					<p class="pt-2 text-sm text-red-500">Name can not be the same as another manufacturer</p>
 				{/if}
-				<TextInput label="Email" name="email" value={editEmail} />
-				<TextInput label="Contact Person" name="contactPerson" value={editContactPerson} />
-				<TextInput label="Website" name="website" value={editWebsite} />
-				<TextInput label="Phone" name="phone" value={editPhone} />
-				<TextArea label="Notes" name="notes" value={editNotes} />
+				<TextArea label="Description" name="description" value={editDescriptionManufacturer} />
 				<div class="mt-6 flex justify-end gap-4">
 					<Button
-						onclick={cancelDeletion}
+						onclick={cancelDeletionManufacturer}
 						variant="secondary"
 						size="md"
 						extraStyles="w-full md:w-auto"
@@ -320,7 +415,7 @@
 						{@html '<span class="hidden md:inline">Cancel</span>'}
 					</Button>
 					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">Update Supplier</span>'}
+						{@html '<span class="hidden md:inline">Update Manufacturer</span>'}
 					</Button>
 				</div>
 			</form>
@@ -329,48 +424,23 @@
 
 	<!-- DRAWER -->
 	{#if showDrawer}
-		<Drawer title="➕ Add New Supplier" onClose={closeDrawer}>
-			<form onsubmit={handleCreate} class="flex flex-col gap-4">
+		<Drawer title="➕ Add New Manufacturer" onClose={closeDrawer}>
+			<form onsubmit={handleCreateManufacturer} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>
-					<TextInput name="name" placeholder="Enter supplier name" extraStyles="w-full" required />
-					{#if wrongName}
-						<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
+					<TextInput name="name" placeholder="Enter manufacturer name" extraStyles="w-full" required />
+					{#if wrongNameManufacturer}
+						<p class="pt-2 text-sm text-red-500">Name can not be the same as another manufacturer</p>
 					{/if}
 				</div>
 
 				<div>
-					<label class="font-semibold">Email</label>
-					<TextInput
-						name="email"
-						placeholder="Enter supplier email"
-						type="email"
+					<label class="font-semibold">Description</label>
+					<TextArea
+						name="description"
+						placeholder="Enter manufacturer description"
 						extraStyles="w-full"
 					/>
-				</div>
-
-				<div>
-					<label class="font-semibold">Contact Person</label>
-					<TextInput
-						name="contactPerson"
-						placeholder="Enter contact person name"
-						extraStyles="w-full"
-					/>
-				</div>
-
-				<div>
-					<label class="font-semibold">Website</label>
-					<TextInput name="website" placeholder="Enter website" type="url" extraStyles="w-full" />
-				</div>
-
-				<div>
-					<label class="font-semibold">Phone</label>
-					<TextInput name="phone" placeholder="Enter phone" type="tel" extraStyles="w-full" />
-				</div>
-
-				<div>
-					<label class="font-semibold">Notes</label>
-					<TextArea name="notes" placeholder="Enter notes" extraStyles="w-full" />
 				</div>
 
 				<div class="mt-4 flex justify-end gap-4">
@@ -397,10 +467,10 @@
 	{/if}
 
 	<ConfirmDialog
-		show={showConfirm}
-		message={`Are you sure you want to delete supplier: ${supplierToDelete}?`}
-		onConfirm={confirmDeletion}
-		onCancel={cancelDeletion}
+		show={showConfirmManufacturer}
+		message={`Are you sure you want to delete manufacturer: ${manufacturerToDelete}?`}
+		onConfirm={confirmDeletionManufacturer}
+		onCancel={cancelDeletionManufacturer}
 	/>
 	{/if}
 </section>
