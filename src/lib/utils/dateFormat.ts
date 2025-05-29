@@ -25,7 +25,7 @@ const formatMap: Record<string, Intl.DateTimeFormatOptions> = {
   
   export function formatDate(date: Date, formatStr: string): string {
     if (formatStr === 'MMMM d, yyyy') {
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('en-GB', {
         month: 'long',
         day:   'numeric',
         year:  'numeric'

@@ -25,3 +25,5 @@ export interface ActionData {
     success?: boolean;
     error?: string;
 }
+
+type SafeUser = Pick<AuthUser, 'id' | 'username' | 'email' | 'roleId'>;

@@ -25,7 +25,8 @@ export async function getSessionWithUser(token: string) {
 			user: {
 				id: users.id,
 				username: users.username,
-				email: users.email
+				email: users.email,
+				roleId: users.roleId
 			},
 			session: userSessions
 		})

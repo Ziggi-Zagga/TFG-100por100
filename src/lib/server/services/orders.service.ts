@@ -45,54 +45,41 @@ export const createOrderWithItems = async (orderData: {
     status?: string;
     notes?: string;
 }) => {
-    console.log('=== Starting order creation ===');
-    console.log('Order data received:', JSON.stringify(orderData, null, 2));
+    
     // Validar datos básicos
-    console.log('Validating order data...');
     if (!orderData.supplierId) {
         const error = 'Supplier ID is required';
-        console.error('Validation error:', error);
         throw new Error(error);
     }
     
     if (!orderData.userId) {
         const error = 'User ID is required';
-        console.error('Validation error:', error);
         throw new Error(error);
     }
     
     if (!orderData.items || orderData.items.length === 0) {
         const error = 'At least one item is required';
-        console.error('Validation error:', error);
         throw new Error(error);
     }
 
     // Verificar que el proveedor existe
-    console.log(`Checking if supplier exists: ${orderData.supplierId}`);
     const supplier = await db.query.suppliers.findFirst({
         where: (suppliers, { eq }) => eq(suppliers.id, orderData.supplierId)
     });
     if (!supplier) {
         const error = `Supplier with ID ${orderData.supplierId} not found`;
-        console.error('Supplier error:', error);
         throw new Error(error);
-    } else {
-        console.log('Supplier found:', JSON.stringify(supplier, null, 2));
     }
 
     // Verificar que el usuario existe
-    console.log(`Checking if user exists: ${orderData.userId}`);
     const user = await db.query.users.findFirst({
         where: (users, { eq }) => eq(users.id, orderData.userId)
     });
     
     if (!user) {
         const error = `User with ID ${orderData.userId} not found`;
-        console.error('User error:', error);
         throw new Error(error);
-    } else {
-        console.log('User found:', user.username);
-    }
+    } 
 
     // Verificar que los productos existen
     console.log('Verifying products exist...');
@@ -116,6 +103,11 @@ export const createOrderWithItems = async (orderData: {
         }
     }
 
+    // revisar el tema de ORD si quitarlo ya que no aporta mucho y solo puede dar problemas
+    // revisar problema de concurrencias y arreglar para evitar eso crear directamente secuencial o autoincremento en la base de datos
+    // buscar sobre la secuencialidad de sqLite y como se haria la migración a una base de datos sin esos problemas
+    //
+    //
     // Generar número de orden
     const lastOrderNumber = await orderRepo.getLastOrderNumber();
     const nextOrderNumber = lastOrderNumber ? 
@@ -123,7 +115,6 @@ export const createOrderWithItems = async (orderData: {
     const orderNumber = `ORD-${nextOrderNumber.toString().padStart(6, '0')}`;
 
     // Crear la orden
-    console.log('Preparing order data...');
     const orderId = crypto.randomUUID();
     const orderToInsert = {
         id: orderId,
