@@ -170,7 +170,7 @@
       <Table columns={["order_id", "date", "quantity", "customer"]} items={[]}  />
     {:else if selectedOption === 'inventory'}
       <Table 
-        columns={["Store", "Section", "Row", "Gap", "Date", "Stock"]} 
+        columns={["Store", "Section", "Row", "Gap", "Stock", "Date"]} 
         items={inventory} 
         onRowClick={(item) => goToDetails(item)}
         ifEdit={(item) => false}

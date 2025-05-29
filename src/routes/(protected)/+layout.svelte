@@ -28,23 +28,26 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
   <!-- Sidebar -->
   <aside class={`relative transition-all duration-300 ease-in-out rounded-2xl shadow-xl border-r border-gray-200 bg-white h-full flex flex-col ${collapsed ? 'w-16' : 'w-64'}`}>
 
-    <!-- Header MAY12EURO-->
-    <div class={`flex ${collapsed ? 'flex-col items-center py-4' : 'justify-between px-4 py-4'} `}>
-      {#if collapsed}
-        <button onclick={toggleSidebar} class="text-gray-600 hover:text-black mb-4">
-          ☰
-        </button>
-        <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
-      {:else}
-        <div class="flex items-center gap-2">
+    <!-- Contenedor con scroll -->
+    <div class="flex flex-col h-full overflow-y-auto">
+  
+      <!-- Header -->
+      <div class={`flex ${collapsed ? 'flex-col items-center py-4' : 'justify-between px-4 py-4'} `}>
+        {#if collapsed}
+          <button onclick={toggleSidebar} class="text-gray-600 hover:text-black mb-4">
+            ☰
+          </button>
           <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
-          <span class="text-lg font-bold">NG Manager</span>
-        </div>
-        <button onclick={toggleSidebar} class="text-gray-600 hover:text-black">
-          ☰
-        </button>
-      {/if}
-    </div>
+        {:else}
+          <div class="flex items-center gap-2">
+            <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
+            <span class="text-lg font-bold">NG Manager</span>
+          </div>
+          <button onclick={toggleSidebar} class="text-gray-600 hover:text-black">
+            ☰
+          </button>
+        {/if}
+      </div>
 
     <!-- Main Menu -->
     <div class="mt-4">
@@ -165,6 +168,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
         {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
       </button>
     </form>
+    </div>
     
   </aside>
 
