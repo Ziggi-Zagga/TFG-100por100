@@ -12,7 +12,7 @@ export const createCategory = async ({
 }: {
     name: string;
     description: string;
-    parentId: string;
+    parentId?: string | null;
 }) => {
     if (!name) {
         throw new ServiceError('Category name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
@@ -42,7 +42,7 @@ export const updateCategory = async ({
     id: string;
     name: string;
     description: string;
-    parentId: string;
+    parentId?: string | null;
 }) => {
     if (!id) {
         throw new ServiceError('Category ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });

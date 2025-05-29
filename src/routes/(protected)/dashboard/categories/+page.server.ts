@@ -18,7 +18,7 @@ export const actions: Actions = {
         const formData = await request.formData();
         const name = formData.get('name')?.toString() ?? '';
         const description = formData.get('description')?.toString() ?? '';
-        const parentId = formData.get('parentId')?.toString() ?? '';
+        const parentId = formData.get('parentId')?.toString() ?? null;
 
         try {
             await createCategory({ name, description, parentId });
@@ -48,7 +48,7 @@ export const actions: Actions = {
         const id = formData.get('id')?.toString() ?? '';
         const name = formData.get('name')?.toString() ?? '';
         const description = formData.get('description')?.toString() ?? '';
-        const parentId = formData.get('parentId')?.toString() ?? '';
+        const parentId = formData.get('parentId')?.toString() ?? null;
 
         try {
             await updateCategory({ id, name, description, parentId });
