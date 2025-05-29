@@ -1,7 +1,6 @@
+import { eq, desc, inArray } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { orders, orderItems, products, suppliers, users } from '$lib/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
-
 
 export const getAllOrders = async () => {
 	return await db
@@ -127,4 +126,55 @@ export const getOrdersWithDetails = async () => {
         .leftJoin(suppliers, eq(orders.supplierId, suppliers.id))
         .leftJoin(users, eq(orders.userId, users.id))
         .orderBy(desc(orders.createdAt));
+};
+
+// Obtener órdenes de un usuario específico
+export const getOrdersByUser = async (userId: string) => {
+    const ordersResult = await db
+        .select({
+            id: orders.id,
+            orderNumber: orders.orderNumber,
+            status: orders.status,
+            orderDate: orders.orderDate,
+            expectedArrival: orders.expectedArrival,
+            notes: orders.notes,
+            supplierId: orders.supplierId,
+            supplierName: suppliers.name,
+            createdAt: orders.createdAt,
+            updatedAt: orders.updatedAt
+        })
+        .from(orders)
+        .leftJoin(suppliers, eq(orders.supplierId, suppliers.id))
+        .where(eq(orders.userId, userId))
+        .orderBy(desc(orders.createdAt));
+
+    const orderIds = ordersResult.map(order => order.id);
+    const itemsResult = await db
+        .select({
+            orderId: orderItems.orderId,
+            id: orderItems.id,
+            productId: orderItems.productId,
+            quantity: orderItems.quantity,
+            price: orderItems.price,
+            productName: products.name,
+            productDescription: products.description
+        })
+        .from(orderItems)
+        .leftJoin(products, eq(orderItems.productId, products.id))
+        .where(inArray(orderItems.orderId, orderIds));
+
+    // Agrupar los items por orderId
+    const itemsByOrderId = new Map<string, typeof itemsResult[number][]>();
+    itemsResult.forEach(item => {
+        if (!itemsByOrderId.has(item.orderId)) {
+            itemsByOrderId.set(item.orderId, []);
+        }
+        itemsByOrderId.get(item.orderId)?.push(item);
+    });
+
+    // Combinar los resultados
+    return ordersResult.map(order => ({
+        ...order,
+        items: itemsByOrderId.get(order.id) || []
+    }));
 };

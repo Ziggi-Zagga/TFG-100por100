@@ -14,6 +14,11 @@
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 
 	const { data } = $props();
+	let selectedOption = $state<'orders' | 'inventory'>('orders');
+	const historyOptions = [
+		{ id: 'orders', name: 'Orders' },
+		{ id: 'inventory', name: 'Inventory' }
+	];
 	let id = $state(get(page).params.id);
 	let user = data.user;
 	let isEditing = $state(false);
@@ -175,18 +180,18 @@
 
 		<Header title="User History" subtitle={user.username}>
 			<div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
-				<!--<Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />-->
+				<Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />
 			</div>
 		</Header>
 
 		<!-- TODO: Implement history -->
-		<!--
+		
       {#if selectedOption === 'orders'}
-        <Table columns={["order_id", "date", "quantity", "customer"]} items={[]} />
+        <Table columns={["orderNumber", "supplier", "date", "status"]} items={data.orders} />
       {:else if selectedOption === 'inventory'}
         <Table columns={["movement_id", "date", "stock_change", "location"]} items={[]} />
       {/if}
-      -->
+      
 	</div>
 </section>
 

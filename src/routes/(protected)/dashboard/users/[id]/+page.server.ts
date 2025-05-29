@@ -3,10 +3,10 @@ import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
+import { getOrdersByUser } from '$lib/server/services/orders.service';
 
 export const load: PageServerLoad = async ({ params }) => {
-  const id = params.id;
-  if (!id) throw fail(400, { message: 'Missing user ID' });
+  const { id } = params;
 
   const user = await db.query.users.findFirst({
     where: eq(users.id, id)
@@ -14,10 +14,12 @@ export const load: PageServerLoad = async ({ params }) => {
   if (!user) throw fail(404, { message: 'User not found' });
 
   const roles = await db.query.roles.findMany();
+  const orders = await getOrdersByUser(id);
 
   return {
     user,
-    roles
+    roles,
+    orders
   };
 };
 
