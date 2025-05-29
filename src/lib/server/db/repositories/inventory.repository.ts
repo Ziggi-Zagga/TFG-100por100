@@ -28,41 +28,6 @@ export const repoGetInventoryView = async () => {
         .where(eq(table.products.active, true));
 }
 
-
-export const repoGetAvailableProducts = async () => {
-    const result = await db
-        .select({
-            id: table.products.id,
-            name: table.products.name,
-            code: table.products.code,
-            category: table.categories.name,
-            supplier: table.suppliers.name,
-            manufacturer: table.manufacturers.name
-        })
-        .from(table.products)
-        .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
-        .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
-        .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
-        .where(
-            and(
-                eq(table.products.active, true),
-                notExists(
-                    db
-                        .select()
-                        .from(table.inventory)
-                        .where(eq(table.inventory.productId, table.products.id))
-                )
-            )
-        );
-
-    return result.map((p) => ({
-        ...p,
-        category: p.category ?? undefined,
-        supplier: p.supplier ?? undefined,
-        manufacturer: p.manufacturer ?? undefined
-    }));
-}
-
 export const repoInsertInventoryItem = async ({
     productId,
     storeGapId,
