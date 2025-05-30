@@ -147,3 +147,25 @@ export const getOrdersWithDetails = async () => {
         .leftJoin(users, eq(orders.userId, users.id))
         .orderBy(desc(orders.createdAt));
 };
+
+export const getOrderItemsByProductId = async (productId: string) => {
+    return await db
+        .select({
+            orderItemId: orderItems.id,
+            orderId: orderItems.orderId,
+            productId: orderItems.productId,
+            quantity: orderItems.quantity,
+            price: orderItems.price,
+            discount: orderItems.discount,
+            orderDate: orders.orderDate,
+            orderNumber: orders.orderNumber,
+            productName: products.name,
+            productCode: products.code
+        })
+        .from(orderItems)
+        .leftJoin(orders, eq(orderItems.orderId, orders.id))
+        .leftJoin(products, eq(orderItems.productId, products.id))
+        .where(eq(orderItems.productId, productId))
+        .orderBy(desc(orders.orderDate));
+};
+
