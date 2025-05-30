@@ -2,7 +2,12 @@ import { getUsers, createUser, deletePermanently, getRoles, createRole } from '$
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	// Verificar si el usuario es administrador (rol 1)
+	if (locals.user?.roleId !== '1') {
+		throw redirect(302, '/dashboard?error=unauthorized');
+	}
+
 	const users = await getUsers();
 	const roles = await getRoles();
 	return { users, roles };
@@ -10,8 +15,16 @@ export const load: PageServerLoad = async () => {
 
 
 
+// Función para verificar si el usuario es administrador
+const requireAdmin = (locals: App.Locals) => {
+  if (locals.user?.roleId !== '1') {
+    throw redirect(302, '/dashboard?error=unauthorized');
+  }
+};
+
 export const actions: Actions = {
-	create: async ({ request }) => {
+	create: async ({ request, locals }) => {
+		requireAdmin(locals);
 		const formData = await request.formData();
 		const username = formData.get('username')?.toString() ?? '';
 		const passwordHash = formData.get('password_hash')?.toString() ?? '';
@@ -22,7 +35,8 @@ export const actions: Actions = {
 		throw redirect(303, '/dashboard/users');
 	},
 
-	delete: async ({ request }) => {
+	delete: async ({ request, locals }) => {
+		requireAdmin(locals);
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString();
 		if (!id) return fail(400, { message: 'Missing user ID' });
@@ -36,7 +50,8 @@ export const actions: Actions = {
 		}
 	},
 
-	createRole: async ({ request }) => {
+	createRole: async ({ request, locals }) => {
+		requireAdmin(locals);
 		const formData = await request.formData();
 		const name = formData.get('role_name')?.toString() ?? '';
 		const description = formData.get('role_description')?.toString() ?? '';

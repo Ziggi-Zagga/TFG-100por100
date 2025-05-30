@@ -1,5 +1,33 @@
 <script lang="ts">
+  import { fly, fade, scale, slide } from 'svelte/transition';
+  import { page } from '$app/stores';
   import type { AuthUser } from '$lib/types/auth.types';
+  import Icon from '$lib/components/utilities/Icons/Icon.svelte';
+	import { cubicOut } from 'svelte/easing';
+  
+  // Estado para controlar cuando la animación de apertura ha terminado
+  let isSidebarOpen = $state(true);
+  let isTransitioning = $state(false);
+  let openInventoryMenu = $state(false);
+  
+  // Función para verificar si una ruta está activa
+  function isActive(href: string) {
+    // Si es la ruta de inventory, verificar todas las subrutas relacionadas
+    if (href === '/dashboard/inventory') {
+      return [
+        '/dashboard/inventory',
+        '/dashboard/products',
+        '/dashboard/categories'
+      ].some(route => $page.url.pathname.startsWith(route));
+    }
+    return $page.url.pathname.startsWith(href);
+  }
+  
+  // Función para verificar si un ítem del submenú está activo
+  function isSubmenuActive(href: string) {
+    return $page.url.pathname === href || 
+           ($page.url.pathname.startsWith(href) && href !== '/dashboard/inventory');
+  }
 
   const { data, children } = $props<{
     data: {
@@ -8,10 +36,44 @@
     children: any;
   }>();
   let collapsed = $state(false);
-  let openOrders = $state(false);
-  function toggleSidebar() {
+  // Toggle sidebar with animation control
+  async function toggleSidebar() {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    
+    if (!collapsed) {
+      // Si se está cerrando, ocultar el texto primero
+      isSidebarOpen = false;
+      // Esperar a que termine la animación de desvanecimiento
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+    
     collapsed = !collapsed;
+    
+    if (!collapsed) {
+      // Si se está abriendo, esperar a que el menú se expanda antes de mostrar el texto
+      await new Promise(resolve => setTimeout(resolve, 300));
+      isSidebarOpen = true;
+    }
+    
+    isTransitioning = false;
   }
+  
+  
+  async function toggleInventoryMenu(e: Event) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  
+  if (collapsed) {
+    await toggleSidebar(); 
+  }
+
+  if (!openInventoryMenu) {
+    openInventoryMenu = true;
+  }
+}
+
 </script>
 
 
@@ -26,145 +88,163 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 
 <div class="flex h-screen bg-gray-100 text-gray-800">
   <!-- Sidebar -->
-  <aside class={`relative transition-all duration-300 ease-in-out rounded-2xl shadow-xl border-r border-gray-200 bg-white h-full flex flex-col ${collapsed ? 'w-16' : 'w-64'}`}>
-
-    <!-- Header MAY12EURO-->
-    <div class={`flex ${collapsed ? 'flex-col items-center py-4' : 'justify-between px-4 py-4'} `}>
-      {#if collapsed}
-        <button onclick={toggleSidebar} class="text-gray-600 hover:text-black mb-4">
-          ☰
-        </button>
-        <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
-      {:else}
-        <div class="flex items-center gap-2">
-          <img src="/logo/logo.png" class="w-8 h-8" alt="Logo" />
-          <span class="text-lg font-bold">NG Manager</span>
-        </div>
-        <button onclick={toggleSidebar} class="text-gray-600 hover:text-black">
-          ☰
-        </button>
-      {/if}
-    </div>
-
-    <!-- Main Menu -->
-    <div class="mt-4">
-      <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Main Menu</div>
-      <nav class="mt-2 flex flex-col gap-1">
-        <a href="/dashboard" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="/icons/png/datos.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Dashboard</span>{/if}
-        </a>
-        
-        <a href="/dashboard/inventory" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="/icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Inventory</span>{/if}
-        </a>
-
-        <a href="/dashboard/products" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="/icons/png/paquete.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Products</span>{/if}
-        </a>
-
-        <a href="/dashboard/suppliers" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <!-- DAR CREDITO POR ICONO-->
-          <!--<a href="https://www.freepik.es/icono/convenio_6400287#fromView=search&page=1&position=10&uuid=cbf1714f-be3b-4c77-b38e-e1a3a02526f6">Icono de juicy_fish</a>-->
-          <img src="/icons/png/suppliers.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Suppliers</span>{/if}
-        </a>
-      </nav>
-    </div>
-    <!-- Orders (desplegable)-->
-<div class="px-4">
-  <div
-    role="button"
-    tabindex="0"
-    class="flex items-center justify-between cursor-pointer px-2 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-    onclick={() => openOrders = !openOrders}
-    onkeydown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        openOrders = !openOrders;
-        e.preventDefault();
-      }
-    }}
-    aria-expanded={openOrders}
-    aria-controls="orders-menu"
+  <aside 
+    class="relative rounded-2xl shadow-xl border-r border-gray-200 bg-white h-full flex flex-col overflow-hidden"
+    style={`width: ${collapsed ? '4.5rem' : '14rem'}; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);`}
   >
-    <div class="flex items-center">
-      <img src="/icons/png/datos.png" class="w-8 h-8" alt="Orders" />
-      {#if !collapsed}<span class="ml-3 text-sm font-medium">Orders</span>{/if}
-    </div>
-    {#if !collapsed}
-      <svg
-        class="w-4 h-4 transition-transform ml-2"
-        style:transform={openOrders ? 'rotate(90deg)' : 'rotate(0deg)'}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+    <!-- Header con logo y título que funciona como botón de menú -->
+    <div class="px-4 py-4">
+      <div 
+        onclick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSidebar(); }}
+        class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-lg mt-2 -ml-2"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-    {/if}
-  </div>
-
-  {#if openOrders}
-    <ul class={`ml-10 mt-1 ${collapsed ? 'hidden' : ''}`}>
-      <li>
-        <a href="/dashboard/orders/ordersList" class="block py-1 text-sm text-gray-600 hover:text-blue-700">Order List</a>
-      </li>
-      <li>
-        <a href="/dashboard/orders/tracking" class="block py-1 text-sm text-gray-600 hover:text-blue-700">Tracking</a>
-      </li>
-    </ul>
-  {/if}
-</div>
-
-    <a href="/dashboard/stores" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="/icons/png/stores.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Stores</span>{/if}
-        </a>
-
-    <a href="/dashboard/categories" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="/icons/png/stores.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Categories</span>{/if}
-    </a>    
-
-    <!-- Settings -->
-    <div class="mt-6">
-      <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Settings</div>
-      <nav class="mt-2 flex flex-col gap-1">
-        <a href="/dashboard/users" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <!-- DAR CREDITO POR ICONO -->
-          <img src="/icons/png/users.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Users</span>{/if}
-        </a>
-        <a href="#" class="flex items-center px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-700 transition">
-          <img src="/icons/png/ajuste.png" class="w-8 h-8" alt="Logo" />
-          {#if !collapsed}<span class="ml-3 text-sm font-medium">Settings</span>{/if}
-        </a>
-      </nav>
-    </div>
-
-    <!-- Spacer -->
-    <div class="flex-grow"></div>
-
-    <!-- User Panel -->
-    <div class="px-4 py-3 border-t border-gray-200 flex items-center gap-3">
-      <img src="/logo/logo.png" alt="User" class="w-8 h-8 rounded-full" />
-      {#if !collapsed}
-        <div>
-          <div class="text-sm font-semibold">{data.user.username}</div>
-          <div class="text-xs text-gray-500 capitalize">{data.user.role}</div>
+        <div class="w-12 h-15 flex-shrink-0 flex items-center justify-center">
+          <img 
+            src="/logo/logo.png" 
+            class="w-13 h-16 object-contain " 
+            alt="Logo"
+            style="transition: none;"
+          />
         </div>
-      {/if}
+        <span 
+          class="text-lg font-bold whitespace-nowrap overflow-hidden text-ellipsis"
+          in:fade={{ duration: 200 }}
+          out:fade={{ duration: 100 }}
+          style="opacity: {isSidebarOpen ? 1 : 0}; transition: opacity 200ms ease-out;"
+        >
+          NG Manager
+        </span>
+      </div>
     </div>
 
-    <!-- Logout -->
-    <form method="POST" action="/logout" class="w-full">
-      <button type="submit" class="mt-2 px-4 py-2 w-full flex items-center text-black bg-indigo-200 hover:bg-indigo-300 transition">
-        <img src="/icons/png/salida-de-emergencia.png" class="w-8 h-8" alt="Logout" />
-        {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
-      </button>
-    </form>
+    <!-- Contenedor principal del menú con scroll -->
+    <div class="flex-1 overflow-y-auto">
+      <!-- Main Menu -->
+      <div class="mt-2">
+        <div 
+          class="text-xs text-gray-400 px-4 uppercase tracking-wider overflow-hidden"
+          in:slide={{ duration: 300, delay: 150, easing: cubicOut }}
+          out:slide={{ duration: 200, easing: cubicOut }}
+          style="display: {!collapsed ? 'block' : 'none'}"
+        >
+        
+        </div>
+        <nav class="flex flex-col gap-1">
+          <!-- Dashboard -->
+          <a 
+            href="/dashboard"
+            class={`flex items-center px-4 py-2 rounded-md transition cursor-pointer ${$page.url.pathname === '/dashboard' ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`}
+          >
+            <img src="/icons/svg/dashboard.svg" class="w-8 h-8" alt="Dashboard" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">Dashboard</span>{/if}
+          </a>
+
+          <!-- Menú de Inventory -->
+          <div>
+            <button 
+              type="button"
+              class={`flex items-center justify-between w-full px-4 py-2 rounded-md transition cursor-pointer ${isActive('/dashboard/inventory') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`}
+              onclick={toggleInventoryMenu}
+              aria-expanded={openInventoryMenu}
+              aria-controls="inventory-submenu"
+            >
+              <div class="flex items-center">
+                <img src="/icons/svg/box.svg" class="w-8 h-8" alt="Storage" />
+                {#if !collapsed}<span class="ml-3 text-sm font-medium">Storage</span>{/if}
+              </div>
+              {#if !collapsed}
+                <div class:rotate-90={openInventoryMenu} class="transition-transform">
+                  <Icon icon="right" size={16} />
+                </div>
+              {/if}
+            </button>
+            
+            <!-- Submenú desplegable -->
+            {#if openInventoryMenu && !collapsed}
+              <div id="inventory-submenu" class="ml-8 mt-1 space-y-1">
+                <a 
+                  href="/dashboard/inventory" 
+                  class="flex items-center px-4 py-2 text-sm rounded-md transition hover:bg-blue-200 hover:text-blue-900"
+                  class:bg-blue-200={isSubmenuActive('/dashboard/inventory')}
+                  class:text-blue-900={isSubmenuActive('/dashboard/inventory')}
+                  
+                >
+                  <span class="w-2 h-2 rounded-full bg-blue-500 mr-3"></span>
+                  <span>Inventory</span>
+                </a>
+                <a 
+                  href="/dashboard/products" 
+                  class="flex items-center px-4 py-2 text-sm rounded-md transition hover:bg-blue-200 hover:text-blue-900"
+                  class:bg-blue-200={isSubmenuActive('/dashboard/products')}
+                  class:text-blue-900={isSubmenuActive('/dashboard/products')}
+                >
+                  <span class="w-2 h-2 rounded-full bg-blue-500 mr-3"></span>
+                  <span>Products</span>
+                </a>
+                <a 
+                  href="/dashboard/categories" 
+                  class="flex items-center px-4 py-2 text-sm rounded-md transition hover:bg-blue-200 hover:text-blue-900"
+                  class:bg-blue-200={isSubmenuActive('/dashboard/categories')}
+                  class:text-blue-900={isSubmenuActive('/dashboard/categories')}
+                >
+                  <span class="w-2 h-2 rounded-full bg-blue-500 mr-3"></span>
+                  <span>Categories</span>
+                </a>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Suppliers -->
+          <a href="/dashboard/suppliers" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/suppliers') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/suppliers') ? 'page' : undefined}>
+            <img src="/icons/svg/suppliers.svg" class="w-8 h-8" alt="Suppliers" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">Suppliers</span>{/if}
+          </a>
+
+          <!-- Orders (enlace directo) -->
+          <a href="/dashboard/orders/ordersList" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/orders') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/orders') ? 'page' : undefined}>
+            <img src="/icons/svg/orders.svg" class="w-8 h-8" alt="Orders" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">Orders</span>{/if}
+          </a>
+
+          <a href="/dashboard/stores" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/stores') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/stores') ? 'page' : undefined}>
+            <img src="/icons/svg/stores.svg" class="w-8 h-8" alt="Stores" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">Stores</span>{/if}
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Sección fija en la parte inferior -->
+    <div class="mt-auto border-t border-gray-200">
+      <!-- Settings -->
+      <div class="py-2">
+        <!--
+        <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Settings</div>
+        -->
+        <nav class="mt-1 flex flex-col gap-1">
+          <a href="/dashboard/users" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/users') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/users') ? 'page' : undefined}>
+            <img src="/icons/svg/users.svg" class="w-8 h-8" alt="Users" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">Users</span>{/if}
+          </a>
+          <!--
+          <a href="/dashboard/settings" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/settings') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/settings') ? 'page' : undefined}>
+            <img src="/icons/png/ajuste.png" class="w-8 h-8" alt="Settings" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">Settings</span>{/if}
+          </a>
+          -->
+        </nav>
+      </div>
+
+      
+
+      <!-- Logout -->
+      <form method="POST" action="/logout" class="w-full">
+        <button type="submit" class="px-4 py-2 w-full flex items-center text-black hover:bg-blue-100 hover:text-blue-700 transition">
+          <img src="/icons/svg/logout.svg" class="w-8 h-8" alt="Logout" />
+          {#if !collapsed}<span class="ml-3 text-sm font-medium">Logout</span>{/if}
+        </button>
+      </form>
+    </div>
     
   </aside>
 

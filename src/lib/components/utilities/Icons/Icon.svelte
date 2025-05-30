@@ -23,6 +23,7 @@
 	import SpaceIcon from './SpaceIcon.svelte';
 	import TodoIcon from './TodoIcon.svelte';
 	import CancelledIcon from './CancelledIcon.svelte';
+	import MenuIcon from './Menu.svelte';
 	
 	const {
 		icon,
@@ -102,4 +103,7 @@
 {/if}
 {#if icon === 'cancelled'}
 	<CancelledIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'menu'}
+	<MenuIcon {size} {extraStyles} />
 {/if}

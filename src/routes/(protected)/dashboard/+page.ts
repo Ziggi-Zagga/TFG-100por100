@@ -9,7 +9,7 @@ export const load = async () => {
             { title: "Total Incidents", value: 1204, change: "5.2%", color: "bg-blue-200", route: "dashboard/incidents" },
             { title: "Resolved Incidents", value: 984, change: "4.7%", color: "bg-indigo-200", route: "dasboards/incidents/resolved" },
             { title: "Products in Stock", value: 3210, change: "1.1%", color: "bg-violet-200", route: "dashboard/inventory" },
-            { title: "Total Orders", value: 75, change: "-2.5%", color: "bg-purple-200", route: "dashboard/orders" },
+            { title: "Total Orders", value: 75, change: "-2.5%", color: "bg-purple-200", route: "dashboard/orders/ordersList" },
         ],
         topProducts: [
             { name: "Product A", sku: "A123", sold: 1200, stock: 30 },

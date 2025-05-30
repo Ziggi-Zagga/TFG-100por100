@@ -63,11 +63,27 @@ export const handle: Handle = async ({ event, resolve }) => {
       event.locals.session = session;
 
     
-      if (event.url.pathname.startsWith('/dashboard/users')) {
-        if (roleId !== '1') { 
-          throw redirect(302, '/dashboard?error=unauthorized');
-        }
+      // Verificar acceso a rutas protegidas
+    if (event.url.pathname.startsWith('/(protected)')) {
+      if (!user) {
+        throw redirect(302, '/onboarding/login?redirect=' + encodeURIComponent(event.url.pathname));
       }
+      
+      // Verificar acceso a rutas de administración (solo rol 1 = admin)
+      const adminRoutes = [
+        '/dashboard/users',
+        '/dashboard/users/'
+      ];
+      
+      // Verificar si la ruta actual requiere ser admin
+      const isAdminRoute = adminRoutes.some(route => 
+        event.url.pathname.startsWith(route)
+      );
+      
+      if (isAdminRoute && roleId !== '1') {
+        throw redirect(302, '/dashboard?error=unauthorized');
+      }
+    }
     } else {
       event.cookies.delete('auth-session', { path: '/' });
       event.locals.user = null;

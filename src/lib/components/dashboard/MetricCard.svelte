@@ -2,9 +2,9 @@
     export let title: string;
     export let value: number;
     export let change: string;
-    export let color: string; // ejemplo: "bg-blue-200"
+    export let color: string; 
     export let textColor: string = "text-black";
-    export let route: string; // ejemplo: "/incidents"
+    export let route: string; 
   </script>
   
   <a
@@ -18,7 +18,6 @@
   <div>
     <h2 class="text-sm font-semibold opacity-70">{title}</h2>
     <p class="text-3xl font-bold">{value}</p>
-    <p class="text-xs opacity-60">Change: {change}</p>
   </div>
 
 
