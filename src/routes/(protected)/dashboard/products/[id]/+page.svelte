@@ -16,18 +16,16 @@
   let id: string;
   let product = data.product;
   let isEditing = $state(false);
-  let activeText: string;
 
   let suppliers = $state([...data.suppliers]);
   let manufacturers = $state([...data.manufacturers]);
   let categories = $state([...data.categories]);
+  let inventory = $state([...data.inventory]);
 
   let showConfirm = $state(false);
 
   onMount(() => {
     id = page.params.id;
-    activeText = product.active ? 'Yes' : 'No';
-
     const urlParams = new URLSearchParams(page.url.search);
     if (urlParams.get('edit') === 'true') {
         isEditing = true;
@@ -36,6 +34,10 @@
 
   function toggleEdit() {
     isEditing = !isEditing;
+  }
+
+  function goToDetails(item: any) {
+    goto(`/dashboard/inventory/${item.id}`);
   }
 
   async function confirmDeletion() {
@@ -158,7 +160,7 @@
       </div>
     </div>
 
-    <Header title={selectedOption === 'orders' ? 'Order History' : 'Inventory History'} subtitle={product.name}>
+    <Header title={selectedOption === 'orders' ? 'Order History' : 'Inventory'} subtitle={product.name}>
       <div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
         <Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />
       </div>
@@ -167,7 +169,13 @@
     {#if selectedOption === 'orders'}
       <Table columns={["order_id", "date", "quantity", "customer"]} items={[]}  />
     {:else if selectedOption === 'inventory'}
-      <Table columns={["movement_id", "date", "stock_change", "location"]} items={[]} />
+      <Table 
+        columns={["Store", "Section", "Row", "Gap", "Stock", "Date"]} 
+        items={inventory} 
+        onRowClick={(item) => goToDetails(item)}
+        ifEdit={(item) => false}
+        ifDelete={(item) => false}
+      />
     {/if}
   </div>
 </section>

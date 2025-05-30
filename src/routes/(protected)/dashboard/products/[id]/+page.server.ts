@@ -20,6 +20,7 @@ export const load: PageServerLoad = async ({ params }) => {
   const supplierName = await prod.getSuppliersById(product.supplierId ?? '');
   const manufacturerName = await prod.getManufacturersById(product.manufacturerId ?? '');
   const categoryName = await prod.getCategoriesById(product.categoryId ?? '');
+  const inventory = await prod.getProductFromInventoryById(product.id ?? '');
 
   return {
     product,
@@ -28,7 +29,8 @@ export const load: PageServerLoad = async ({ params }) => {
     categories,
     supplierName,
     manufacturerName,
-    categoryName
+    categoryName,
+    inventory
   };
 };
 
@@ -48,10 +50,6 @@ export const actions: Actions = {
     const dimensions = formData.get('dimensions')?.toString() ?? '';
     const material = formData.get('material')?.toString() ?? '';
     const specifications = formData.get('specifications')?.toString() ?? '';
-
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
   
     await prod.updateProduct({
       id,

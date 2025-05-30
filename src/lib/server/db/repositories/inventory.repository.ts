@@ -28,41 +28,6 @@ export const repoGetInventoryView = async () => {
         .where(eq(table.products.active, true));
 }
 
-
-export const repoGetAvailableProducts = async () => {
-    const result = await db
-        .select({
-            id: table.products.id,
-            name: table.products.name,
-            code: table.products.code,
-            category: table.categories.name,
-            supplier: table.suppliers.name,
-            manufacturer: table.manufacturers.name
-        })
-        .from(table.products)
-        .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
-        .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
-        .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
-        .where(
-            and(
-                eq(table.products.active, true),
-                notExists(
-                    db
-                        .select()
-                        .from(table.inventory)
-                        .where(eq(table.inventory.productId, table.products.id))
-                )
-            )
-        );
-
-    return result.map((p) => ({
-        ...p,
-        category: p.category ?? undefined,
-        supplier: p.supplier ?? undefined,
-        manufacturer: p.manufacturer ?? undefined
-    }));
-}
-
 export const repoInsertInventoryItem = async ({
     productId,
     storeGapId,
@@ -121,6 +86,31 @@ export const repoUpdateInventoryItem = async ({
         updatedAt: updatedAt ?? new Date(),
     }).where(eq(table.inventory.id, id));
 }
+
+export const repoGetInventoryByProductId = async (productId: string) => {
+    return db.select().from(table.inventory).where(eq(table.inventory.productId, productId));
+}
+
+export const repoGetInventoryWithFullLocationByProductId = async (productId: string) => {
+    return await db
+      .select({
+        id: table.inventory.id,
+        productId: table.inventory.productId,
+        Stock: table.inventory.quantity,
+        Date: table.inventory.createdAt,
+        Gap: table.storeGaps.name,
+        Row: table.storeRows.name,
+        Section: table.sections.name,
+        Store: table.stores.name
+      })
+      .from(table.inventory)
+      .innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
+      .innerJoin(table.storeRows, eq(table.storeGaps.rowId, table.storeRows.id))
+      .innerJoin(table.sections, eq(table.storeRows.sectionId, table.sections.id))
+      .innerJoin(table.stores, eq(table.sections.storeId, table.stores.id))
+      .where(eq(table.inventory.productId, productId));
+  };
+  
 
 export const repoDeleteInventoryItem = async (id: string) => {
     return db.delete(table.inventory).where(eq(table.inventory.id, id));

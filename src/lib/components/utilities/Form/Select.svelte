@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	
+
 	let {
 		label,
-		value = $bindable<string>(),
+		value = $bindable<string | null>(),
 		name,
 		options = [],
 		required = false,
@@ -16,7 +16,7 @@
 		...rest
 	}: {
 		label?: string;
-		value?: string;
+		value?: string | null;
 		name?: string;
 		options?: Array<{ id: string; name: string; code?: string }>;
 		required?: boolean;
@@ -24,12 +24,16 @@
 		size?: 'sm' | 'md' | 'lg';
 		error?: string;
 		extraStyles?: string;
-		onValueChange?: (val: string) => void;
+		onValueChange?: (val: string | null) => void;
 		extraClass?: string;
 		placeholder?: string;
 	} = $props();
 
-	$effect(() => onValueChange?.(value));
+	// Para que no envie "" cuando se selecciona la opción por defecto
+	$effect(() => {
+		if (value === '') value = null;
+		onValueChange?.(value);
+	});
 </script>
 
 <div class="flex flex-col gap-1.5">
@@ -64,10 +68,7 @@
 				disabled && 'bg-gray-100'
 			)}
 		>
-			<option disabled value="" selected={value === ''}>
-				Select an option
-			</option>
-
+			<option value="">-- Select an option --</option>
 			{#each options as option}
 				<option value={option.id}>{option.name}</option>
 			{/each}

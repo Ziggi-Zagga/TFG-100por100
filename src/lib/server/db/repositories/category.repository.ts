@@ -23,7 +23,7 @@ export const insertCategory = async ({
     id: string;
     name: string;
     description: string;
-    parentId: string;
+    parentId?: string | null;
 }) => {
     await db.insert(categories).values({
         id,
@@ -46,7 +46,7 @@ export const repoUpdateCategory = async ({
     id: string;
     name: string;
     description: string;
-    parentId: string;
+    parentId?: string | null;
 }) => {
     await db.update(categories).set({
         name,

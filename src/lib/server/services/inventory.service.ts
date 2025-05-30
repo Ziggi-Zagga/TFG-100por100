@@ -1,6 +1,5 @@
 import {
 	repoGetInventoryView,
-	repoGetAvailableProducts,
 	repoInsertInventoryItem,
 	repoDeleteInventoryItem,
 	repoGetInventoryById,
@@ -12,11 +11,11 @@ import { getSuppliersById } from '$lib/server/db/repositories/supplier.repositor
 import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.repository';
 
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
-import { repoGetProductById } from '../db/repositories/products.repository';
+import { getFullProductsList, repoGetProductById } from '../db/repositories/products.repository';
 
 export const getInventoryData = async () => {
 	const items = await repoGetInventoryView();
-	const safeAvailableProducts = await repoGetAvailableProducts();
+	const safeAvailableProducts = await getFullProductsList();
 	const fullStoreTree = await getFullStoresTree();
 	
 	return {
