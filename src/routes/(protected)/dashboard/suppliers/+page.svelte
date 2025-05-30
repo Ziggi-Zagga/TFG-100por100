@@ -236,7 +236,7 @@
 		<div class="w-full md:flex-1">
 			<SearchBar bind:search placeholder="Search by name, email, contact..." />
 		</div>
-		<div class="-mt-6 flex w-full justify-end md:w-auto">
+		<div class="flex w-full justify-end md:w-auto">
 			<div class="px-5">
 				<Button onclick={() => (isSuppliers = false)} variant="primary" size="md" extraStyles="w-full md:w-auto">
 					{@html '<span class="hidden md:inline">Manufacturers</span>'}
