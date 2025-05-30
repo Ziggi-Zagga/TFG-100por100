@@ -9,6 +9,7 @@
   import Select from '$lib/components/utilities/Form/Select.svelte';
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
   import type { Supplier, Manufacturer, Category, Product } from '$lib/types/products.types.js';
+  import { formatCurrency } from '$lib/components/helpers/currencies';
 
   const { data } = $props();
   let productsCopy = $state<Product[]>([...data.products]);
@@ -89,7 +90,10 @@
 
   <Table
     columns={['code', 'name', 'price', 'unit', 'material']}
-    items={filteredProducts()}
+    items={filteredProducts().map(p => ({
+      ...p,
+      price: formatCurrency(p.price || 0)
+    }))}
     onRowClick={(item) => goToProductDetails(item, '')}
     onEdit={(item) => goToProductDetails(item, '?edit=true')}
     onDelete={(item) => askDelete(item.id, item.name)}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount } from 'svelte';
+  import { currency } from '$lib/components/helpers/currencies';
   import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
@@ -144,7 +145,7 @@
         </Modal>
         {/if}
           <h2 class="text-4xl font-bold text-gray-800">{product.name}</h2>
-          <p class="text-indigo-600 text-2xl mt-1">${product.price?.toFixed(2) ?? 'N/A'}</p>
+          <p class="text-indigo-600 text-2xl mt-1">{product.price ? `${product.price.toFixed(2)} ${currency}` : 'N/A'}</p>
           <ShowText label="Description" value={product.description} />
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <ShowText label="Unit" value={product.unit} />

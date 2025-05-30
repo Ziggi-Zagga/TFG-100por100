@@ -6,6 +6,7 @@ import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 import Table from '$lib/components/utilities/table/Table.svelte';
 import type { Product, Supplier } from '$lib/types/products.types';
 import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+import { currency } from '$lib/components/helpers/currencies';
 
 let { 
   onClose = () => {}, 
@@ -108,8 +109,19 @@ function handleProductChange(item: any, field: string, value: any) {
   const price = field === 'price' ? updatedItem[field] : updatedItem.price;
   const discount = field === 'discount' ? updatedItem[field] : (updatedItem.discount || 0);
   
-  updatedItem.total = (quantity * price) * (1 - (discount / 100));
-  updatedItem.total = parseFloat(updatedItem.total.toFixed(2)); // Redondear a 2 decimales
+  // Calcular subtotal (precio * cantidad)
+  updatedItem.subtotal = quantity * price;
+  
+  // Calcular descuento en valor absoluto
+  updatedItem.discountValue = updatedItem.subtotal * (discount / 100);
+  
+  // Calcular total (subtotal - descuento)
+  updatedItem.total = updatedItem.subtotal - updatedItem.discountValue;
+  
+  // Redondear a 2 decimales
+  updatedItem.subtotal = parseFloat(updatedItem.subtotal.toFixed(2));
+  updatedItem.discountValue = parseFloat(updatedItem.discountValue.toFixed(2));
+  updatedItem.total = parseFloat(updatedItem.total.toFixed(2));
 
   if (oldValue === updatedItem[field] && 
       (!updatedProducts[itemIndex].total || 
@@ -246,14 +258,46 @@ function closeModal() {
             quickSearch={true}
           />
 
-          <Table
-            columns={productColumns}
-            items={selectedProducts}
-            columnTypes={productColumnTypes}
-            onCellChange={handleProductChange}
-            onDelete={(item) => handleDeleteProduct(item.id)}
-            ifEdit={(item) => false}
-          />
+          <div class="overflow-x-auto">
+            <Table
+              columns={productColumns}
+              items={selectedProducts}
+              columnTypes={productColumnTypes}
+              onCellChange={handleProductChange}
+              onDelete={(item) => handleDeleteProduct(item.id)}
+              ifEdit={(item) => false}
+            />
+            
+            <!-- Summary Table -->
+            {#if selectedProducts.length > 0}
+              <div class="mt-6 w-full max-w-2xl ml-auto">
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200">
+                      <tr class="bg-gray-50">
+                        <td class="px-6 py-3 text-sm font-medium text-gray-900">Subtotal</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-500">
+                          {selectedProducts.reduce((sum, item) => sum + (item.subtotal || 0), 0).toFixed(2)} {currency}
+                        </td>
+                      </tr>
+                      <tr class="bg-white">
+                        <td class="px-6 py-3 text-sm font-medium text-gray-900">Discount</td>
+                        <td class="px-6 py-3 text-right text-sm text-red-600">
+                          -{selectedProducts.reduce((sum, item) => sum + (item.discountValue || 0), 0).toFixed(2)} {currency}
+                        </td>
+                      </tr>
+                      <tr class="bg-gray-50">
+                        <td class="px-6 py-3 text-base font-bold text-gray-900">Total</td>
+                        <td class="px-6 py-3 text-right text-base font-bold text-gray-900">
+                          {selectedProducts.reduce((sum, item) => sum + (item.total || 0), 0).toFixed(2)} {currency}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            {/if}
+          </div>
 
           <div class="flex justify-end gap-4 pt-4">
             <Button

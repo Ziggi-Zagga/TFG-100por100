@@ -3,6 +3,7 @@
   import Modal from '$lib/components/utilities/Modal/Modal.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
   import type { Supplier } from '$lib/types/products.types';
+  import { currency,formatCurrency } from '$lib/components/helpers/currencies';
 
   let { isOpen = $bindable<boolean>(), order, onClose, supplier } = $props<{
     isOpen?: boolean;
@@ -29,36 +30,39 @@
   }
 
   function calculateSubtotal(products: any[]) {
-    if (!products || !products.length) return 0;
-    return products.reduce((total: number, item: any) => {
+    if (!products || !products.length) return '0.00';
+    const subtotal = products.reduce((total: number, item: any) => {
       const price = parseFloat(item.price || 0);
       const quantity = parseFloat(item.quantity || 0);
       return total + (price * quantity);
-    }, 0).toFixed(2);
+    }, 0);
+    return formatCurrency(subtotal);
   }
 
   function calculateDiscounts(products: any[]) {
-    if (!products || !products.length) return 0;
-    return products.reduce((total: number, item: any) => {
+    if (!products || !products.length) return '0.00';
+    const totalDiscount = products.reduce((total: number, item: any) => {
       const price = parseFloat(item.price || 0);
       const quantity = parseFloat(item.quantity || 0);
       const discount = parseFloat(item.discount || 0);
       const subtotal = price * quantity;
       const discountAmount = subtotal * (discount / 100);
       return total + discountAmount;
-    }, 0).toFixed(2);
+    }, 0);
+    return formatCurrency(totalDiscount);
   }
 
   function calculateTotal(products: any[]) {
-    if (!products || !products.length) return 0;
-    return products.reduce((total: number, item: any) => {
+    if (!products || !products.length) return '0.00';
+    const total = products.reduce((total: number, item: any) => {
       const price = parseFloat(item.price || 0);
       const quantity = parseFloat(item.quantity || 0);
       const discount = parseFloat(item.discount || 0);
       const subtotal = price * quantity;
       const discountAmount = subtotal * (discount / 100);
       return total + (subtotal - discountAmount);
-    }, 0).toFixed(2);
+    }, 0);
+    return formatCurrency(total);
   }
 
   const productColumns = ['code', 'name', 'quantity', 'price', 'discount', 'total'];
@@ -86,16 +90,16 @@
       const discount = parseFloat(item.discount || 0);
       const subtotal = price * quantity;
       const discountAmount = subtotal * (discount / 100);
-      const total = (subtotal - discountAmount).toFixed(2);
+      const total = subtotal - discountAmount;
       
       return {
         ...item,
         code: item.code || 'N/A',
         name: item.name || 'Unnamed Product',
-        price: price.toFixed(2) + ' €',
+        price: formatCurrency(price),
         quantity: quantity.toString(),
         discount: discount > 0 ? `${discount}%` : '0%',
-        total: total + ' €',
+        total: formatCurrency(total),
         _rowClass: 'hover:bg-gray-50',
         _cellClass: {
           price: 'font-mono',
@@ -190,17 +194,17 @@
                 <div class="w-full max-w-md">
                   <div class="flex justify-between py-1">
                     <span class="text-sm font-medium text-gray-700">Subtotal:</span>
-                    <span class="text-sm text-gray-900">{calculateSubtotal(order.products)} €</span>
+                    <span class="text-sm text-gray-900">{calculateSubtotal(order.products)}</span>
                   </div>
                   {#if hasDiscounts(order.products)}
                     <div class="flex justify-between py-1">
                       <span class="text-sm font-medium text-gray-700">Discounts:</span>
-                      <span class="text-sm text-red-600">-{calculateDiscounts(order.products)} €</span>
+                      <span class="text-sm text-red-600">-{calculateDiscounts(order.products)}</span>
                     </div>
                   {/if}
                   <div class="flex justify-between pt-2 mt-2 border-t border-gray-200">
                     <span class="text-base font-semibold text-gray-900">Total:</span>
-                    <span class="text-base font-semibold text-gray-900">{calculateTotal(order.products)} €</span>
+                    <span class="text-base font-semibold text-gray-900">{calculateTotal(order.products)}</span>
                   </div>
                 </div>
               </div>
