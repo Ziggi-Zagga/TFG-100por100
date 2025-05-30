@@ -74,6 +74,7 @@
 		items={filteredUsers()}
 		onRowClick={(item) => goToDetails(item)}
 		onDelete={(item) => handleDelete(item.id)}
+		ifEdit={() => false}
 	/>
 
 	<!-- DRAWER -->

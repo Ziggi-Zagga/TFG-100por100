@@ -296,3 +296,11 @@ export const getProductsBySupplierId = async (supplierId: string) => {
     }
     return await productRepo.getProductsBySupplier(supplierId);
 };
+
+export const getOrdersByUser = async (userId: string) => {
+    if (!userId) {
+        throw new Error('User ID is required');
+    }
+    return await orderRepo.getOrdersByUser(userId);
+};
+
