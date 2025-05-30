@@ -187,9 +187,10 @@
 		<!-- TODO: Implement history -->
 		
       {#if selectedOption === 'orders'}
-        <Table columns={["orderNumber", "supplier", "date", "status"]} items={data.orders} />
+			{console.log(data.orders)}
+        <Table columns={["orderNumber", "supplierName", "createdAt", "status"]} ifEdit={() => false} ifDelete={() => false} items={data.orders} onRowClick={(item) => goto(`/dashboard/orders/ordersList?id=${item.id}`)}/>
       {:else if selectedOption === 'inventory'}
-        <Table columns={["movement_id", "date", "stock_change", "location"]} items={[]} />
+        <Table columns={["movement_id", "date", "stock_change", "location"]} ifEdit={() => false} ifDelete={() => false} items={[]} />
       {/if}
       
 	</div>
