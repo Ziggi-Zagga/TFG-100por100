@@ -21,6 +21,10 @@
 	let showDeleteDialog = $state(false);
 	let orderToDelete: { id: string, orderNumber: string } | null = $state(null);
 
+	// Estados para la ordenación
+	let sortColumn = $state<string | null>('orderDate');
+	let sortDirection = $state<'asc' | 'desc'>('desc');
+
 	let formData = $state({
 		orderNumber: '',
 		supplierId: '',
@@ -117,15 +121,55 @@
     }
 }
 
-	const filteredOrders = $derived(() =>
-		orders.filter(
-			(order) =>
-				order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
-				order.status.toLowerCase().includes(search.toLowerCase())
-		)
-	);
+	const filteredAndSortedOrders = $derived(() => {
+		let result = [...orders];
 
-	async function handleStatusChange(order: any, column: string, newStatus: string) {
+		// Aplicar búsqueda
+		if (search) {
+			const searchTerm = search.toLowerCase();
+			result = result.filter(
+				(order) =>
+					order.orderNumber?.toLowerCase().includes(searchTerm) ||
+					order.status?.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		// Aplicar ordenación
+		if (sortColumn) {
+			result.sort((a, b) => {
+				let aValue = a[sortColumn as keyof typeof a];
+				let bValue = b[sortColumn as keyof typeof b];
+
+				// Manejar valores nulos o indefinidos
+				if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+				if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+
+				// Convertir a string para comparación
+				aValue = String(aValue).toLowerCase();
+				bValue = String(bValue).toLowerCase();
+
+				// Ordenar según la dirección
+				if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+				if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+				return 0;
+			});
+		}
+
+		return result;
+	});
+
+	async function handleSort(column: string) {
+	if (sortColumn === column) {
+		// Cambiar dirección si se hace clic en la misma columna
+		sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+	} else {
+		// Ordenar por nueva columna en orden ascendente
+		sortColumn = column;
+		sortDirection = 'asc';
+	}
+}
+
+async function handleStatusChange(order: any, column: string, newStatus: string) {
 		const oldStatus = order[column];
 		
 		try {
@@ -277,37 +321,40 @@
 </script>
 
 <section class="min-h-screen w-full bg-gradient-to-b from-gray-50 to-blue-50 p-8">
-	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`} />
-
-	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
-		<div class="w-full md:flex-1">
-			<SearchBar bind:search placeholder="Search by order number or status..." />
+	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`}>	
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-72 md:flex-[3] lg:flex-[4]">
+				<SearchBar bind:search placeholder="Search by order number or status..." extraClasses="w-full" />
+			</div>
+			<div class="w-full md:w-auto">
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					Add Order
+				</Button>
+			</div>
 		</div>
-		<div class="-mt-6 flex w-full justify-end md:w-auto">
-			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-				Add Order
-			</Button>
-		</div>
-	</div>
-
+	</PageHeader>
 	<Table
 		columns={ordersColumns}
 		columnTypes={ordersColumnTypes}
-		items={filteredOrders()}
+		items={filteredAndSortedOrders()}
 		onRowClick={(item: any) => handleViewOrder(item)}
 		onDelete={confirmDelete}
 		onCellChange={handleStatusChange}
+		onSort={handleSort}
+		sortable={true}
+		sortColumn={sortColumn}
+		sortDirection={sortDirection}
 		ifEdit={() => false}
 		
 	/>
-
+	{#if showDrawer}
 	<CreateOrders
-		isOpen={showDrawer}
 		suppliers={suppliers}
 		products={products}
 		onClose={closeDrawer}
 		onSubmit={handleSubmit}
 	/>
+	{/if}
 	{#if showOrderDetails}
 		<OrderDetails
 			bind:isOpen={showOrderDetails}

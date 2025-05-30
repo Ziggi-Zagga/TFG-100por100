@@ -24,6 +24,7 @@
 	import TodoIcon from './TodoIcon.svelte';
 	import CancelledIcon from './CancelledIcon.svelte';
 	import MenuIcon from './Menu.svelte';
+	import ArrowIcon from './Arrow.svelte';
 	
 	const {
 		icon,
@@ -106,4 +107,7 @@
 {/if}
 {#if icon === 'menu'}
 	<MenuIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'arrow'}
+	<ArrowIcon {size} {extraStyles} />
 {/if}

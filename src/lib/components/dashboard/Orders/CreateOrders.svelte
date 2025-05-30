@@ -5,14 +5,16 @@ import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 import Table from '$lib/components/utilities/table/Table.svelte';
 import type { Product, Supplier } from '$lib/types/products.types';
+import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 
 let { 
-  isOpen = false, 
   onClose = () => {}, 
   onSubmit = () => {}, 
   suppliers = [], 
   products = [] 
-} = $props<{isOpen?: boolean, onClose?: () => void, onSubmit?: (data: any) => Promise<void>, suppliers?: Supplier[], products?: Product[]}>();
+} = $props<{onClose?: () => void, onSubmit?: (data: any) => Promise<void>, suppliers?: Supplier[], products?: Product[]}>();
+
+let isLoading = $state(false);
 
 let formData = $state({
   supplierId: '',
@@ -126,6 +128,8 @@ function handleDeleteProduct(productId: string) {
 async function handleSubmit(e: SubmitEvent) {
   e.preventDefault();
   
+  if (isLoading) return; // Evitar múltiples envíos
+  
   // Validate required fields
   if (!formData.supplierId) {
     alert('Please select a supplier');
@@ -136,6 +140,8 @@ async function handleSubmit(e: SubmitEvent) {
     alert('Please add at least one product');
     return;
   }
+  
+  isLoading = true;
   
   try {
     // Prepare the order data
@@ -149,12 +155,18 @@ async function handleSubmit(e: SubmitEvent) {
       }))
     };
     
-    // Call the parent's onSubmit with the order data
+    // Cerrar el modal antes de esperar a que termine el envío
+    onClose();
+    
+    // Llamar a onSubmit después de cerrar el modal para evitar problemas de sincronización
     await onSubmit(orderData);
     
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('Error submitting form. Please try again.');
+    // No mostramos alerta aquí ya que el modal se cerró
+    throw error; // Re-lanzamos el error para que el componente padre pueda manejarlo si es necesario
+  } finally {
+    isLoading = false;
   }
 }
 
@@ -162,19 +174,7 @@ function closeModal() {
   onClose();
 }
 </script>
-{#if isOpen}
-  <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex min-h-screen items-center justify-center p-4">
-      <button 
-        type="button" 
-        class="fixed inset-0 w-full h-full bg-black/30 cursor-default focus:outline-none" 
-        onclick={closeModal}
-        aria-label="Close modal"
-      ></button>
-      <div class="relative w-full max-w-4xl rounded-xl bg-white p-6 shadow-2xl">
-        <div class="mb-6 flex items-center justify-between">
-          <h2 class="text-2xl font-bold">➕ Create New Order</h2>
-        </div>
+<Modal title="Create New Order" size="lg" onClose={onClose}>
 
         <form onsubmit={handleSubmit} class="space-y-6" method="POST">
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -270,14 +270,13 @@ function closeModal() {
               variant="primary"
               size="md"
               extraStyles="w-full md:w-auto"
-              
-              disabled={!formData.supplierId || selectedProducts.length === 0}
+              loading={isLoading}
+              disabled={!formData.supplierId || selectedProducts.length === 0 || isLoading}
             >
-              Create Order
+              {isLoading ? 'Creating...' : 'Create Order'}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
-  </div>
-{/if}
+      
+    
+  </Modal>

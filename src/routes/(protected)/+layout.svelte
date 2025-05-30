@@ -1,14 +1,16 @@
 <script lang="ts">
   import { fly, fade, scale, slide } from 'svelte/transition';
   import { page } from '$app/stores';
+  import { onMount, onDestroy } from 'svelte';
   import type { AuthUser } from '$lib/types/auth.types';
   import Icon from '$lib/components/utilities/Icons/Icon.svelte';
-	import { cubicOut } from 'svelte/easing';
+  import { cubicOut } from 'svelte/easing';
   
   // Estado para controlar cuando la animación de apertura ha terminado
   let isSidebarOpen = $state(true);
   let isTransitioning = $state(false);
   let openInventoryMenu = $state(false);
+  let inventoryMenuRef: HTMLElement;
   
   // Función para verificar si una ruta está activa
   function isActive(href: string) {
@@ -60,19 +62,72 @@
   }
   
   
-  async function toggleInventoryMenu(e: Event) {
-  e.preventDefault();
-  e.stopPropagation();
-
+  function toggleInventoryMenu(e: Event) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (collapsed) {
+      toggleSidebar().then(() => {
+        openInventoryMenu = true;
+      });
+    } else {
+      openInventoryMenu = !openInventoryMenu;
+    }
+  }
   
-  if (collapsed) {
-    await toggleSidebar(); 
+  // Cerrar menú al hacer clic fuera, pero no en los enlaces del menú
+  function handleClickOutside(event: MouseEvent) {
+    if (typeof window === 'undefined') return; // No ejecutar en el servidor
+    
+    if (inventoryMenuRef) {
+      // Verificar si el clic fue en un enlace dentro del menú
+      const target = event.target as HTMLElement;
+      const isClickOnMenuLink = target.closest ? 
+        target.closest('a[href^="/dashboard/inventory"], a[href^="/dashboard/products"], a[href^="/dashboard/categories"]') : 
+        null;
+      
+      // Solo cerrar si el clic no fue en un enlace del menú
+      if (!isClickOnMenuLink && inventoryMenuRef && !inventoryMenuRef.contains(target)) {
+        openInventoryMenu = false;
+      }
+    }
   }
-
-  if (!openInventoryMenu) {
-    openInventoryMenu = true;
-  }
-}
+  
+  // Cerrar menú solo cuando se navega fuera de las rutas de inventario
+  const unsubscribe = page.subscribe(($page) => {
+    const currentPath = $page.url.pathname;
+    const isInventoryRoute = [
+      '/dashboard/inventory',
+      '/dashboard/products',
+      '/dashboard/categories'
+    ].some(route => currentPath.startsWith(route));
+    
+    if (!isInventoryRoute) {
+      openInventoryMenu = false;
+    }
+  });
+  
+  // Limpiar eventos al desmontar
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', handleClickOutside);
+    }
+    unsubscribe();
+  });
+  
+  // Agregar evento de clic fuera del menú solo en el navegador
+  import { browser } from '$app/environment';
+  
+  onMount(() => {
+    if (browser) {
+      // Usamos setTimeout para asegurarnos de que el menú se cierre después de la navegación
+      setTimeout(() => {
+        if (typeof document !== 'undefined') {
+          document.addEventListener('click', handleClickOutside);
+        }
+      }, 0);
+    }
+  });
 
 </script>
 
@@ -140,7 +195,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
           </a>
 
           <!-- Menú de Inventory -->
-          <div>
+          <div bind:this={inventoryMenuRef} class="relative">
             <button 
               type="button"
               class={`flex items-center justify-between w-full px-4 py-2 rounded-md transition cursor-pointer ${isActive('/dashboard/inventory') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`}

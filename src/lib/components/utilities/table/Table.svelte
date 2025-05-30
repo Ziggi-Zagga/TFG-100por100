@@ -13,8 +13,12 @@
 	onRowClick = () => {},
 	onEdit = () => {},
 	onDelete = () => {},
+	onSort = () => {},
 	ifEdit = () => true,
-	ifDelete = () => true
+	ifDelete = () => true,
+	sortable = false,
+	sortColumn = null,
+	sortDirection = 'asc'
 } = $props<{
 	columns?: string[];
 	items?: any[];
@@ -33,8 +37,12 @@
 	onRowClick?: (item: any) => void;
 	onEdit?: (item: any) => void;
 	onDelete?: (item: any) => void;
+	onSort?: (column: string, direction: 'asc' | 'desc') => void;
 	ifEdit?: (item: any) => boolean;
 	ifDelete?: (item: any) => boolean;
+	sortable?: boolean;
+	sortColumn?: string | null;
+	sortDirection?: 'asc' | 'desc';
 }>();
 
 function handleCellChange(item: any, column: string, value: any) {
@@ -52,7 +60,23 @@ function handleDelete(e: MouseEvent, item: any, name?: string) {
 	onDelete(item);
 }
 function formatHeader(header: string): string {
-	return header.charAt(0).toUpperCase() + header.slice(1);
+	// Convertir de camelCase o snake_case a palabras con espacios
+	const result = header
+		.replace(/([A-Z])/g, ' $1')
+		.replace(/_/g, ' ')
+		.trim();
+	return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
+function handleHeaderClick(column: string) {
+	if (!sortable || !onSort) return;
+	
+	let newDirection: 'asc' | 'desc' = 'asc';
+	if (sortColumn === column) {
+		newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+	}
+	
+	onSort(column, newDirection);
 }
 
 function isDateColumn(columnName: string): boolean {
@@ -82,7 +106,23 @@ function formatDateValue(value: any): string {
                 <thead class="sticky top-0 bg-indigo-50 border-b border-gray-200 text-gray-500 z-10">
                     <tr>
                         {#each columns as col}
-                            <th class="px-4 py-3 text-center max-w-[100px] font-semibold whitespace-nowrap">{formatHeader(col)}</th>
+                            <th 
+						class="px-4 py-3 text-center max-w-[100px] font-semibold whitespace-nowrap cursor-pointer hover:bg-gray-100 transition-colors {sortColumn === col ? 'font-bold' : ''}"
+						onclick={() => handleHeaderClick(col)}
+					>
+						<div class="flex items-center justify-center gap-1">
+							{formatHeader(col)}
+							{#if sortable && sortColumn === col}
+								<span class="text-xs" aria-label={sortDirection === 'asc' ? 'Orden ascendente' : 'Orden descendente'}>
+									{#if sortDirection === 'asc'}
+										<Icon icon="arrow" size={18} extraStyles="rotate-180" />
+									{:else}
+										<Icon icon="arrow" size={18} />
+									{/if}
+								</span>
+							{/if}
+						</div>
+					</th>
                         {/each}
                         <th class="px-4 py-3 text-center font-semibold"></th>
                     </tr>
@@ -103,13 +143,14 @@ function formatDateValue(value: any): string {
 								<td class="px-4 py-4 text-center whitespace-nowrap h-9 max-w-[100px] overflow-hidden text-ellipsis align-middle">
 									{#if columnTypes[col]}
 										{#if columnTypes[col].type === 'select'}
-										<div class="w-full" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
+										<div class="w-full flex justify-center" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 										tabindex="0" role="button">
 										<Select
 											bind:value={item[col]}
 											size="md"
 											options={columnTypes[col].options}
-											onValueChange={(val) => handleCellChange(item, col, val)}								
+											onValueChange={(val) => handleCellChange(item, col, val)}
+											extraClass="text-center"
 										/>
 									</div>
 										{:else if columnTypes[col].type === 'textarea'}
