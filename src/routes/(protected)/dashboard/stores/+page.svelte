@@ -63,12 +63,55 @@
 		</div>
 	</div>
 
-	<Table
-		columns={['name', 'location']}
-		items={filteredStores()}
-		onRowClick={(item) => goToStoreDetails(item.id)}
-		onDelete={(item) => handleDelete(item.id)}
-	/>
+	<div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+		{#each filteredStores() as store}
+			<div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
+				<!-- Botones de acción -->
+				<div class="absolute right-4 top-4 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+					<button
+						onclick={(e) => { e.preventDefault(); goToStoreDetails(store.id); }}
+						class="rounded-full bg-blue-100 p-2 text-blue-600 hover:bg-blue-200"
+						title="Edit"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+						</svg>
+					</button>
+					<button
+						onclick={(e) => { e.preventDefault(); handleDelete(store.id); }}
+						class="rounded-full bg-red-100 p-2 text-red-600 hover:bg-red-200"
+						title="Delete"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Contenido de la tarjeta -->
+				<div class="flex flex-col items-center text-center">
+					<!-- Ícono de la tienda -->
+					<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+						</svg>
+					</div>
+
+					<!-- Nombre de la tienda -->
+					<h3 class="mb-1 text-lg font-semibold text-gray-900">{store.name}</h3>
+
+					<!-- Ubicación -->
+					<div class="flex items-center text-sm text-gray-500">
+						<svg xmlns="http://www.w3.org/2000/svg" class="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+						</svg>
+						<span>{store.location || 'No location'}</span>
+					</div>
+				</div>
+			</div>
+		{/each}
+	</div>
 
 	{#if showDrawer}
 		<Drawer title="➕ Create New Store" onClose={closeDrawer}>

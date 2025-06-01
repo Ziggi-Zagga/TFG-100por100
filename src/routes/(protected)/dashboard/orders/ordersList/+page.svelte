@@ -7,6 +7,7 @@
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import type { Supplier } from '$lib/types/products.types';
 	import CreateOrders from '$lib/components/dashboard/Orders/CreateOrders.svelte';
+	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
@@ -20,6 +21,26 @@
 	let currentSupplier = $state<Supplier | null>(null);
 	let showDeleteDialog = $state(false);
 	let orderToDelete: { id: string, orderNumber: string } | null = $state(null);
+
+	// Toast state
+	let toasts = $state<Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>>([]);
+
+	// Helper functions for showing toasts
+	function showSuccess(message: string) {
+		const id = crypto.randomUUID();
+		toasts = [...toasts, { id, message, type: 'success' }];
+		setTimeout(() => removeToast(id), 3000);
+	}
+
+	function showError(message: string) {
+		const id = crypto.randomUUID();
+		toasts = [...toasts, { id, message, type: 'error' }];
+		setTimeout(() => removeToast(id), 3000);
+	}
+
+	function removeToast(id: string) {
+		toasts = toasts.filter(t => t.id !== id);
+	}
 
 	// Estados para la ordenación
 	let sortColumn = $state<string | null>('orderDate');
@@ -189,13 +210,18 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			}
 
 			const result = await response.json();
-			if (result.error) {
-				throw new Error(result.message || 'Error al actualizar el pedido');
-			}
+				if (result.error) {
+					const errorMessage = result.message || 'Error al actualizar el pedido';
+					showError(errorMessage);
+					throw new Error(errorMessage);
+				}
+				showSuccess('Order status updated successfully');
 
 			return true;
 		} catch (error) {
-			console.error('Error al actualizar el estado:', error);
+			const errorMessage = 'Error updating order status: ' + (error instanceof Error ? error.message : 'Unknown error');
+			console.error(errorMessage, error);
+			showError(errorMessage);
 			order[column] = oldStatus;
 			return false;
 		}
@@ -223,16 +249,18 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			if (response.ok) {
 				// Update the orders list by removing the deleted order
 				orders = orders.filter(order => order.id !== orderToDelete?.id);
-				// Show success message (you can replace this with a toast notification)
-				alert('Order deleted successfully');
+				// Show success toast
+				showSuccess('Order deleted successfully');
 			} else {
 				const result = await response.json();
-				console.error('Error deleting order:', result.message);
-				alert('Error deleting order: ' + (result.message || 'Unknown error'));
+				const errorMessage = 'Error deleting order: ' + (result.message || 'Unknown error');
+				console.error(errorMessage);
+				showError(errorMessage);
 			}
 		} catch (error) {
-			console.error('Error deleting order:', error);
-			alert('Error deleting order. Please try again.');
+			const errorMessage = 'Error deleting order. ' + (error instanceof Error ? error.message : 'Please try again.');
+			console.error(errorMessage, error);
+			showError(errorMessage);
 		} finally {
 			showDeleteDialog = false;
 			orderToDelete = null;
@@ -269,11 +297,12 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			// Close the drawer
 			showDrawer = false;
 			
-			// Show success message or redirect
-			alert('Pedido creado exitosamente');
+			// Show success toast
+			showSuccess('Order created successfully');
 		} catch (error) {
-			console.error('Error creating order:', error);
-			alert('Error al crear el pedido: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+			const errorMessage = 'Error creating order: ' + (error instanceof Error ? error.message : 'Unknown error');
+			console.error(errorMessage, error);
+			showError(errorMessage);
 		}
 	}
 
@@ -310,12 +339,14 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 				window.location.reload();
 			} else {
 				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.message || 'Error creating order');
+				const errorMessage = errorData.message || 'Error creating order';
+				console.error(errorMessage);
+				showError(errorMessage);
 			}
 		} catch (error) {
-			console.error('Error creating order:', error);
-			alert(`Error creating order: ${error instanceof Error ? error.message : 'Unknown error'}`);
-			throw error; // Re-throw to let the form handle it
+				const errorMessage = `Error creating order: ${error instanceof Error ? error.message : 'Unknown error'}`;
+				console.error(errorMessage, error);
+				showError(errorMessage);
 		}
 	}
 </script>
@@ -373,4 +404,5 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			orderToDelete = null;
 		}}
 	/>
+	<ToastList {toasts} on:removeToast={e => removeToast(e.detail.id)} />
 </section>
