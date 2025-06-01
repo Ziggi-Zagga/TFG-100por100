@@ -22,6 +22,7 @@
   let manufacturers = $state([...data.manufacturers]);
   let categories = $state([...data.categories]);
   let inventory = $state([...data.inventory]);
+  let orderItems = $state([...data.orderItems]);
 
   let showConfirm = $state(false);
 
@@ -168,7 +169,11 @@
     </Header>
 
     {#if selectedOption === 'orders'}
-      <Table columns={["order_id", "date", "quantity", "customer"]} items={[]}  />
+      <Table columns={["orderNumber", "quantity", "discount", "price", "orderDate"]} 
+      items={orderItems} 
+      ifEdit={(item) => false}
+      ifDelete={(item) => false}
+      />
     {:else if selectedOption === 'inventory'}
       <Table 
         columns={["Store", "Section", "Row", "Gap", "Stock", "Date"]} 

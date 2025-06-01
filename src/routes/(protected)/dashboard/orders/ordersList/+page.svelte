@@ -54,6 +54,23 @@
 		notes: ''
 	});
 
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const id = urlParams.get('id');
+		if (id) {
+			const order = orders.find(order => order.id === id);
+			if (order) {
+				search = order.orderNumber;
+				urlParams.delete('id');
+				const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+				window.history.replaceState({}, '', newUrl);
+			}
+		}
+	});
+	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
+
 	
 
 	const ordersColumns = ['', 'orderNumber', 'status', 'orderDate'];

@@ -21,6 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
   const manufacturerName = await prod.getManufacturersById(product.manufacturerId ?? '');
   const categoryName = await prod.getCategoriesById(product.categoryId ?? '');
   const inventory = await prod.getProductFromInventoryById(product.id ?? '');
+  const orderItems = await prod.getOrderItemsByProductId(product.id ?? '');
 
   return {
     product,
@@ -30,7 +31,8 @@ export const load: PageServerLoad = async ({ params }) => {
     supplierName,
     manufacturerName,
     categoryName,
-    inventory
+    inventory,
+    orderItems
   };
 };
 

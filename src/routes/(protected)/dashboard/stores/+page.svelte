@@ -56,7 +56,7 @@
 		<div class="w-full md:flex-1">
 			<SearchBar bind:search placeholder="Search by name or location..." />
 		</div>
-		<div class="-mt-6 flex w-full justify-end md:w-auto">
+		<div class="flex w-full justify-end md:w-auto">
 			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
 				{@html '<span class="hidden md:inline">Add Store</span>'}
 			</Button>
