@@ -5,6 +5,7 @@
 	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import Breadcrumb from '$lib/components/utilities/Breadcrumb.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import { goto } from '$app/navigation';
 
 	const { data } = $props();
@@ -25,7 +26,7 @@
 	}
 
 	function goToRow(rowId: string) {
-		goto(`/dashboard/warehouse/${data.warehouse.id}/${data.currentSection.id}/${rowId}`);
+		goto(`/dashboard/warehouses/${data.warehouse.id}/${data.currentSection.id}/${rowId}`);
 	}
 
 	async function handleDelete(rowId: string) {
@@ -72,38 +73,38 @@
 		onDelete={(item) => handleDelete(item.id)}
 	/>
 
-	{#if showDrawer}
-		<Drawer title="➕ Create New Row" onClose={closeDrawer}>
-			<form
-				method="POST"
-				action="?/create"
-				class="fixed top-0 right-0 w-full max-w-3xl h-full bg-white shadow-2xl p-10 rounded-l-3xl overflow-y-auto z-50 border-l border-blue-100 space-y-4"
-			>
-				<h2 class="text-3xl font-bold text-blue-800 mb-8">➕ Create New Row</h2>
-
-				<input
+	<Drawer 
+		title="Create New Row" 
+		onClose={closeDrawer}
+		show={showDrawer}
+	>
+		<form 
+			method="POST" 
+			action="?/create" 
+			class="space-y-4"
+		>
+			<TextInput 
 					name="name"
+				label="Row Name"
+					placeholder="Enter row name"
 					required
-					placeholder="Row Name"
-					class="w-full p-3 border border-gray-300 rounded-xl"
 				/>
 
-				<div class="flex justify-end gap-4 mt-6">
-					<button
-						type="button"
-						onclick={closeDrawer}
-						class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-xl shadow-sm"
-					>
-						Cancel
-					</button>
-					<button
-						type="submit"
-						class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md"
-					>
-						Create
-					</button>
-				</div>
-			</form>
-		</Drawer>
-	{/if}
+			<div class="mt-6 flex justify-end gap-4">
+				<button 
+					type="button" 
+					onclick={closeDrawer}
+					class="rounded-xl bg-gray-200 px-6 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-300"
+				>
+					Cancel
+				</button>
+				<button 
+					type="submit" 
+					class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
+				>
+					Create Row
+				</button>
+			</div>
+		</form>
+	</Drawer>
 </section>
