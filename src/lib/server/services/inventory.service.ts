@@ -5,7 +5,7 @@ import {
 	repoGetInventoryById,
 	repoUpdateInventoryItem
 } from '$lib/server/db/repositories/inventory.repository';
-import { getFullStoresTree, repoGetTreeFromGapId } from '$lib/server/db/repositories/stores.repository';
+import { getFullwarehouseTree, repoGetTreeFromGapId } from '$lib/server/db/repositories/warehouse.repository';
 import { getCategoriesById } from '$lib/server/db/repositories/category.repository';
 import { getSuppliersById } from '$lib/server/db/repositories/supplier.repository';
 import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.repository';
@@ -16,19 +16,19 @@ import { getFullProductsList, repoGetProductById } from '../db/repositories/prod
 export const getInventoryData = async () => {
 	const items = await repoGetInventoryView();
 	const safeAvailableProducts = await getFullProductsList();
-	const fullStoreTree = await getFullStoresTree();
+	const fullwarehouseTree = await getFullwarehouseTree();
 	
 	return {
 		inventoryItems: items,
 		availableProducts: safeAvailableProducts,
-		fullStoreTree: fullStoreTree,
+		fullwarehouseTree: fullwarehouseTree,
 		totalProducts: items.length
 	};
 }
 
 export const createInventoryEntry = async ({
 	productId,
-	storeGapId,
+	warehouseGapId,
 	stock,
 	minQuantity,
 	reorderQuantity,
@@ -37,7 +37,7 @@ export const createInventoryEntry = async ({
 	updatedAt = new Date()
 }: {
 	productId: string;
-	storeGapId: string;
+	warehouseGapId: string;
 	stock: number;
 	minQuantity: number;
 	reorderQuantity: number;
@@ -48,7 +48,7 @@ export const createInventoryEntry = async ({
 	if (!productId) {
 		throw new ServiceError('Product ID is required', ERROR_TYPES.VALIDATION, 400);
 	}
-	if (!storeGapId) {
+	if (!warehouseGapId) {
 		throw new ServiceError('Location ID is required', ERROR_TYPES.VALIDATION, 400);
 	}
 	if (isNaN(stock) || stock < 0) {
@@ -61,7 +61,7 @@ export const createInventoryEntry = async ({
 		throw new ServiceError('Reorder quantity must be a valid non-negative number', ERROR_TYPES.VALIDATION, 400);
 	}
 
-	await repoInsertInventoryItem({ productId, storeGapId, stock, minQuantity, reorderQuantity, lastCount, createdAt, updatedAt });
+	await repoInsertInventoryItem({ productId, warehouseGapId, stock, minQuantity, reorderQuantity, lastCount, createdAt, updatedAt });
 }
 
 export const deleteInventoryEntry = async (id: string) => {
@@ -76,7 +76,7 @@ export const updateInventoryEntry = async ({
 	stock,
 	minQuantity,
 	reorderQuantity,
-	storeGapId,
+	warehouseGapId,
 	lastCount,
 	updatedAt
 }: {
@@ -84,14 +84,14 @@ export const updateInventoryEntry = async ({
 	stock: number;
 	minQuantity: number;
 	reorderQuantity: number;
-	storeGapId: string;
+	warehouseGapId: string;
 	lastCount?: Date;
 	updatedAt?: Date;
 }) => {
 	if (!id) {
 		throw new ServiceError('Invalid or missing inventory ID', ERROR_TYPES.VALIDATION, 400);
 	}
-	await repoUpdateInventoryItem({ id, stock, minQuantity, reorderQuantity, storeGapId, lastCount, updatedAt });
+	await repoUpdateInventoryItem({ id, stock, minQuantity, reorderQuantity, warehouseGapId, lastCount, updatedAt });
 }
 
 export const getCategorie = async (id: string) => {

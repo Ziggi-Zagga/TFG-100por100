@@ -1,7 +1,7 @@
 export interface InventoryItem {
     id: string;
     productId: string;
-    storeGapId: string;
+    warehouseGapId: string;
     quantity: number;
     minQuantity: number;
     reorderQuantity: number;
@@ -10,7 +10,7 @@ export interface InventoryItem {
     updatedAt: Date;
 }
 
-export interface Store {
+export interface warehouse {
     id: string;
     name: string;
     location: string;
@@ -19,19 +19,19 @@ export interface Store {
 
 export interface Section {
     id: string;
-    storeId: string;
+    warehouseId: string;
     name: string;
     description?: string;
 }
 
-export interface StoreRow {
+export interface warehouseRow {
     id: string;
     sectionId: string;
     name: string;
     description?: string;
 }
 
-export interface StoreGap {
+export interface warehouseGap {
     id: string;
     rowId: string;
     name: string;

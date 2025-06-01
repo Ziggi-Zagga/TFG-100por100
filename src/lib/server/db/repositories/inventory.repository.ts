@@ -14,14 +14,14 @@ export const repoGetInventoryView = async () => {
             unit: table.products.unit,
             quantity: table.inventory.quantity,
             lastCount: table.inventory.lastCount,
-            location: table.storeGaps.name,
+            location: table.warehouseGaps.name,
             supplier: table.suppliers.name,
             category: table.categories.name,
             manufacturer: table.manufacturers.name
         })
         .from(table.products)
         .innerJoin(table.inventory, eq(table.products.id, table.inventory.productId))
-        .innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
+        .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
         .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
         .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
         .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
@@ -30,7 +30,7 @@ export const repoGetInventoryView = async () => {
 
 export const repoInsertInventoryItem = async ({
     productId,
-    storeGapId,
+    warehouseGapId,
     stock,
     minQuantity,
     reorderQuantity,
@@ -39,7 +39,7 @@ export const repoInsertInventoryItem = async ({
     updatedAt
 }: {
     productId: string;
-    storeGapId: string;
+    warehouseGapId: string;
     stock: number;
     minQuantity: number;
     reorderQuantity: number;
@@ -50,7 +50,7 @@ export const repoInsertInventoryItem = async ({
     return db.insert(table.inventory).values({
         id: crypto.randomUUID(),
         productId,
-        storeGapId,
+        warehouseGapId,
         quantity: stock,
         minQuantity: minQuantity ?? 0,
         reorderQuantity: reorderQuantity ?? 0,
@@ -65,7 +65,7 @@ export const repoUpdateInventoryItem = async ({
     stock,
     minQuantity,
     reorderQuantity,
-    storeGapId,
+    warehouseGapId,
     lastCount,
     updatedAt
 }: {
@@ -73,7 +73,7 @@ export const repoUpdateInventoryItem = async ({
     stock: number;
     minQuantity: number;
     reorderQuantity: number;
-    storeGapId: string;
+    warehouseGapId: string;
     lastCount?: Date;
     updatedAt?: Date;
 }) => {
@@ -81,7 +81,7 @@ export const repoUpdateInventoryItem = async ({
         quantity: stock,
         minQuantity: minQuantity ?? 0,
         reorderQuantity: reorderQuantity ?? 0,
-        storeGapId: storeGapId,
+        warehouseGapId: warehouseGapId,
         lastCount: lastCount ?? new Date(),
         updatedAt: updatedAt ?? new Date(),
     }).where(eq(table.inventory.id, id));
@@ -98,16 +98,16 @@ export const repoGetInventoryWithFullLocationByProductId = async (productId: str
         productId: table.inventory.productId,
         Stock: table.inventory.quantity,
         Date: table.inventory.createdAt,
-        Gap: table.storeGaps.name,
-        Row: table.storeRows.name,
+        Gap: table.warehouseGaps.name,
+        Row: table.warehouseRows.name,
         Section: table.sections.name,
-        Store: table.stores.name
+        warehouse: table.warehouse.name
       })
       .from(table.inventory)
-      .innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
-      .innerJoin(table.storeRows, eq(table.storeGaps.rowId, table.storeRows.id))
-      .innerJoin(table.sections, eq(table.storeRows.sectionId, table.sections.id))
-      .innerJoin(table.stores, eq(table.sections.storeId, table.stores.id))
+      .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
+      .innerJoin(table.warehouseRows, eq(table.warehouseGaps.rowId, table.warehouseRows.id))
+      .innerJoin(table.sections, eq(table.warehouseRows.sectionId, table.sections.id))
+      .innerJoin(table.warehouse, eq(table.sections.warehouseId, table.warehouse.id))
       .where(eq(table.inventory.productId, productId));
   };
   

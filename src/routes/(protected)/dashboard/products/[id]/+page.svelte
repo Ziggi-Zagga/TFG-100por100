@@ -56,7 +56,7 @@
     if (res.ok) {
       goto('/dashboard/products');
     } else {
-      console.error('Failed to delete store');
+      console.error('Failed to delete warehouse');
     }
   }
 
@@ -176,7 +176,7 @@
       />
     {:else if selectedOption === 'inventory'}
       <Table 
-        columns={["Store", "Section", "Row", "Gap", "Stock", "Date"]} 
+        columns={["warehouse", "Section", "Row", "Gap", "Stock", "Date"]} 
         items={inventory} 
         onRowClick={(item) => goToDetails(item)}
         ifEdit={(item) => false}

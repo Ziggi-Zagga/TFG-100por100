@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import InventoryHeader from '$lib/components/utilities/Header/Header.svelte';
+  import PageHeader from '$lib/components/utilities/Header/Header.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
   import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
@@ -69,7 +69,7 @@
       productsCopy = productsCopy.filter((p) => p.id !== productIdToDelete);
       productIdToDelete = null;
     } else {
-      console.error('Failed to delete store');
+      console.error('Failed to delete warehouse');
     }
   }
 
@@ -81,12 +81,18 @@
 
 <section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 
-  <InventoryHeader title="Products" subtitle="{totalProducts} Products">
-    <SearchBar bind:search placeholder="Search by name or code..." />
-    <Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-      {@html '<span class="hidden md:inline">Add Product</span>'}
-    </Button>
-  </InventoryHeader>
+  <PageHeader title="Products Management" subtitle={`${totalProducts} Products`}>
+    <div class="flex w-full flex-col items-center gap-4 md:flex-row">
+      <div class="w-60 md:flex-[3] lg:flex-[4]">
+        <SearchBar bind:search placeholder="Search by name or code..." extraClasses="w-full" />
+      </div>
+      <div class="flex w-full justify-end md:w-auto">
+        <Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+          <span class="hidden md:inline">Add Product</span>
+        </Button>
+      </div>
+    </div>
+  </PageHeader>
 
   <Table
     columns={['code', 'name', 'price', 'unit', 'material']}
@@ -99,8 +105,8 @@
     onDelete={(item) => askDelete(item.id, item.name)}
   />
 
-  {#if showDrawer}
-    <Drawer title="➕ Create New Product" onClose={closeDrawer}>
+
+    <Drawer title="Create New Product" onClose={closeDrawer} show={showDrawer}>
       <form 
         method="POST"
         action="?/create"
@@ -129,7 +135,6 @@
         </div>
       </form>
     </Drawer>
-  {/if}
 
   <ConfirmDialog
     show={showConfirm}

@@ -1,29 +1,35 @@
 <script lang="ts">
-import { classes } from './header.utils';
-
-  const {
-    title,
-    subtitle = 'items',
-    children,
-    variant = 'default',
-  }: {
-    title: string;
-    subtitle?: string;
-    children?: () => any;
-    variant?: 'default' | 'plain' | 'dark' | 'compact';
-  } = $props();
-</script>
-
-<div
-  class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 rounded-2xl shadow-sm mb-6 w-full gap-4"
-  style="{classes[variant]}"
->
-  <div>
-    <h1 class="text-2xl font-semibold text-gray-800">{title}</h1>
-    <p class="text-sm text-gray-700 mt-1">{subtitle}</p>
+    const {
+      title,
+      subtitle = 'items',
+      children,
+      hidden = false
+    }: {
+      title: string;
+      subtitle?: string;
+      children?: () => any;
+      hidden?: boolean;
+    } = $props();
+  </script>
+  
+  {#if !hidden}
+  <!-- Clean sticky header matching warehouse layout exactly -->
+  <div class="sticky top-0 z-40 w-full bg-white border-b border-gray-300 shadow-md mb-5">
+    <div
+      class="flex items-center justify-between px-6 py-4"
+    >
+      <!-- Left side - Title section clean and minimal -->
+      <div class="flex items-center space-x-4">
+        <h1 class="text-2xl font-bold text-gray-900">{title}</h1>
+        <span class="text-sm text-gray-500">•</span>
+        <span class="text-sm text-gray-600">{subtitle}</span>
+      </div>
+      
+      <!-- Right side - Actions -->
+      <div class="flex items-center space-x-4">
+        {@render children?.()}
+      </div>
+    </div>
   </div>
-
-  <div class="flex flex-wrap items-center gap-4 w-full md:w-auto justify-end">
-    {@render children?.()}
-  </div>
-</div>
+  {/if}
+  

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/warehouse';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';

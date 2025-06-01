@@ -261,9 +261,9 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
             {#if !collapsed}<span class="ml-3 text-sm font-medium">Orders</span>{/if}
           </a>
 
-          <a href="/dashboard/stores" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/stores') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/stores') ? 'page' : undefined}>
-            <img src="/icons/svg/stores.svg" class="w-8 h-8" alt="Stores" />
-            {#if !collapsed}<span class="ml-3 text-sm font-medium">Stores</span>{/if}
+          <a href="/dashboard/warehouses" class={`flex items-center px-4 py-2 rounded-md transition ${isActive('/dashboard/warehouse') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`} aria-current={isActive('/dashboard/warehouse') ? 'page' : undefined}>
+            <img src="/icons/svg/warehouse.svg" class="w-8 h-8" alt="warehouse" />
+            {#if !collapsed}<span class="ml-3 text-sm font-medium">warehouse</span>{/if}
           </a>
         </nav>
       </div>

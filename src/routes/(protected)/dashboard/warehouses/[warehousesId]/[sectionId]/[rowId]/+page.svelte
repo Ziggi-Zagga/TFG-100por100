@@ -24,7 +24,7 @@
     showDrawer = false;
   }
   	function goToGap(gapId: string) {
-		goto(`/dashboard/stores/${data.store.id}/${data.section.id}/${data.row.id}/${gapId}`);
+		goto(`/dashboard/warehouse/${data.warehouse.id}/${data.section.id}/${data.row.id}/${gapId}`);
 	}
 
   async function handleDelete(gapId: string) {
@@ -46,9 +46,9 @@
   <PageHeader title={data.row.name} subtitle={`${gaps.length} gaps`}>
     <div class="flex items-center gap-4">
       <Breadcrumb segments={[
-        { name: 'Stores', href: '/dashboard/stores' },
-        { name: data.store.name, href: `/dashboard/stores/${data.store.id}` },
-        { name: data.section.name, href: `/dashboard/stores/${data.store.id}/${data.section.id}` },
+        { name: 'warehouse', href: '/dashboard/warehouse' },
+        { name: data.warehouse.name, href: `/dashboard/warehouse/${data.warehouse.id}` },
+        { name: data.section.name, href: `/dashboard/warehouse/${data.warehouse.id}/${data.section.id}` },
         { name: data.row.name }
       ]} />
     </div>

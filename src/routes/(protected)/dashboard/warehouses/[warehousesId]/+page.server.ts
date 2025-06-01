@@ -1,43 +1,46 @@
 import {
-	getStoreWithSections,
+	getwarehouseWithSections,
 	createSection,
 	deleteSectionById
-} from '$lib/server/services/stores.service';
+} from '$lib/server/services/warehouse.service';
 import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const storeId = params.storeId;
-	if (!storeId) throw fail(400, { message: 'Missing store ID' });
+	const warehousesId = params.warehousesId;
+	if (!warehousesId) throw fail(400, { message: 'Missing warehouse ID' });
 
-	const data = await getStoreWithSections(storeId);
-	if (!data.store) throw fail(404, { message: 'Store not found' });
+	const data = await getwarehouseWithSections(warehousesId);
+	if (!data.warehouse) throw fail(404, { message: 'warehouse not found' });
 
 	return {
-		store: data.store,
+		warehouse: data.warehouse,
 		sections: data.sections
 	};
 };
 
 export const actions: Actions = {
 	create: async ({ request, params }) => {
-		const storeId = params.storeId;
-		if (!storeId) return fail(400, { message: 'Missing store ID' });
+		const warehousesId = params.warehousesId;
+		if (!warehousesId) return fail(400, { message: 'Missing warehouse ID' });
 
 		const formData = await request.formData();
 		const name = formData.get('name')?.toString() ?? '';
 		const description = formData.get('description')?.toString() ?? '';
 
 		try {
-			await createSection({ storeId, name, description });
-			throw redirect(303, `/dashboard/stores/${storeId}`);
+			await createSection({ warehouseId: warehousesId, name, description });
+			throw redirect(303, `/dashboard/warehouses/${warehousesId}`);
 		} catch (error) {
 			console.error('Create section failed:', error);
 			return fail(500, { message: 'Failed to create section' });
 		}
 	},
 
-	delete: async ({ request }) => {
+	delete: async ({ request, params }) => {
+		const warehousesId = params.warehousesId;
+		if (!warehousesId) return fail(400, { message: 'Missing warehouse ID' });
+
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString();
 

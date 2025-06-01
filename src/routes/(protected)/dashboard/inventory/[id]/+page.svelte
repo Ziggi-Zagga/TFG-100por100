@@ -19,9 +19,9 @@
     let isEditing = $state(false);
     let id = $state(page.params.id);
  
-    let fullStoreTree = $state([...data.fullStoreTree]);
+    let fullwarehouseTree = $state([...data.fullwarehouseTree]);
 
-    let selectedStore = $state(location[0].storeName);
+    let selectedwarehouse = $state(location[0].warehouseName);
     let selectedSection = $state(location[0].sectionName);
     let selectedRow = $state(location[0].rowName);
     let selectedGapName = $state(location[0].gapName);
@@ -56,8 +56,8 @@
         isEditing = false;
     }
 
-    function handleStoreChange(store: any) {
-      selectedStore = store.name;
+    function handlewarehouseChange(warehouse: any) {
+      selectedwarehouse = warehouse.name;
       selectedSection = '';
       selectedRow = '';
       selectedGapName = '';
@@ -82,18 +82,18 @@
       selectedGapName = gap.name;
     }
 
-    const stores = $derived(() =>
+    const warehouse = $derived(() =>
       Array.from(
-        new Map(fullStoreTree.map(i => [i.storeId, { id: i.storeId, name: i.storeName }])).values()
+        new Map(fullwarehouseTree.map(i => [i.warehouseId, { id: i.warehouseId, name: i.warehouseName }])).values()
       )
     );
 
     const sections = $derived(() =>
-      selectedStore
+      selectedwarehouse
         ? Array.from(
             new Map(
-              fullStoreTree
-                .filter(i => i.storeId && i.storeName === selectedStore && i.sectionId)
+              fullwarehouseTree
+                .filter(i => i.warehouseId && i.warehouseName === selectedwarehouse && i.sectionId)
                 .map(i => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
             ).values()
           )
@@ -104,7 +104,7 @@
       selectedSection
         ? Array.from(
             new Map(
-              fullStoreTree
+              fullwarehouseTree
                 .filter(i => i.sectionName === selectedSection && i.rowId)
                 .map(i => [i.rowId, { id: i.rowId, name: i.rowName }])
             ).values()
@@ -116,7 +116,7 @@
       selectedRow
         ? Array.from(
             new Map(
-              fullStoreTree
+              fullwarehouseTree
                 .filter(i => i.rowName === selectedRow && i.gapId)
                 .map(i => [i.gapId, { id: i.gapId, name: i.gapName }])
             ).values()
@@ -170,7 +170,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ShowText label="Section" value={location[0].sectionName} />
               <ShowText label="Row" value={location[0].rowName} />
-              <ShowText label="Store" value={location[0].storeName} />
+              <ShowText label="warehouse" value={location[0].warehouseName} />
               <ShowText label="Gap" value={location[0].gapName} />
             </div>
           </div>
@@ -194,7 +194,7 @@
 
             <Header title="Location" subtitle="" variant="compact"/>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-              <ComboBox label="Store" name="storeId" items={stores()} searchQuery={selectedStore} onSelect={(item) => handleStoreChange(item)} value={selectedStore} />
+              <ComboBox label="warehouse" name="warehouseId" items={warehouse()} searchQuery={selectedwarehouse} onSelect={(item) => handlewarehouseChange(item)} value={selectedwarehouse} />
               <ComboBox label="Section" name="sectionId" items={sections()} searchQuery={selectedSection} onSelect={(item) => handleSectionChange(item)} value={selectedSection} />
               <ComboBox label="Row" name="rowId" items={rows()} searchQuery={selectedRow} onSelect={(item) => handleRowChange(item)} value={selectedRow} />
               <ComboBox label="Gap" name="gapName" items={gaps()} searchQuery={selectedGapName} onSelect={(item) => handleGapChange(item)} value={selectedGapName} required />

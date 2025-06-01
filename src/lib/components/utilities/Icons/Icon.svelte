@@ -55,10 +55,10 @@
 	<TemplateIcon {size} />
 {/if}
 {#if icon === 'edit'}
-	<EditIcon {size} />
+	<EditIcon {size} {extraStyles} />
 {/if}
 {#if icon === 'delete'}
-	<DeleteIcon {size} />
+	<DeleteIcon {size} {extraStyles} />
 {/if}
 {#if icon === 'send'}
 	<SendIcon {size} />

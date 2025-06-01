@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Header from '$lib/components/utilities/Header/Header.svelte';
-	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
-	import Table from '$lib/components/utilities/table/Table.svelte';
-	import Button from '$lib/components/utilities/Button/Button.svelte';
-	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
-	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
-	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
-	import type { Manufacturer, Supplier } from '$lib/types/products.types.js';
-	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
-	import { fail } from '@sveltejs/kit';
+import PageHeader from '$lib/components/utilities/Header/Header.svelte';
+import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
+import Table from '$lib/components/utilities/table/Table.svelte';
+import Button from '$lib/components/utilities/Button/Button.svelte';
+import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
+import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
+import type { Manufacturer, Supplier } from '$lib/types/products.types.js';
+import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
+import { fail } from '@sveltejs/kit';
 
-	const { data } = $props();
+	const { data } = $props();	
 
 	let showDrawer = $state(false);
 	let isEditing = $state(false);
@@ -229,24 +229,30 @@
 
 <!-- SUPPLIERS -->
 {#if isSuppliers}
-	<!-- HEADER & SEARCHBAR -->
-	<Header title="Suppliers" subtitle={totalSuppliers().toString() + ' suppliers'} />
-
-	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
-		<div class="w-full md:flex-1">
-			<SearchBar bind:search placeholder="Search by name, email, contact..." />
-		</div>
-		<div class="flex w-full justify-end md:w-auto">
-			<div class="px-5">
-				<Button onclick={() => (isSuppliers = false)} variant="primary" size="md" extraStyles="w-full md:w-auto">
-					{@html '<span class="hidden md:inline">Manufacturers</span>'}
+	<PageHeader title="Suppliers Management" subtitle={`${totalSuppliers} Suppliers`}>
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-60 md:flex-[3] lg:flex-[4]">
+				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
+			</div>
+			<div class="flex w-full items-center justify-end gap-2 md:w-auto">
+				<Button
+					on:click={() => (isSuppliers = true)}
+					variant={isSuppliers ? 'primary' : 'secondary'}
+					size="md"
+					extraStyles="w-full md:w-auto"
+				>Suppliers</Button>
+				<Button
+					on:click={() => (isSuppliers = false)}
+					variant={!isSuppliers ? 'primary' : 'secondary'}
+					size="md"
+					extraStyles="w-full md:w-auto"
+				>Manufacturers</Button>
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					<span class="hidden md:inline">Add Supplier</span>
 				</Button>
 			</div>
-			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-				{@html '<span class="hidden md:inline">Add Supplier</span>'}
-			</Button>
 		</div>
-	</div>
+	</PageHeader>
 
 	<!-- TABLE -->
 	<Table
@@ -289,7 +295,7 @@
 
 	<!-- DRAWER -->
 	{#if showDrawer}
-		<Drawer title="➕ Add New Supplier" onClose={closeDrawer}>
+		<Drawer title="➕ Add New Supplier" onClose={closeDrawer} 	>
 			<form onsubmit={handleCreate} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>
@@ -367,24 +373,30 @@
 
 	<!-- MANUFACTURERS -->
 
-	<!-- HEADER & SEARCHBAR -->
-	<Header title="Manufacturers" subtitle={totalManufacturers().toString() + ' manufacturers'} />
-
-	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
-		<div class="w-full md:flex-1">
-			<SearchBar bind:search placeholder="Search by name..." />
-		</div>
-		<div class="-mt-6 flex w-full justify-end md:w-auto">
-			<div class="px-5">
-				<Button onclick={() => (isSuppliers = true)} variant="primary" size="md" extraStyles="w-full md:w-auto">
-					{@html '<span class="hidden md:inline">Suppliers</span>'}
+	<PageHeader title="Manufacturers Management" subtitle={`${totalManufacturers} Manufacturers`}>
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-60 md:flex-[3] lg:flex-[4]">
+				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
+			</div>
+			<div class="flex w-full items-center justify-end gap-2 md:w-auto">
+				<Button
+					onclick={() => (isSuppliers = true)}
+					variant={isSuppliers ? 'primary' : 'secondary'}
+					size="md"
+					extraStyles="w-full md:w-auto"
+				>Suppliers</Button>
+				<Button
+					onclick={() => (isSuppliers = false)}
+					variant={!isSuppliers ? 'primary' : 'secondary'}
+					size="md"
+					extraStyles="w-full md:w-auto"
+				>Manufacturers</Button>
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">					
+					<span class="hidden md:inline">Add Manufacturer</span>
 				</Button>
 			</div>
-			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-				{@html '<span class="hidden md:inline">Add Manufacturer</span>'}
-			</Button>
 		</div>
-	</div>
+	</PageHeader>
 
 	<!-- TABLE -->
 	<Table
@@ -397,7 +409,7 @@
 
 	<!-- MODAL -->
 	{#if isEditingManufacturer}
-		<Modal title="➕ Edit Manufacturer" onClose={closeEditManufacturer}>
+		<Modal title="Edit Manufacturer" onClose={closeEditManufacturer}>
 			<form method="POST" action="?/updateManufacturer">
 				<input type="hidden" name="id" value={editIdManufacturer} />
 				<TextInput label="Name" name="name" value={editNameManufacturer} required />
@@ -424,7 +436,7 @@
 
 	<!-- DRAWER -->
 	{#if showDrawer}
-		<Drawer title="➕ Add New Manufacturer" onClose={closeDrawer}>
+		<Drawer title="Add New Manufacturer" onClose={closeDrawer}>
 			<form onsubmit={handleCreateManufacturer} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>

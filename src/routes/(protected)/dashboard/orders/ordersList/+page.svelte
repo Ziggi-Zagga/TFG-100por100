@@ -69,9 +69,6 @@
 			}
 		}
 	});
-	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
-
-	
 
 	const ordersColumns = ['', 'orderNumber', 'status', 'orderDate'];
 
@@ -283,46 +280,6 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			orderToDelete = null;
 		}
 	}
-
-
-	async function handleOrderSubmit(event: CustomEvent) {
-		try {
-			// The event detail contains the form data from CreateOrders component
-			const formData = event.detail;
-			
-			// Here you would typically send the data to your API
-			const response = await fetch('?/create', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(formData)
-			});
-
-			if (!response.ok) {
-				throw new Error('Error al crear el pedido');
-			}
-
-			const result = await response.json();
-			if (result.error) {
-				throw new Error(result.message || 'Error al crear el pedido');
-			}
-
-			// Add the new order to the orders list
-			orders = [result.data, ...orders];
-			
-			// Close the drawer
-			showDrawer = false;
-			
-			// Show success toast
-			showSuccess('Order created successfully');
-		} catch (error) {
-			const errorMessage = 'Error creating order: ' + (error instanceof Error ? error.message : 'Unknown error');
-			console.error(errorMessage, error);
-			showError(errorMessage);
-		}
-	}
-
 	async function handleSubmit(orderData: any) {
 		try {
 			const formData = new FormData();

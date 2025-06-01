@@ -25,7 +25,7 @@
 	}
 
 	function goToRow(rowId: string) {
-		goto(`/dashboard/stores/${data.store.id}/${data.section.id}/${rowId}`);
+		goto(`/dashboard/warehouse/${data.warehouse.id}/${data.currentSection.id}/${rowId}`);
 	}
 
 	async function handleDelete(rowId: string) {
@@ -44,12 +44,12 @@
 </script>
 
 <section class="p-8 w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<PageHeader title={data.section.name} subtitle={`${rows.length} rows`}>
+	<PageHeader title={data.currentSection.name} subtitle={`${rows.length} rows`}>
 		<div class="flex items-center gap-4">
 			<Breadcrumb segments={[
-				{ name: 'Stores', href: '/dashboard/stores' },
-				{ name: data.store.name, href: `/dashboard/stores/${data.store.id}` },
-				{ name: data.section.name }
+				{ name: 'warehouse', href: '/dashboard/warehouse' },
+				{ name: data.warehouse.name, href: `/dashboard/warehouse/${data.warehouse.id}` },
+				{ name: data.currentSection.name }
 			]} />
 		</div>
 	</PageHeader>

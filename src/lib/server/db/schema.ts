@@ -77,7 +77,7 @@ export const products = sqliteTable('products', {
 });
 
 
-export const stores = sqliteTable('stores', {
+export const warehouse = sqliteTable('warehouse', {
   id: text('id').primaryKey(),
   name: text('name', { length: 100 }).notNull(),
   location: text('location', { length: 150 }),
@@ -86,20 +86,20 @@ export const stores = sqliteTable('stores', {
 
 export const sections = sqliteTable('sections', {
   id: text('id').primaryKey(),
-  storeId: text('storeId').references(() => stores.id).notNull(),
+  warehouseId: text('warehouseId').references(() => warehouse.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
 });
 
-export const storeRows = sqliteTable('storeRows', {
+export const warehouseRows = sqliteTable('warehouseRows', {
   id: text('id').primaryKey(),
   sectionId: text('sectionId').references(() => sections.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
 });
 
-export const storeGaps = sqliteTable('storeGaps', {
+export const warehouseGaps = sqliteTable('warehouseGaps', {
   id: text('id').primaryKey(),
-  rowId: text('rowId').references(() => storeRows.id).notNull(),
+  rowId: text('rowId').references(() => warehouseRows.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
   capacity: real('capacity'),
   notes: text('notes'),
@@ -108,7 +108,7 @@ export const storeGaps = sqliteTable('storeGaps', {
 export const inventory = sqliteTable('inventory', {
   id: text('id').primaryKey(),
   productId: text('productId').notNull().references(() => products.id),
-  storeGapId: text('storeGapId').notNull().references(() => storeGaps.id),
+  warehouseGapId: text('warehouseGapId').notNull().references(() => warehouseGaps.id),
   quantity: real('quantity').notNull(),
   minQuantity: real('minQuantity'),
   reorderQuantity: real('reorderQuantity'),
@@ -121,8 +121,8 @@ export const inventoryHistory = sqliteTable('inventoryHistory', {
   id: text('id').primaryKey(),
   productId: text('productId').notNull().references(() => products.id),
   inventoryId: text('inventoryId').notNull().references(() => inventory.id),
-  fromGapId: text('fromGapId').references(() => storeGaps.id),
-  toGapId: text('toGapId').references(() => storeGaps.id),
+  fromGapId: text('fromGapId').references(() => warehouseGaps.id),
+  toGapId: text('toGapId').references(() => warehouseGaps.id),
   previousQuantity: real('previousQuantity'),
   newQuantity: real('newQuantity'),
   quantityChanged: real('quantityChanged').notNull(),

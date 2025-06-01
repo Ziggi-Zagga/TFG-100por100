@@ -1,6 +1,6 @@
 <script lang="ts">
-	import InventoryHeader from '$lib/components/utilities/Header/Header.svelte';
-	import InventorySearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
+	import PageHeader from '$lib/components/utilities/Header/Header.svelte';
+	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import ProductDrawer from '$lib/components/utilities/Drawer/Drawer.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
@@ -8,12 +8,12 @@
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
-	import type { Store, Section, Row, Gap } from '$lib/types/stores.types';
+	import type { warehouse, Section, Row, Gap } from '$lib/types/warehouse.types';
 
 	const { data } = $props();
 	let inventoryItems = $state([...data.inventoryItems]);
 	let availableProducts = $state([...data.availableProducts]);
-	let fullStoreTree = $state([...data.fullStoreTree]);
+	let fullwarehouseTree = $state([...data.fullwarehouseTree]);
 	let totalProducts = $state(data.totalProducts);
 
 	let showDrawer = $state(false);
@@ -24,7 +24,7 @@
 	let selectedProduct = $state('');
 	let selectedProductId = $state('');
 
-	let selectedStore = $state<Store | null>(null);
+	let selectedwarehouse = $state<warehouse | null>(null);
 	let selectedSection = $state<Section | null>(null);
 	let selectedRow = $state<Row | null>(null);
 	let selectedGap = $state<Gap | null>(null);
@@ -59,8 +59,8 @@
 		selectedManufacturer = product.manufacturer ?? '';
 	}
 
-	function handleStoreChange(store: Store) {
-		selectedStore = store;
+	function handlewarehouseChange(warehouse: warehouse) {
+		selectedwarehouse = warehouse;
 		selectedSection = null;
 		selectedRow = null;
 		selectedGap = null;
@@ -81,18 +81,18 @@
 		selectedGap = gap;
 	}
 
-	const stores = $derived(() =>
+	const warehouses = $derived(() =>
 		Array.from(
-			new Map(fullStoreTree.map(i => [i.storeId, { id: i.storeId, name: i.storeName }])).values()
+			new Map(fullwarehouseTree.map(i => [i.warehouseId, { id: i.warehouseId, name: i.warehouseName }])).values()
 		)
 	);
 
 	const sections = $derived(() =>
-		selectedStore
+		selectedwarehouse
 			? Array.from(
 					new Map(
-						fullStoreTree
-							.filter(i => i.storeId === selectedStore?.id && i.sectionId)
+						fullwarehouseTree
+							.filter(i => i.warehouseId === selectedwarehouse?.id && i.sectionId)
 							.map(i => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
 					).values()
 			  )
@@ -103,7 +103,7 @@
 		selectedSection
 			? Array.from(
 					new Map(
-						fullStoreTree
+						fullwarehouseTree
 							.filter(i => i.sectionId === selectedSection?.id && i.rowId)
 							.map(i => [i.rowId, { id: i.rowId, name: i.rowName }])
 					).values()
@@ -115,7 +115,7 @@
 		selectedRow
 			? Array.from(
 					new Map(
-						fullStoreTree
+						fullwarehouseTree
 							.filter(i => i.rowId === selectedRow?.id && i.gapId)
 							.map(i => [i.gapId, { id: i.gapId, name: i.gapName }])
 					).values()
@@ -160,13 +160,19 @@
 	}
 </script>
 
-<section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<InventoryHeader title="Inventory" subtitle={`${totalProducts} Products`}>
-		<InventorySearchBar bind:search placeholder="Search by name or code..." />
-		<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-			{@html '<span class="hidden md:inline">Add Product</span>'}
-		</Button>
-	</InventoryHeader>
+<section class="min-h-screen w-full p-8" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+	<PageHeader title="Inventory Management" subtitle={`${totalProducts} Products`}>
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-60 md:flex-[3] lg:flex-[4]">
+				<SearchBar bind:search placeholder="Search by name or code..." extraClasses="w-full" />
+			</div>
+			<div class="flex w-full justify-end md:w-auto">
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					<span class="hidden md:inline">Add Inventory</span>
+				</Button>
+			</div>
+		</div>
+	</PageHeader>
 
 	<Table
 		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
@@ -176,8 +182,7 @@
 		onDelete={(item) => askDelete(item)}
 	/>
 
-	{#if showDrawer}
-		<ProductDrawer title="➕ Add Product to Inventory" onClose={closeDrawer}>
+	<ProductDrawer title="Add Product to Inventory" onClose={closeDrawer} show={showDrawer}>
 			<form method="POST" action="?/create">
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					<div class="col-span-1 sm:col-span-2 lg:col-span-3">
@@ -202,14 +207,14 @@
 
 				<h1>Location</h1>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<ComboBox label="Store" name="storeId" items={stores()} onSelect={handleStoreChange} value={selectedStore?.name || ''} searchQuery={selectedStore?.name || ''} displayField="name" />
+					<ComboBox label="warehouse" name="warehouseId" items={warehouses()} onSelect={handlewarehouseChange} value={selectedwarehouse?.name || ''} searchQuery={selectedwarehouse?.name || ''} displayField="name" />
 					<ComboBox label="Section" name="sectionId" items={sections()} onSelect={handleSectionChange} value={selectedSection?.name || ''} searchQuery={selectedSection?.name || ''} displayField="name" />
 					<ComboBox label="Row" name="rowId" items={rows()} onSelect={handleRowChange} value={selectedRow?.name || ''} searchQuery={selectedRow?.name || ''} displayField="name" />
 					<ComboBox label="Gap" name="gapId" items={gaps()} onSelect={handleGapChange} value={selectedGap?.name || ''} searchQuery={selectedGap?.name || ''} displayField="name" required />
 				</div>
 
 				<input type="hidden" name="productId" value={selectedProductId} />
-				<input type="hidden" name="storeGapId" value={selectedGap?.id || ''} />
+				<input type="hidden" name="warehouseGapId" value={selectedGap?.id || ''} />
 
 				<div class="mt-6 flex justify-end gap-4">
 					<Button onclick={closeDrawer} variant="secondary" size="md" extraStyles="w-full md:w-auto">
@@ -221,7 +226,6 @@
 				</div>
 			</form>
 		</ProductDrawer>
-	{/if}
 
 	<ConfirmDialog
 		show={showConfirm}

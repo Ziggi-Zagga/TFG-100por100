@@ -1,20 +1,20 @@
-import * as repo from '../db/repositories/stores.repository';
+import * as repo from '../db/repositories/warehouse.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 
-export const getStoresTree = async () => {
-	return await repo.getFullStoresTree();
+export const getwarehouseTree = async () => {
+	return await repo.getFullwarehouseTree();
 };
 
-export const getStores = async () => {
-	return await repo.getAllStores();
+export const getwarehouse = async () => {
+	return await repo.getAllwarehouse();
 };
 
-export const getStoreWithSections = async (storeId: string) => {
-	if (!storeId) {
-		throw new ServiceError('Store ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'storeId' });
+export const getwarehouseWithSections = async (warehouseId: string) => {
+	if (!warehouseId) {
+		throw new ServiceError('warehouse ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'warehouseId' });
 	}
-	return await repo.getStoreAndSections(storeId);
+	return await repo.getwarehouseAndSections(warehouseId);
 };
 
 export const getSectionWithRows = async (sectionId: string) => {
@@ -38,7 +38,7 @@ export const getGapById = async (gapId: string) => {
 	return await repo.getGap(gapId);
 };
 
-export const createStore = async ({
+export const createwarehouse = async ({
 	name,
 	location,
 	description
@@ -48,35 +48,35 @@ export const createStore = async ({
 	description?: string;
 }) => {
 	if (!name) {
-		throw new ServiceError('Store name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+		throw new ServiceError('warehouse name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
 	}
 	if (!location) {
 		throw new ServiceError('Location is required', ERROR_TYPES.VALIDATION, 400, { field: 'location' });
 	}
 
 	const id = crypto.randomUUID();
-	await repo.insertStore({ id, name, location, description });
+	await repo.insertwarehouse({ id, name, location, description });
 	return { id };
 };
 
 export const createSection = async ({
-	storeId,
+	warehouseId,
 	name,
 	description
 }: {
-	storeId: string;
+	warehouseId: string;
 	name: string;
 	description?: string;
 }) => {
-	if (!storeId) {
-		throw new ServiceError('Store ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'storeId' });
+	if (!warehouseId) {
+		throw new ServiceError('warehouse ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'warehouseId' });
 	}
 	if (!name) {
 		throw new ServiceError('Section name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
 	}
 
 	const id = crypto.randomUUID();
-	await repo.insertSection({ id, storeId, name, description });
+	await repo.insertSection({ id, warehouseId, name, description });
 	return { id };
 };
 
@@ -121,12 +121,33 @@ export const createGap = async ({
 	await repo.insertGap({ id, rowId, name, capacity, notes });
 	return { id };
 };
-export const deleteStoreById = async (id: string) => {
+
+export const updatewarehouse = async (id: string, data: 
+	{ name: string; location?: string | null; description?: string | null }) => {
 	if (!id) {
-		throw new ServiceError('Missing store ID', ERROR_TYPES.VALIDATION, 400);
+		throw new ServiceError('warehouse ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
 	}
-	await repo.removeStore(id);
+	if (!data.name) {
+		throw new ServiceError('warehouse name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	return await repo.updatewarehouse(id, {
+		warehouseId: id,
+		updatedData: {
+			name: data.name,
+			location: data.location,
+			description: data.description
+		}
+	});
 };
+
+export const deletewarehouseById = async (id: string) => {
+	if (!id) {
+		throw new ServiceError('warehouse ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	await repo.removewarehouse(id);
+};
+
 export const deleteSectionById = async (id: string) => {
 	if (!id) {
 		throw new ServiceError('Missing section ID', ERROR_TYPES.VALIDATION, 400);

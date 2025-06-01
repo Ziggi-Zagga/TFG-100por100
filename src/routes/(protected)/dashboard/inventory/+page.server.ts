@@ -17,12 +17,12 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const productId = formData.get('productId')?.toString() ?? "";
-			const storeGapId = formData.get('storeGapId')?.toString() ?? "";
+			const warehouseGapId = formData.get('warehouseGapId')?.toString() ?? "";
 			const stock = Number(formData.get('stock'));
 			const minQuantity = Number(formData.get('minQuantity'));
 			const reorderQuantity = Number(formData.get('reorderQuantity'));
 
-			await createInventoryEntry({ productId, storeGapId, stock, minQuantity, reorderQuantity });
+			await createInventoryEntry({ productId, warehouseGapId, stock, minQuantity, reorderQuantity });
 
 			return redirect(303, '/dashboard/inventory');
 		} catch (err) {

@@ -3,8 +3,7 @@ import * as supplierRepo from '../db/repositories/supplier.repository';
 import * as productRepo from '../db/repositories/products.repository';
 import crypto from 'crypto';
 import { db } from '$lib/server/db';
-import { users, orders, orderItems } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { orders, orderItems } from '$lib/server/db/schema';
 
 
 export const getOrders = async () => {
