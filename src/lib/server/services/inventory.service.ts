@@ -12,6 +12,7 @@ import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.
 
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 import { getFullProductsList, repoGetProductById } from '../db/repositories/products.repository';
+import { repoGetInventoryHistoryByInventoryId, repoGetInventoryHistoryView, repoInsertInventoryHistory } from '../db/repositories/inventoryHistory.repository';
 
 export const getInventoryData = async () => {
 	const items = await repoGetInventoryView();
@@ -118,3 +119,64 @@ export const getTreeFromGapId = async (gapId: string) => {
 	return await repoGetTreeFromGapId(gapId);
 }
 
+export const getInventoryHistory = async () => {
+	return await repoGetInventoryHistoryView();
+}
+
+export const getInventoryHistoryByInventoryId = async (inventoryId: string) => {
+	return await repoGetInventoryHistoryByInventoryId(inventoryId);
+}
+
+export const createInventoryHistoryEntry = async ({
+	id,
+	productId,
+	inventoryId,
+	fromGapId,
+	toGapId,
+	previousQuantity,
+	newQuantity,
+	quantityChanged,
+	userId,
+	notes,
+	createdAt = new Date(),
+  }: {
+	id: string;
+	productId: string;
+	inventoryId: string;
+	fromGapId?: string;
+	toGapId?: string;
+	previousQuantity?: number;
+	newQuantity?: number;
+	quantityChanged: number;
+	userId?: string;
+	notes?: string;
+	createdAt?: Date;
+  }) => {
+	if (!id) {
+	  throw new ServiceError('ID is required', ERROR_TYPES.VALIDATION, 400);
+	}
+	if (!productId) {
+	  throw new ServiceError('Product ID is required', ERROR_TYPES.VALIDATION, 400);
+	}
+	if (!inventoryId) {
+	  throw new ServiceError('Inventory ID is required', ERROR_TYPES.VALIDATION, 400);
+	}
+	if (isNaN(quantityChanged)) {
+	  throw new ServiceError('Quantity changed must be a valid number', ERROR_TYPES.VALIDATION, 400);
+	}
+  
+	await repoInsertInventoryHistory({
+	  id,
+	  productId,
+	  inventoryId,
+	  fromGapId,
+	  toGapId,
+	  previousQuantity,
+	  newQuantity,
+	  quantityChanged,
+	  userId,
+	  notes,
+	  createdAt,
+	});
+  };
+  

@@ -54,9 +54,9 @@
 	function handleProductChange(product: any) {
 		selectedProduct = product.name;
 		selectedProductId = product.id;
-		selectedCategory = product.category ?? '';
-		selectedSupplier = product.supplier ?? '';
-		selectedManufacturer = product.manufacturer ?? '';
+		selectedCategory = product.categoryName ?? '';
+		selectedSupplier = product.supplierName ?? '';
+		selectedManufacturer = product.manufacturerName ?? '';
 	}
 
 	function handlewarehouseChange(warehouse: warehouse) {
