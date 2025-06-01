@@ -79,7 +79,7 @@
   }
 </script>
 
-<section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class=" bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 
   <PageHeader title="Products Management" subtitle={`${totalProducts} Products`}>
     <div class="flex w-full flex-col items-center gap-4 md:flex-row">

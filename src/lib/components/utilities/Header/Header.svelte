@@ -1,14 +1,18 @@
 <script lang="ts">
+	import { classes } from "./header.utils";
+
     const {
       title,
       subtitle = 'items',
       children,
-      hidden = false
+      hidden = false,
+      extraStyles = 'default'
     }: {
       title: string;
       subtitle?: string;
       children?: () => any;
       hidden?: boolean;
+      extraStyles?: 'default' | 'plain' | 'dark' | 'compact';
     } = $props();
   </script>
   
@@ -17,6 +21,7 @@
   <div class="sticky top-0 z-40 w-full bg-white border-b border-gray-300 shadow-md mb-5">
     <div
       class="flex items-center justify-between px-6 py-4"
+      style={classes[extraStyles]}
     >
       <!-- Left side - Title section clean and minimal -->
       <div class="flex items-center space-x-4">

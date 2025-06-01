@@ -20,8 +20,8 @@ import { fail } from '@sveltejs/kit';
 	let searchManufacturers = $state('');
 	let suppliers = $state([...data.suppliers]);
 	let manufacturers = $state([...data.manufacturers]);
-	let totalSuppliers = $derived(() => suppliers.length);
-	let totalManufacturers = $derived(() => manufacturers.length);
+	let totalSuppliers = $state(data.suppliers.length);
+	let totalManufacturers = $state(data.manufacturers.length);
 	let wrongName = $state(false);
 	let wrongNameManufacturer = $state(false);
 	let showConfirm = $state(false);
@@ -223,7 +223,7 @@ import { fail } from '@sveltejs/kit';
 </script>
 
 <section
-	class="min-h-screen w-full p-8"
+	class="min-h-screen w-full"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 >
 

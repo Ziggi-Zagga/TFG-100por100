@@ -160,7 +160,7 @@
 	}
 </script>
 
-<section class="min-h-screen w-full p-8" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 	<PageHeader title="Inventory Management" subtitle={`${totalProducts} Products`}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
