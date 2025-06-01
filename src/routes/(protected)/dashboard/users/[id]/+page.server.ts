@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { getOrdersByUser } from '$lib/server/services/orders.service';
+import { getInventoryHistoryByUserId } from '$lib/server/services/inventoryHistory.service';
 
 export const load: PageServerLoad = async ({ params }) => {
   const { id } = params;
@@ -15,11 +16,13 @@ export const load: PageServerLoad = async ({ params }) => {
 
   const roles = await db.query.roles.findMany();
   const orders = await getOrdersByUser(id);
+  const inventoryHistory = await getInventoryHistoryByUserId(id);
 
   return {
     user,
     roles,
-    orders
+    orders,
+    inventoryHistory
   };
 };
 

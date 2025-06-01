@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 
 const warehouseGapsFrom = alias(table.warehouseGaps, 'warehouseGapsFrom');
@@ -57,6 +57,33 @@ export const repoGetInventoryHistoryByInventoryId = async (inventoryId: string) 
         .leftJoin(warehouseGapsTo, eq(table.inventoryHistory.toGapId, warehouseGapsTo.id))
         .leftJoin(table.users, eq(table.inventoryHistory.userId, table.users.id))
         .where(eq(table.inventoryHistory.inventoryId, inventoryId));
+};
+
+export const repoGetInventoryHistoryByUserId = async (userId: string) => {
+    return await db
+        .select({
+            id: table.inventoryHistory.id,
+            productId: table.products.id,
+            productName: table.products.name,
+            inventoryId: table.inventory.id,
+            fromLocation: warehouseGapsFrom.name,
+            toLocation: warehouseGapsTo.name,
+            previousQuantity: table.inventoryHistory.previousQuantity,
+            newQuantity: table.inventoryHistory.newQuantity,
+            quantityChanged: table.inventoryHistory.quantityChanged,
+            userId: table.users.id,
+            userName: table.users.username,
+            notes: table.inventoryHistory.notes,
+            createdAt: table.inventoryHistory.createdAt,
+        })
+        .from(table.inventoryHistory)
+        .innerJoin(table.products, eq(table.inventoryHistory.productId, table.products.id))
+        .innerJoin(table.inventory, eq(table.inventoryHistory.inventoryId, table.inventory.id))
+        .leftJoin(warehouseGapsFrom, eq(table.inventoryHistory.fromGapId, warehouseGapsFrom.id))
+        .leftJoin(warehouseGapsTo, eq(table.inventoryHistory.toGapId, warehouseGapsTo.id))
+        .leftJoin(table.users, eq(table.inventoryHistory.userId, table.users.id))
+        .where(eq(table.inventoryHistory.userId, userId))
+        .orderBy(desc(table.inventoryHistory.createdAt));
 };
 
 export const repoInsertInventoryHistory = async ({

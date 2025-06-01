@@ -72,8 +72,7 @@
 		onDelete={(item) => handleDelete(item.id)}
 	/>
 
-	{#if showDrawer}
-		<Drawer title="➕ Create New Row" onClose={closeDrawer}>
+	<Drawer title="➕ Create New Row" onClose={closeDrawer} show={showDrawer}>
 			<form
 				method="POST"
 				action="?/create"
@@ -105,5 +104,4 @@
 				</div>
 			</form>
 		</Drawer>
-	{/if}
 </section>

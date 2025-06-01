@@ -229,7 +229,7 @@ import { fail } from '@sveltejs/kit';
 
 <!-- SUPPLIERS -->
 {#if isSuppliers}
-	<PageHeader title="Suppliers Management" subtitle={`${totalSuppliers} Suppliers`}>
+	<PageHeader title="Suppliers Management" subtitle={totalSuppliers() + ' Suppliers'}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
 				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
@@ -294,8 +294,7 @@ import { fail } from '@sveltejs/kit';
 	{/if}
 
 	<!-- DRAWER -->
-	{#if showDrawer}
-		<Drawer title="➕ Add New Supplier" onClose={closeDrawer} 	>
+		<Drawer title="➕ Add New Supplier" onClose={closeDrawer} show={showDrawer}>
 			<form onsubmit={handleCreate} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>
@@ -360,7 +359,6 @@ import { fail } from '@sveltejs/kit';
 				</div>
 			</form>
 		</Drawer>
-	{/if}
 
 	<ConfirmDialog
 		show={showConfirm}
@@ -373,7 +371,7 @@ import { fail } from '@sveltejs/kit';
 
 	<!-- MANUFACTURERS -->
 
-	<PageHeader title="Manufacturers Management" subtitle={`${totalManufacturers} Manufacturers`}>
+	<PageHeader title="Manufacturers Management" subtitle={totalManufacturers() + ' Manufacturers'}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
 				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
@@ -435,8 +433,7 @@ import { fail } from '@sveltejs/kit';
 	{/if}
 
 	<!-- DRAWER -->
-	{#if showDrawer}
-		<Drawer title="Add New Manufacturer" onClose={closeDrawer}>
+		<Drawer title="Add New Manufacturer" onClose={closeDrawer} show={showDrawer}>
 			<form onsubmit={handleCreateManufacturer} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>
@@ -471,12 +468,11 @@ import { fail } from '@sveltejs/kit';
 						size="md"
 						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
 					>
-						Create Supplier
+						Create Manufacturer
 					</Button>
 				</div>
 			</form>
 		</Drawer>
-	{/if}
 
 	<ConfirmDialog
 		show={showConfirmManufacturer}

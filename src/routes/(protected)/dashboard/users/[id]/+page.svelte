@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/warehouse';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
@@ -12,8 +11,10 @@
 	import { goto } from '$app/navigation';
 	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
+	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 
-	const { data } = $props();
+	const { data } = $props<PageData>();
 	let selectedOption = $state<'orders' | 'inventory'>('orders');
 	const historyOptions = [
 		{ id: 'orders', name: 'Orders' },
@@ -187,10 +188,10 @@
 		<!-- TODO: Implement history -->
 		
       {#if selectedOption === 'orders'}
-			{console.log(data.orders)}
         <Table columns={["orderNumber", "supplierName", "createdAt", "status"]} ifEdit={() => false} ifDelete={() => false} items={data.orders} onRowClick={(item) => goto(`/dashboard/orders/ordersList?id=${item.id}`)}/>
       {:else if selectedOption === 'inventory'}
-        <Table columns={["movement_id", "date", "stock_change", "location"]} ifEdit={() => false} ifDelete={() => false} items={[]} />
+        <Table columns={["id", "productName", "fromLocation", "toLocation", "previousQuantity", "newQuantity" ]} ifEdit={() => false} ifDelete={() => false} items={data.inventoryHistory} onRowClick={(item) => goto(`/dashboard/inventory?id=${item.inventoryId}`)}/>
+      {/if}
       {/if}
       
 	</div>

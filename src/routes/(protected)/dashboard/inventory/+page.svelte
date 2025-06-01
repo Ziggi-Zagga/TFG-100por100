@@ -9,6 +9,7 @@
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
 	import type { warehouse, Section, Row, Gap } from '$lib/types/warehouse.types';
+	import { onMount } from 'svelte';
 
 	const { data } = $props();
 	let inventoryItems = $state([...data.inventoryItems]);
@@ -31,6 +32,20 @@
 
 	let showConfirm = $state(false);
 	let inventoryIdToDelete = $state<string | null>(null);
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const id = urlParams.get('id');
+		if (id) {
+			const inventory = inventoryItems.find(inventory => inventory.id === id);
+			if (inventory) {
+				search = inventory.code;
+				urlParams.delete('id');
+				const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+				window.history.replaceState({}, '', newUrl);
+			}
+		}
+	});
 
 	function openDrawer() {
 		showDrawer = true;
