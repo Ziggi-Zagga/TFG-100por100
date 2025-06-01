@@ -61,18 +61,18 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const id = formData.get('id')?.toString();
-
+	
 			if (!id) {
-				return fail(400, { message: 'ID is required' });
+				return fail(400, { message: 'Warehouse ID is required' });
 			}
-
+	
 			await deletewarehouseById(id);
 			return { success: true };
 		} catch (error) {
-			if (error instanceof ServiceError) {
-				return fail(400, { message: error.message });
-			}
-			return fail(500, { message: 'Failed to delete warehouse' });
+			console.error('Error deleting warehouse:', error);
+			return fail(500, { 
+				message: error instanceof Error ? error.message : 'Failed to delete warehouse' 
+			});
 		}
 	},
 

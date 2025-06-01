@@ -57,37 +57,34 @@
 	}
 
 	async function handleDelete() {
-		if (!warehouseToDelete) return;
+        if (!warehouseToDelete) return;
+        
+        try {
+            const formData = new FormData();
+            formData.append('id', warehouseToDelete.id);
 
-		try {
-			const formData = new FormData();
-			formData.append('id', warehouseToDelete.id);
+            const response = await fetch('?/delete', {
+                method: 'POST',
+                body: formData
+            });
 
-			const res = await fetch('?/delete', {
-				method: 'POST',
-				body: formData
-			});
-
-			const result = await res.json();
-
-			if (res.ok && result.success) {
-				warehouse = warehouse.filter((s) => s.id !== warehouseToDelete?.id);
-				showSuccess(`Warehouse "${warehouseToDelete.name}" deleted successfully`);
-			} else {
-				console.log(result);
-				console.log(res);
-				const error = result.message || 'Failed to delete warehouse';
-				console.error('Failed to delete warehouse:', error);
-				showError(error);
-			}
-		} catch (error) {
-			console.error('Error deleting warehouse:', error);
-			showError('An error occurred while deleting the warehouse');
-		} finally {
-			showDeleteDialog = false;
-			warehouseToDelete = null;
-		}
-	}
+            if (response.ok) {
+                // Update the warehouse list by removing the deleted warehouse
+                warehouse = warehouse.filter(w => w.id !== warehouseToDelete?.id);
+                showSuccess(`Warehouse "${warehouseToDelete.name}" deleted successfully`);
+            } else {
+                const result = await response.json();
+                const errorMessage = result.message || 'Failed to delete warehouse';
+                throw new Error(errorMessage);
+            }
+        } catch (error) {
+            console.error('Error deleting warehouse:', error);
+            showError(error instanceof Error ? error.message : 'An error occurred while deleting the warehouse');
+        } finally {
+            showDeleteDialog = false;
+            warehouseToDelete = null;
+        }
+    }
 
 	function handleEdit(warehouseId: string, event: Event) {
 		event.stopPropagation();
