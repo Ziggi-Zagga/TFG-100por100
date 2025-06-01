@@ -1,6 +1,6 @@
 <script lang="ts">
   export let label: string;
-  export let value: string | number | null | undefined;
+  export let value: string | number | null | undefined | Date;
   export let uppercase: boolean = false;
 </script>
 

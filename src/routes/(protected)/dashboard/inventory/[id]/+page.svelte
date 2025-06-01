@@ -16,8 +16,10 @@
     let inventory = $state([...data.inventory]);
     let product = $state([...data.product]);
     let location = $state([...data.location]);
+    let inventoryHistory = $state([...data.history]);
     let isEditing = $state(false);
     let id = $state(page.params.id);
+    let showHistory = $state(false);
  
     let fullStoreTree = $state([...data.fullStoreTree]);
 
@@ -26,6 +28,8 @@
     let selectedRow = $state(location[0].rowName);
     let selectedGapName = $state(location[0].gapName);
     let selectedGapId = $state(location[0].gapId);
+
+    let selectedHistory = $state(inventoryHistory[0]);
 
     console.log(id);
 
@@ -48,12 +52,9 @@
         showConfirm = false;
     }
 
-    function goBack() {
-        history.back();
-    }
-
-    function closeDrawer() {
-        isEditing = false;
+    function onHistoryClick(item: any) {
+        selectedHistory = item;
+        showHistory = true;
     }
 
     function handleStoreChange(store: any) {
@@ -177,7 +178,13 @@
         </div>
         <div class="w-full md:w-1/2 mt-4 md:mt-0">
           <Header title="Product History" subtitle="" variant="compact"/>
-          <Table columns={["Date", "Stock", "Location"]} items={inventory} />
+          <Table 
+          columns={["fromLocation", "toLocation", "previousQuantity", "newQuantity"]} 
+          items={inventoryHistory}
+          onRowClick={(item) => onHistoryClick(item)} 
+          ifEdit={() => false}
+          ifDelete={() => false}
+          />
         </div>
       </div>
 
@@ -192,6 +199,7 @@
               <TextInput label="Reorder Quantity" name="reorderQuantity" type="number" min={0} placeholder="Enter reorder quantity" value={inventory[0].reorderQuantity ?? undefined} required />
             </div>  
 
+            <br/>
             <Header title="Location" subtitle="" variant="compact"/>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
               <ComboBox label="Store" name="storeId" items={stores()} searchQuery={selectedStore} onSelect={(item) => handleStoreChange(item)} value={selectedStore} />
@@ -199,6 +207,13 @@
               <ComboBox label="Row" name="rowId" items={rows()} searchQuery={selectedRow} onSelect={(item) => handleRowChange(item)} value={selectedRow} />
               <ComboBox label="Gap" name="gapName" items={gaps()} searchQuery={selectedGapName} onSelect={(item) => handleGapChange(item)} value={selectedGapName} required />
             </div>
+
+            <br/>
+            <TextInput label="Notes" name="notes" type="textArea" placeholder="Enter notes" />
+
+            <input type="hidden" name="productId" value={inventory[0].productId} />
+            <input type="hidden" name="lastStoreGapId" value={inventory[0].storeGapId} />
+            <input type="hidden" name="lastStock" value={inventory[0].quantity} />
 
             <div class="mt-6 flex justify-end gap-4">
               <Button onclick={toggleEdit} variant="secondary" size="md" extraStyles="w-full md:w-auto">
@@ -209,9 +224,34 @@
               </Button>
             </div>
 
+            <input type="hidden" name="productId" value={inventory[0].productId} />
             <input type="hidden" name="gapId" value={selectedGapId} />
             <input type="hidden" name="id" value={id} />
         </form>
+    </Modal>
+    {/if}
+
+    {#if showHistory}
+    <Modal title="Inventory History" size="lg" onClose={() => showHistory = false}>
+      <Header title="Stock" subtitle="" variant="compact"/>
+      <div class="grid grid-cols-3 gap-x-6 gap-y-2 pb-6">
+        <ShowText label="Actual Stock" value={selectedHistory.newQuantity} />
+        <ShowText label="Minimum Stock" value={selectedHistory.previousQuantity} />
+        <ShowText label="Reorder Quantity" value={selectedHistory.quantityChanged} />
+      </div>
+
+      <Header title="Location" subtitle="" variant="compact"/>
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 pb-6">
+        <ShowText label="From Location" value={selectedHistory.fromLocation} />
+        <ShowText label="To Location" value={selectedHistory.toLocation} />
+      </div>
+
+      <Header title="Other info" subtitle="" variant="compact"/>
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 pb-6">
+        <ShowText label="User" value={selectedHistory.userName} />
+        <ShowText label="Date" value={selectedHistory.createdAt} />
+      </div>
+      <ShowText label="Notes" value={selectedHistory.notes} />
     </Modal>
     {/if}
 

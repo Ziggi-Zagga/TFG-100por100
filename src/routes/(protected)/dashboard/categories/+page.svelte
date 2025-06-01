@@ -88,10 +88,16 @@
 
 <section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 	<Header title="Categories" subtitle={`${totalCategories} Categories`}>
-        <SearchBar bind:search placeholder="Search by name..." />
-		<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-			{@html '<span class="hidden md:inline">Add Category</span>'}
-		</Button>
+        <div class="flex w-full flex-col items-center gap-4 md:flex-row">
+            <div class="w-72 md:flex-[3] lg:flex-[4]">
+                <SearchBar bind:search placeholder="Search by name..." />
+            </div>
+            <div class="w-full md:w-auto">
+                <Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+                    {@html '<span class="hidden md:inline">Add Category</span>'}
+                </Button>
+            </div>
+        </div>
 	</Header>
 
     <Table

@@ -54,9 +54,9 @@
 	function handleProductChange(product: any) {
 		selectedProduct = product.name;
 		selectedProductId = product.id;
-		selectedCategory = product.category ?? '';
-		selectedSupplier = product.supplier ?? '';
-		selectedManufacturer = product.manufacturer ?? '';
+		selectedCategory = product.categoryName ?? '';
+		selectedSupplier = product.supplierName ?? '';
+		selectedManufacturer = product.manufacturerName ?? '';
 	}
 
 	function handleStoreChange(store: Store) {
@@ -162,10 +162,16 @@
 
 <section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 	<InventoryHeader title="Inventory" subtitle={`${totalProducts} Products`}>
-		<InventorySearchBar bind:search placeholder="Search by name or code..." />
-		<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-			{@html '<span class="hidden md:inline">Add Product</span>'}
-		</Button>
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-72 md:flex-[3] lg:flex-[4]">
+				<InventorySearchBar bind:search placeholder="Search by name or code..." />
+			</div>
+			<div class="w-full md:w-auto">
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					{@html '<span class="hidden md:inline">Add Product</span>'}
+				</Button>
+			</div>
+		</div>
 	</InventoryHeader>
 
 	<Table
