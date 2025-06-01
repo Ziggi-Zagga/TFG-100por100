@@ -150,7 +150,7 @@
 <section class="pt-0 pb-4 md:pb-8 px-4 md:px-8 min-h-screen flex justify-center" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
     <div class="flex flex-col md:flex-row gap-6 w-full max-w-screen-xl px-4 py-6">
         <div class="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6 space-y-6">
-          <Header title={product[0].name} subtitle="" variant="default">
+          <Header title={product[0].name} subtitle="">
             <Button onclick={toggleEdit} variant="secondary" size="md" extraStyles="w-full md:w-auto">
               <Icon icon="edit" size={20} />
             </Button>
@@ -159,7 +159,7 @@
             </Button>
           </Header>
           <div>
-            <Header title="Stock Information" subtitle="" variant="compact"/>
+            <Header title="Stock Information" subtitle=""/>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <ShowText label="Actual Stock" value={inventory[0].quantity} />
               <ShowText label="Minimum Stock" value={inventory[0].minQuantity} />
@@ -167,7 +167,7 @@
             </div>
           </div>
           <div>
-            <Header title="Location" subtitle="" variant="compact"/>
+            <Header title="Location" subtitle=""/>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ShowText label="Section" value={location[0].sectionName} />
               <ShowText label="Row" value={location[0].rowName} />
@@ -177,7 +177,7 @@
           </div>
         </div>
         <div class="w-full md:w-1/2 mt-4 md:mt-0">
-          <Header title="Product History" subtitle="" variant="compact"/>
+          <Header title="Product History" subtitle=""/>
           <Table 
           columns={["fromLocation", "toLocation", "previousQuantity", "newQuantity"]} 
           items={inventoryHistory}
@@ -192,7 +192,7 @@
     <Modal title="➕ Edit Inventory" onClose={toggleEdit}>
         <form method="POST" action="?/update" class="p-6">
 
-            <Header title="Product Information" subtitle="" variant="compact"/>
+            <Header title="Product Information" subtitle=""/>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <TextInput label="Actual Stock" name="quantity" type="number" min={0} placeholder="Enter product stock" value={inventory[0].quantity ?? undefined} required />
               <TextInput label="Minimum Stock" name="minQuantity" type="number" min={0} placeholder="Enter minimum stock" value={inventory[0].minQuantity ?? undefined} required />
@@ -200,7 +200,7 @@
             </div>  
 
             <br/>
-            <Header title="Location" subtitle="" variant="compact"/>
+            <Header title="Location" subtitle=""/>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
               <ComboBox label="warehouse" name="warehouseId" items={warehouse()} searchQuery={selectedwarehouse} onSelect={(item) => handlewarehouseChange(item)} value={selectedwarehouse} />
               <ComboBox label="Section" name="sectionId" items={sections()} searchQuery={selectedSection} onSelect={(item) => handleSectionChange(item)} value={selectedSection} />
@@ -212,7 +212,7 @@
             <TextInput label="Notes" name="notes" type="textArea" placeholder="Enter notes" />
 
             <input type="hidden" name="productId" value={inventory[0].productId} />
-            <input type="hidden" name="lastStoreGapId" value={inventory[0].storeGapId} />
+            <input type="hidden" name="lastwarehouseGapId" value={inventory[0].warehouseGapId} />
             <input type="hidden" name="lastStock" value={inventory[0].quantity} />
 
             <div class="mt-6 flex justify-end gap-4">
@@ -233,20 +233,20 @@
 
     {#if showHistory}
     <Modal title="Inventory History" size="lg" onClose={() => showHistory = false}>
-      <Header title="Stock" subtitle="" variant="compact"/>
+      <Header title="Stock" subtitle=""/>
       <div class="grid grid-cols-3 gap-x-6 gap-y-2 pb-6">
         <ShowText label="Actual Stock" value={selectedHistory.newQuantity} />
         <ShowText label="Minimum Stock" value={selectedHistory.previousQuantity} />
         <ShowText label="Reorder Quantity" value={selectedHistory.quantityChanged} />
       </div>
 
-      <Header title="Location" subtitle="" variant="compact"/>
+      <Header title="Location" subtitle=""/>
       <div class="grid grid-cols-2 gap-x-6 gap-y-2 pb-6">
         <ShowText label="From Location" value={selectedHistory.fromLocation} />
         <ShowText label="To Location" value={selectedHistory.toLocation} />
       </div>
 
-      <Header title="Other info" subtitle="" variant="compact"/>
+      <Header title="Other info" subtitle=""/>
       <div class="grid grid-cols-2 gap-x-6 gap-y-2 pb-6">
         <ShowText label="User" value={selectedHistory.userName} />
         <ShowText label="Date" value={selectedHistory.createdAt} />

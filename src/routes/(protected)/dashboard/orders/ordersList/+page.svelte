@@ -325,7 +325,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 	}
 </script>
 
-<section class="min-h-screen w-full bg-gradient-to-b from-gray-50 to-blue-50 p-8">
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
 	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`}>	
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-72 md:flex-[3] lg:flex-[4]">

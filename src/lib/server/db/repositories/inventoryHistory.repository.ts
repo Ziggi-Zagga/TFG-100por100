@@ -3,8 +3,8 @@ import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 
-const storeGapsFrom = alias(table.storeGaps, 'storeGapsFrom');
-const storeGapsTo = alias(table.storeGaps, 'storeGapsTo');
+const warehouseGapsFrom = alias(table.warehouseGaps, 'warehouseGapsFrom');
+const warehouseGapsTo = alias(table.warehouseGaps, 'warehouseGapsTo');
 
 export const repoGetInventoryHistoryView = async () => {
   return await db
@@ -13,8 +13,8 @@ export const repoGetInventoryHistoryView = async () => {
           productId: table.products.id,
           productName: table.products.name,
           inventoryId: table.inventory.id,
-          fromLocation: storeGapsFrom.name,
-          toLocation: storeGapsTo.name,
+          fromLocation: warehouseGapsFrom.name,
+          toLocation: warehouseGapsTo.name,
           previousQuantity: table.inventoryHistory.previousQuantity,
           newQuantity: table.inventoryHistory.newQuantity,
           quantityChanged: table.inventoryHistory.quantityChanged,
@@ -26,8 +26,8 @@ export const repoGetInventoryHistoryView = async () => {
       .from(table.inventoryHistory)
       .innerJoin(table.products, eq(table.inventoryHistory.productId, table.products.id))
       .innerJoin(table.inventory, eq(table.inventoryHistory.inventoryId, table.inventory.id))
-      .leftJoin(storeGapsFrom, eq(table.inventoryHistory.fromGapId, storeGapsFrom.id))
-      .leftJoin(storeGapsTo, eq(table.inventoryHistory.toGapId, storeGapsTo.id))
+      .leftJoin(warehouseGapsFrom, eq(table.inventoryHistory.fromGapId, warehouseGapsFrom.id))
+      .leftJoin(warehouseGapsTo, eq(table.inventoryHistory.toGapId, warehouseGapsTo.id))
       .leftJoin(table.users, eq(table.inventoryHistory.userId, table.users.id));
 };
 
@@ -40,8 +40,8 @@ export const repoGetInventoryHistoryByInventoryId = async (inventoryId: string) 
             productId: table.products.id,
             productName: table.products.name,
             inventoryId: table.inventory.id,
-            fromLocation: storeGapsFrom.name,
-            toLocation: storeGapsTo.name,
+            fromLocation: warehouseGapsFrom.name,
+            toLocation: warehouseGapsTo.name,
             previousQuantity: table.inventoryHistory.previousQuantity,
             newQuantity: table.inventoryHistory.newQuantity,
             quantityChanged: table.inventoryHistory.quantityChanged,
@@ -53,8 +53,8 @@ export const repoGetInventoryHistoryByInventoryId = async (inventoryId: string) 
         .from(table.inventoryHistory)
         .innerJoin(table.products, eq(table.inventoryHistory.productId, table.products.id))
         .innerJoin(table.inventory, eq(table.inventoryHistory.inventoryId, table.inventory.id))
-        .leftJoin(storeGapsFrom, eq(table.inventoryHistory.fromGapId, storeGapsFrom.id))
-        .leftJoin(storeGapsTo, eq(table.inventoryHistory.toGapId, storeGapsTo.id))
+        .leftJoin(warehouseGapsFrom, eq(table.inventoryHistory.fromGapId, warehouseGapsFrom.id))
+        .leftJoin(warehouseGapsTo, eq(table.inventoryHistory.toGapId, warehouseGapsTo.id))
         .leftJoin(table.users, eq(table.inventoryHistory.userId, table.users.id))
         .where(eq(table.inventoryHistory.inventoryId, inventoryId));
 };
