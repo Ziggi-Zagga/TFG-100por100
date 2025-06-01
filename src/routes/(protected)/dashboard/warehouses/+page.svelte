@@ -63,18 +63,22 @@
 			const formData = new FormData();
 			formData.append('id', warehouseToDelete.id);
 
-			const res = await fetch('/dashboard/warehouses/delete', {
+			const res = await fetch('?/delete', {
 				method: 'POST',
 				body: formData
 			});
 
-			if (res.ok) {
+			const result = await res.json();
+
+			if (res.ok && result.success) {
 				warehouse = warehouse.filter((s) => s.id !== warehouseToDelete?.id);
-				showSuccess(`warehouse "${warehouseToDelete.name}" deleted successfully`);
+				showSuccess(`Warehouse "${warehouseToDelete.name}" deleted successfully`);
 			} else {
-				const error = await res.text();
+				console.log(result);
+				console.log(res);
+				const error = result.message || 'Failed to delete warehouse';
 				console.error('Failed to delete warehouse:', error);
-				showError(`Failed to delete warehouse: ${error}`);
+				showError(error);
 			}
 		} catch (error) {
 			console.error('Error deleting warehouse:', error);
@@ -99,21 +103,29 @@
 		try {
 			formData.append('id', editingwarehouse.id);
 			
-			const res = await fetch('/dashboard/warehouses/update', {
+			const res = await fetch('?/update', {
 				method: 'POST',
 				body: formData
 			});
+
+			const result = await res.json();
 			
-			if (res.ok) {
-				warehouse = warehouse.map((s) => s.id === editingwarehouse?.id ? editingwarehouse : s);
-				showSuccess(`warehouse "${editingwarehouse.name}" updated successfully`);
+			if (res.ok && result.success) {
+				// Update the warehouse in the local state with the updated data
+				warehouse = warehouse.map((w) => 
+					w.id === editingwarehouse?.id ? { ...w, ...result.warehouse } : w
+				);
+				showSuccess(`Warehouse "${result.warehouse.name}" updated successfully`);
 			} else {
-				const error = await res.text();
+				const error = result.message || 'Failed to update warehouse';
 				showError(`Failed to update warehouse: ${error}`);
-			}	
+			}
 		} catch (error) {
+			console.error('Update error:', error);
 			showError('An error occurred while updating the warehouse');
-		} 
+		} finally {
+			closeEditDrawer();
+		}
 	}
 
 	function closeEditDrawer() {

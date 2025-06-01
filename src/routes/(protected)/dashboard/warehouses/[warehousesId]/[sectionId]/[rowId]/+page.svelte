@@ -12,6 +12,7 @@
   let showDrawer = $state(false);
   let search = $state('');
 
+
   const filteredGaps = $derived(() =>
     gaps.filter((gap) => gap.name.toLowerCase().includes(search.toLowerCase()))
   );
@@ -72,13 +73,13 @@
   onDelete={(item) => handleDelete(item.id)}
 />
 
-    <Drawer title="➕ Create New Gap" onClose={closeDrawer} show={showDrawer}>
+    <Drawer title="Create New Gap" onClose={closeDrawer} show={showDrawer}>
       <form
         method="POST"
         action="?/create"
         class="fixed top-0 right-0 w-full max-w-3xl h-full bg-white shadow-2xl p-10 rounded-l-3xl overflow-y-auto z-50 border-l border-blue-100 space-y-4"
       >
-        <h2 class="text-3xl font-bold text-blue-800 mb-8">➕ Create New Gap</h2>
+        <h2 class="text-3xl font-bold text-blue-800 mb-8">Create New Gap</h2>
 
         <input name="name" required placeholder="Gap Name" class="w-full p-3 border border-gray-300 rounded-xl" />
         <input name="capacity" type="number" placeholder="Capacity" class="w-full p-3 border border-gray-300 rounded-xl" />
