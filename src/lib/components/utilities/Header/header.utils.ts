@@ -7,7 +7,7 @@ export const classes = {
       background-blend-mode: overlay;
     `,
     plain: `
-      padding: 1.5rem;
+      
       background-color: white;
     `,
     dark: `

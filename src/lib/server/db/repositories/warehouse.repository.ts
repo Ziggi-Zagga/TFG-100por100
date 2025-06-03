@@ -93,18 +93,21 @@ export const insertSection = async ({
 	id,
 	warehouseId,
 	name,
+	location,
 	description
 }: {
 	id: string;
 	warehouseId: string;
 	name: string;
-	description?: string;
+	location?: string | null;
+	description?: string | null;
 }) => {
 	await db.insert(sections).values({
 		id,
 		warehouseId,
 		name,
-		description
+		location: location || null,
+		description: description || null
 	});
 };
 

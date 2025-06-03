@@ -62,11 +62,13 @@ export const createwarehouse = async ({
 export const createSection = async ({
 	warehouseId,
 	name,
+	location,
 	description
 }: {
 	warehouseId: string;
 	name: string;
-	description?: string;
+	location?: string | null;
+	description?: string | null;
 }) => {
 	if (!warehouseId) {
 		throw new ServiceError('warehouse ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'warehouseId' });
@@ -76,7 +78,13 @@ export const createSection = async ({
 	}
 
 	const id = crypto.randomUUID();
-	await repo.insertSection({ id, warehouseId, name, description });
+	await repo.insertSection({ 
+		id, 
+		warehouseId, 
+		name, 
+		location: location || null, 
+		description: description || null 
+	});
 	return { id };
 };
 

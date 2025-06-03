@@ -88,6 +88,7 @@ export const sections = sqliteTable('sections', {
   id: text('id').primaryKey(),
   warehouseId: text('warehouseId').references(() => warehouse.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
+  location: text('location', { length: 150 }),
   description: text('description'),
 });
 
@@ -95,12 +96,16 @@ export const warehouseRows = sqliteTable('warehouseRows', {
   id: text('id').primaryKey(),
   sectionId: text('sectionId').references(() => sections.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
+  location: text('location', { length: 150 }),
+  description: text('description'),
 });
 
 export const warehouseGaps = sqliteTable('warehouseGaps', {
   id: text('id').primaryKey(),
   rowId: text('rowId').references(() => warehouseRows.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
+  location: text('location', { length: 150 }),
+  description: text('description'),
   capacity: real('capacity'),
   notes: text('notes'),
 });
