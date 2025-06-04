@@ -54,7 +54,7 @@
 </script>
 
 <div
-    class="fixed inset-0 z-40 flex backdrop-blur-sm items-center justify-center p-4"
+    class="fixed inset-0 z-50 flex backdrop-blur-sm items-center justify-center p-4"
     onclick={onClose}
     onkeydown={handleKeyClose}
     tabindex="0"
@@ -79,7 +79,7 @@
         aria-labelledby="modal-title-{Math.random().toString(36).substring(2, 9)}"
        
     >
-        <div class="sticky top-0 z-10 bg-white border-b border-gray-100 p-6 pb-4">
+        <div class="sticky top-0 z-20 bg-white border-b border-gray-100 p-6 pb-4">
             <div class="flex items-center justify-between">
                 <h2 id="modal-title-{Math.random().toString(36).substring(2, 9)}" class="text-2xl font-bold text-gray-900">{title}</h2>
                 <button 

@@ -107,7 +107,7 @@
 		<div class="flex flex-col gap-12 md:flex-row">
 			<div class="flex w-full justify-center md:w-1/3">
 				<div
-					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md"
+					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md hidden md:block"
 				>
 				
 				<!-- Atribuir imagen de usuario -->
@@ -185,13 +185,10 @@
 			</div>
 		</Header>
 
-		<!-- TODO: Implement history -->
-		
       {#if selectedOption === 'orders'}
         <Table columns={["orderNumber", "supplierName", "createdAt", "status"]} ifEdit={() => false} ifDelete={() => false} items={data.orders} onRowClick={(item) => goto(`/dashboard/orders/ordersList?id=${item.id}`)}/>
       {:else if selectedOption === 'inventory'}
         <Table columns={["id", "productName", "fromLocation", "toLocation", "previousQuantity", "newQuantity" ]} ifEdit={() => false} ifDelete={() => false} items={data.inventoryHistory} onRowClick={(item) => goto(`/dashboard/inventory?id=${item.inventoryId}`)}/>
-      {/if}
       {/if}
       
 	</div>

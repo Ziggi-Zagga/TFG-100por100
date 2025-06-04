@@ -229,7 +229,7 @@ import { fail } from '@sveltejs/kit';
 
 <!-- SUPPLIERS -->
 {#if isSuppliers}
-	<PageHeader title="Suppliers Management" subtitle={totalSuppliers() + ' Suppliers'}>
+	<PageHeader title="Suppliers Management" subtitle={totalSuppliers + ' Suppliers'}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
 				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
@@ -371,7 +371,7 @@ import { fail } from '@sveltejs/kit';
 
 	<!-- MANUFACTURERS -->
 
-	<PageHeader title="Manufacturers Management" subtitle={totalManufacturers() + ' Manufacturers'}>
+	<PageHeader title="Manufacturers Management" subtitle={totalManufacturers + ' Manufacturers'}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
 				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
