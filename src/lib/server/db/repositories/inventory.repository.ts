@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq, and, notExists } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 
 export const repoGetInventoryView = async () => {
@@ -117,5 +117,19 @@ export const repoDeleteInventoryItem = async (id: string) => {
 }
 
 export const repoGetInventoryById = async (id: string) => {
-    return db.select().from(table.inventory).where(eq(table.inventory.id, id));
+    return await db.query.inventory.findFirst({
+        where: (inventory, { eq }) => eq(inventory.id, id)
+    })
+}
+
+export const repoGetProductsByGapId = async (gapId: string) => {
+    return await db
+        .select({
+            product: table.products,
+            gapName: table.warehouseGaps.name
+        })
+        .from(table.inventory)
+        .innerJoin(table.products, eq(table.inventory.productId, table.products.id))
+        .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
+        .where(eq(table.inventory.warehouseGapId, gapId));
 }

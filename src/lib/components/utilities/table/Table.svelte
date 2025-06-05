@@ -199,7 +199,7 @@ function formatDateValue(value: any): string {
 								<div class="flex justify-center gap-3" role="group" aria-label="Row actions">
 									{#if ifEdit(item)}
 									<button
-										class="text-gray-500 hover:text-blue-600 p-1"
+										class="text-gray-500 hover:text-blue-600 p-1 cursor-pointer"
 										title="Edit"
 										aria-label="Edit"
 										type="button"
@@ -210,7 +210,7 @@ function formatDateValue(value: any): string {
 									{/if}
 									{#if ifDelete(item)}
 									<button
-										class="text-gray-500 hover:text-red-600 p-1"
+										class="text-gray-500 hover:text-red-600 p-1 cursor-pointer"
 										title="Delete"
 										aria-label="Delete"
 										type="button"

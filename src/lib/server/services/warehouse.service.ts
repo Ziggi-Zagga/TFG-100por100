@@ -62,10 +62,12 @@ export const createwarehouse = async ({
 export const createSection = async ({
 	warehouseId,
 	name,
+	location,
 	description
 }: {
 	warehouseId: string;
 	name: string;
+	location: string;
 	description?: string;
 }) => {
 	if (!warehouseId) {
@@ -76,16 +78,20 @@ export const createSection = async ({
 	}
 
 	const id = crypto.randomUUID();
-	await repo.insertSection({ id, warehouseId, name, description });
+	await repo.insertSection({ id, warehouseId, location, name, description });
 	return { id };
 };
 
 export const createRow = async ({
 	sectionId,
-	name
+	name,
+	location,
+	description
 }: {
 	sectionId: string;
 	name: string;
+	location?: string;
+	description?: string;
 }) => {
 	if (!sectionId) {
 		throw new ServiceError('Section ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'sectionId' });
@@ -95,7 +101,7 @@ export const createRow = async ({
 	}
 
 	const id = crypto.randomUUID();
-	await repo.insertRow({ id, sectionId, name });
+	await repo.insertRow({ id, sectionId, name, location, description });
 	return { id };
 };
 
@@ -103,12 +109,12 @@ export const createGap = async ({
 	rowId,
 	name,
 	capacity,
-	notes
+	description
 }: {
 	rowId: string;
 	name: string;
 	capacity?: number;
-	notes?: string;
+	description?: string;
 }) => {
 	if (!rowId) {
 		throw new ServiceError('Row ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'rowId' });
@@ -118,7 +124,7 @@ export const createGap = async ({
 	}
 
 	const id = crypto.randomUUID();
-	await repo.insertGap({ id, rowId, name, capacity, notes });
+	await repo.insertGap({ id, rowId, name, capacity, description });
 	return { id };
 };
 
@@ -142,10 +148,28 @@ export const updatewarehouse = async (id: string, data:
 };
 
 export const deletewarehouseById = async (id: string) => {
-	if (!id) {
-		throw new ServiceError('warehouse ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+
+	try {
+		const sections = await repo.getSectionsByWarehouseId(id);
+		if (sections.length > 0) {
+			throw new ServiceError(
+				'Cannot delete warehouse with existing sections',
+				ERROR_TYPES.VALIDATION,
+				400
+			);
+		}
+
+		await repo.removewarehouse(id);
+		return { success: true };
+	} catch (error) {
+		if (error instanceof ServiceError) throw error;
+		throw new ServiceError(
+			'Failed to delete warehouse',
+			ERROR_TYPES.DATABASE,
+			500,
+			{ details: { message: (error as Error).message } }
+		);
 	}
-	await repo.removewarehouse(id);
 };
 
 export const deleteSectionById = async (id: string) => {
@@ -167,4 +191,68 @@ export const deleteGapById = async (id: string) => {
 		throw new ServiceError('Missing gap ID', ERROR_TYPES.VALIDATION, 400);
 	}
 	await repo.removeGap(id);
+};
+
+export const updateSection = async (id: string, data: { name: string; location?: string | null; description?: string | null }) => {
+	
+	if (!id) {
+		throw new ServiceError('Section ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	if (!data.name) {
+		throw new ServiceError('Section name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+	
+	try {
+		const result = await repo.updateSection(id, {
+			name: data.name,
+			location: data.location ?? null,
+			description: data.description ?? null
+		});
+		return result;
+	} catch (error) {
+		if (error instanceof ServiceError) throw error;
+		throw error;
+	}
+};
+
+export const updateRow = async (id: string, data: { name: string; location?: string | null; description?: string | null }) => {
+	if (!id) {
+		throw new ServiceError('Row ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	if (!data.name) {
+		throw new ServiceError('Row name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	const updatedRow = await repo.updateRow(id, {
+		name: data.name,
+		location: data.location ?? null,
+		description: data.description ?? null
+	});
+
+	if (!updatedRow) {
+		throw new ServiceError('Row not found', ERROR_TYPES.NOT_FOUND, 404);
+	}
+
+	return updatedRow;
+};
+
+export const updateGap = async (id: string, data: { name: string; capacity?: number | null; description?: string | null }) => {
+	if (!id) {
+		throw new ServiceError('Gap ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+	}
+	if (!data.name) {
+		throw new ServiceError('Gap name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+	}
+
+	const updatedGap = await repo.updateGap(id, {
+		name: data.name,
+		capacity: data.capacity ?? null,
+		description: data.description ?? null
+	});
+
+	if (!updatedGap) {
+		throw new ServiceError('Gap not found', ERROR_TYPES.NOT_FOUND, 404);
+	}
+
+	return updatedGap;
 };

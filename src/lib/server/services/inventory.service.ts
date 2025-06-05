@@ -3,12 +3,14 @@ import {
 	repoInsertInventoryItem,
 	repoDeleteInventoryItem,
 	repoGetInventoryById,
-	repoUpdateInventoryItem
+	repoUpdateInventoryItem,
+	repoGetProductsByGapId
 } from '$lib/server/db/repositories/inventory.repository';
 import { getFullwarehouseTree, repoGetTreeFromGapId } from '$lib/server/db/repositories/warehouse.repository';
 import { getCategoriesById } from '$lib/server/db/repositories/category.repository';
 import { getSuppliersById } from '$lib/server/db/repositories/supplier.repository';
 import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.repository';
+import type { Product } from '$lib/types/products.types';
 
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 import { getFullProductsList, repoGetProductById } from '../db/repositories/products.repository';
@@ -126,6 +128,18 @@ export const getInventoryHistory = async () => {
 export const getInventoryHistoryByInventoryId = async (inventoryId: string) => {
 	return await repoGetInventoryHistoryByInventoryId(inventoryId);
 }
+
+export interface ProductWithGapName {
+    product: Product;
+    gapName: string;
+}
+
+export const getProductsByGapId = async (gapId: string): Promise<ProductWithGapName[]> => {
+    if (!gapId) {
+        throw new ServiceError('Gap ID is required', ERROR_TYPES.VALIDATION, 400);
+    }
+    return await repoGetProductsByGapId(gapId);
+};
 
 export const createInventoryHistoryEntry = async ({
 	id,

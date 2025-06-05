@@ -1,74 +1,159 @@
-import type { PageServerLoad, Actions } from './$types';
 import {
-  getRowWithGaps,
-  getSectionWithRows,
-  getwarehouseWithSections,
-  createGap,
-  deleteGapById
+	getRowWithGaps,
+	getSectionWithRows,
+	createGap,
+	deleteGapById,
+	updateGap,
+	getwarehouseWithSections
 } from '$lib/server/services/warehouse.service';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
+import { ERROR_TYPES, ServiceError } from '$lib/utils/errors/ServiceError';
 
 export const load: PageServerLoad = async ({ params }) => {
-  const warehousesId = params.warehousesId;
-  const sectionId = params.sectionId;
-  const rowId = params.rowId;
+    try {
+        const warehousesId = params.warehousesId;
+        const sectionId = params.sectionId;
+        const rowId = params.rowId;
 
-  if (!warehousesId || !sectionId || !rowId) {
-    throw error(400, 'Missing warehouse, section, or row ID');
-  }
+        
+        if (!warehousesId) return fail(400, { message: 'Missing warehouse ID' });
+        if (!sectionId) return fail(400, { message: 'Missing section ID' });
+        if (!rowId) return fail(400, { message: 'Missing row ID' });
 
-  const { row, gaps } = await getRowWithGaps(rowId);
-  if (!row) throw error(404, 'Row not found');
+        // Obtener datos de la sección con sus filas
+		const warehouse = await getwarehouseWithSections(warehousesId);
+        const data = await getSectionWithRows(sectionId);
+        const row = await getRowWithGaps(rowId);
+        if (!row.row) return fail(404, { message: 'Row not found' });
 
-  const { section } = await getSectionWithRows(sectionId);
-  if (!section) throw error(404, 'Section not found');
-
-  const { warehouse } = await getwarehouseWithSections(warehousesId);
-  if (!warehouse) throw error(404, 'warehouse not found');
-
-  return {
-    warehouse,
-    section,
-    row,
-    gaps
-  };
+        // Devolver los datos en el formato esperado
+        return {
+            warehouse: warehouse.warehouse,
+            sections: warehouse.sections,
+            row: row.row,
+            gaps: row.gaps,
+            }
+        }
+    catch (error) {
+        console.error('Error loading section data:', error);
+        return fail(500, { 
+            message: 'Error loading section data',
+            warehouse: null,
+            sections: null,
+            row: null,
+            gaps: null
+        });
+    }
 };
 
 export const actions: Actions = {
-  create: async ({ request, params }) => {
-    const warehousesId = params.warehousesId;
-    const sectionId = params.sectionId;
-    const rowId = params.rowId;
+	create: async ({ request, params }) => {
+		try {
+			const formData = await request.formData();
+			const rowId = params.rowId;
+			
+			if (!rowId) {
+				return fail(400, { 
+					message: 'row ID is required', 
+					field: 'rowId' 
+				});
+			}
 
-    if (!warehousesId || !sectionId || !rowId) {
-      return fail(400, { error: 'Missing warehouse, section, or row ID' });
-    }
+			const name = formData.get('name')?.toString()?.trim() || '';
+			const location = formData.get('location')?.toString()?.trim() || '';
+			const description = formData.get('description')?.toString()?.trim() || '';
 
-    const formData = await request.formData();
-    const name = formData.get('name')?.toString() ?? '';
-    const notes = formData.get('notes')?.toString() ?? '';
-    const capacity = Number(formData.get('capacity')) || 0;
+			if (!name) {
+				return fail(400, { 
+					message: 'Row name is required', 
+					field: 'name' 
+				});
+			}
 
-    try {
-      await createGap({ rowId, name, notes, capacity });
-      throw redirect(303, `/dashboard/warehouses/${warehousesId}/${sectionId}/${rowId}`);
-    } catch (err) {
-      console.error('Create gap failed:', err);
-      return fail(500, { error: 'Failed to create gap' });
-    }
-  },
+			const newGap = await createGap({ 
+				rowId,
+				name, 
+				capacity: Number(formData.get('capacity')) || undefined, 
+				description: description || undefined 
+			});
+			
+			return { 
+				success: true,
+				gap: newGap
+			};
+		} catch (error) {
+			console.error('Error creating gap:', error);
+			if (error instanceof ServiceError) {
+				const status = error.type === ERROR_TYPES.VALIDATION ? 400 : 500;
+				return fail(status, { 
+					message: error.message, 
+					field: error.field 
+				});
+			}
+			return fail(500, { 
+				message: 'Error creating gap. Please try again.' 
+			});
+		}
+	},
 
-  delete: async ({ request }) => {
-    const formData = await request.formData();
-    const id = formData.get('id')?.toString();
-    if (!id) return fail(400, { error: 'Missing gap ID' });
+	update: async ({ request }) => {
+		try {
+			const formData = await request.formData();
+			const id = formData.get('id')?.toString()?.trim();
+			const name = formData.get('name')?.toString()?.trim() || '';
+			const capacity = Number(formData.get('capacity')) || undefined;
+			const description = formData.get('description')?.toString()?.trim() || '';
 
-    try {
-      await deleteGapById(id);
-      return { success: true };
-    } catch (err) {
-      console.error('Delete gap failed:', err);
-      return fail(500, { error: 'Failed to delete gap' });
-    }
-  }
+			if (!id) {
+				return fail(400, { message: 'Gap ID not provided' });
+			}
+ 
+			const updateData = {
+				name,
+				capacity,
+				description
+			};
+
+			await updateGap(id, updateData);
+			
+			return { 
+				success: true, 
+			};
+		} catch (error) {
+			if (error instanceof ServiceError) {
+				return fail(400, {
+					message: error.message,
+					field: error.field
+				});
+			}
+			return fail(500, { message: 'Error updating gap' });
+		}
+	},
+
+	delete: async ({ request }) => {
+		try {
+			const formData = await request.formData();
+			const id = formData.get('id')?.toString();
+			
+			if (!id) {
+				return fail(400, { message: 'Gap ID not provided' });
+			}
+
+			await deleteGapById(id);
+			return { 
+				success: true,
+			};
+		} catch (error) {
+			if (error instanceof ServiceError) {
+				const status = error.type === ERROR_TYPES.NOT_FOUND ? 404 : 400;
+				return fail(status, {
+					message: error.message,
+				});
+			}
+			return fail(500, {
+				message: 'Error deleting gap'
+			});
+		}
+	}
 };

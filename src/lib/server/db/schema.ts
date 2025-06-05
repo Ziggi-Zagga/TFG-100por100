@@ -87,6 +87,7 @@ export const warehouse = sqliteTable('warehouse', {
 export const sections = sqliteTable('sections', {
   id: text('id').primaryKey(),
   warehouseId: text('warehouseId').references(() => warehouse.id).notNull(),
+  location: text('location'),
   name: text('name', { length: 100 }).notNull(),
   description: text('description'),
 });
@@ -94,7 +95,9 @@ export const sections = sqliteTable('sections', {
 export const warehouseRows = sqliteTable('warehouseRows', {
   id: text('id').primaryKey(),
   sectionId: text('sectionId').references(() => sections.id).notNull(),
+  location: text('location'),
   name: text('name', { length: 100 }).notNull(),
+  description: text('description'),
 });
 
 export const warehouseGaps = sqliteTable('warehouseGaps', {
@@ -102,7 +105,7 @@ export const warehouseGaps = sqliteTable('warehouseGaps', {
   rowId: text('rowId').references(() => warehouseRows.id).notNull(),
   name: text('name', { length: 100 }).notNull(),
   capacity: real('capacity'),
-  notes: text('notes'),
+  description: text('description'),
 });
 
 export const inventory = sqliteTable('inventory', {

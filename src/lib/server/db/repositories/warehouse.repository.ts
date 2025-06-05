@@ -25,19 +25,23 @@ export const getAllwarehouse = async () => {
 	return await db.select().from(warehouse);
 };
 
+export const getSectionsByWarehouseId = async (warehouseId: string) => {
+    return await db
+        .select()
+        .from(sections)
+        .where(eq(sections.warehouseId, warehouseId));
+};
+
 export const getwarehouseAndSections = async (warehouseId: string) => {
     try {
-        // Usar la sintaxis correcta para la consulta con Drizzle
         const warehouseData = await db.query.warehouse.findFirst({
             where: (wh, { eq }) => eq(wh.id, warehouseId)
         });
         
         if (!warehouseData) {
-            console.error('No se encontró el almacén con ID:', warehouseId);
             return { warehouse: null, sections: [] };
         }
         
-        // Usar la sintaxis correcta para la consulta de secciones
         const sectionsList = await db.select()
             .from(sections)
             .where(eq(sections.warehouseId, warehouseId));
@@ -47,7 +51,6 @@ export const getwarehouseAndSections = async (warehouseId: string) => {
             sections: sectionsList 
         };
     } catch (error) {
-        console.error('Error en getwarehouseAndSections:', error);
         throw error;
     }
 };
@@ -92,35 +95,51 @@ export const insertwarehouse = async ({
 export const insertSection = async ({
 	id,
 	warehouseId,
+	location,
 	name,
 	description
 }: {
 	id: string;
 	warehouseId: string;
+	location: string;
 	name: string;
 	description?: string;
 }) => {
 	await db.insert(sections).values({
 		id,
 		warehouseId,
+		location,
 		name,
 		description
 	});
 };
 
-export const insertRow = async ({
+export const insertRow = ({
 	id,
 	sectionId,
-	name
+	name,
+	location,
+	description
 }: {
 	id: string;
 	sectionId: string;
 	name: string;
+	location?: string | null;
+	description?: string;
 }) => {
-	await db.insert(warehouseRows).values({
-		id,
-		sectionId,
-		name
+	return db.transaction(async (tx) => {
+		const [newRow] = await tx
+			.insert(warehouseRows)
+			.values({
+				id,
+				sectionId,
+				name,
+				location: location ?? null,
+				description: description ?? null
+			})
+			.returning();
+
+		return newRow;
 	});
 };
 
@@ -129,20 +148,20 @@ export const insertGap = async ({
 	rowId,
 	name,
 	capacity,
-	notes
+	description
 }: {
 	id: string;
 	rowId: string;
 	name: string;
 	capacity?: number;
-	notes?: string;
+	description?: string;
 }) => {
 	await db.insert(warehouseGaps).values({
 		id,
 		rowId,
 		name,
 		capacity,
-		notes
+		description
 	});
 };
 
@@ -177,6 +196,61 @@ export const removeRow = async (id: string) => {
 
 export const removeGap = async (id: string) => {
 	await db.delete(warehouseGaps).where(eq(warehouseGaps.id, id));
+};
+
+export const updateSection = async (id: string, data: Partial<typeof sections.$inferInsert>) => {
+    try {
+        const [updatedSection] = await db
+            .update(sections)
+            .set({
+                name: data.name,
+                location: data.location ?? null,
+                description: data.description ?? null,
+            })
+            .where(eq(sections.id, id))
+            .returning();
+
+        return updatedSection;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateRow = async (id: string, data: Partial<typeof warehouseRows.$inferInsert>) => {
+	const updateData: Record<string, any> = {
+		...data,
+		updatedAt: new Date()
+	};
+
+	// Asegurarse de que los campos opcionales se manejen correctamente
+	if ('location' in data) {
+		updateData.location = data.location ?? null;
+	}
+	if ('description' in data) {
+		updateData.description = data.description ?? null;
+	}
+
+	const [updatedRow] = await db
+		.update(warehouseRows)
+		.set(updateData)
+		.where(eq(warehouseRows.id, id))
+		.returning();
+
+	return updatedRow;
+};
+
+export const updateGap = async (id: string, data: Partial<typeof warehouseGaps.$inferInsert>) => {
+    const [updatedGap] = await db
+        .update(warehouseGaps)
+        .set({
+            name: data.name,
+            capacity: data.capacity ?? null,
+            description: data.description ?? null,
+        })
+        .where(eq(warehouseGaps.id, id))
+        .returning();
+
+    return updatedGap;
 };
 
 export const repoGetTreeFromGapId = async (gapId: string) => {

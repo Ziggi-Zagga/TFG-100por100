@@ -8,10 +8,9 @@
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
+	import { page } from '$app/state';
+	import { enhance } from '$app/forms';
 
-	const { data } = $props();
-
-	let warehouse = $state([...data.warehouse]);
 	let showDrawer = $state(false);
 	let showEditDrawer = $state(false);
 	let showDeleteDialog = $state(false);
@@ -19,10 +18,14 @@
 	let editingwarehouse = $state<{id: string, name: string, location: string | null, description: string | null} | null>(null);
 	let search = $state('');
 
-	// Referencia al componente ToastList
+	let warehouses = $state(page.data.warehouse || []);
+
+	$effect(() => {
+		warehouses = page.data.warehouse || [];
+	});
+
 	let toastList: { addToast: (message: string, type?: 'success' | 'error' | 'info') => void } | null = null;
 
-	// Helper functions for showing toasts
 	function showSuccess(message: string) {
 		toastList?.addToast(message, 'success');
 	}
@@ -32,7 +35,7 @@
 	}
 
 	const filteredWarehouse = $derived(() =>
-		warehouse.filter((warehouse) =>
+		warehouses.filter((warehouse: any) =>
 			warehouse.name.toLowerCase().includes(search.toLowerCase()) ||
 			(warehouse.location ?? '').toLowerCase().includes(search.toLowerCase())
 		)
@@ -69,20 +72,25 @@
 			});
 
 			const result = await res.json();
-
-			if (res.ok && result.success) {
-				warehouse = warehouse.filter((s) => s.id !== warehouseToDelete?.id);
-				showSuccess(`Warehouse "${warehouseToDelete.name}" deleted successfully`);
-			} else {
-				console.log(result);
-				console.log(res);
-				const error = result.message || 'Failed to delete warehouse';
-				console.error('Failed to delete warehouse:', error);
-				showError(error);
+			if (result.type === 'failure') {
+				let errorMessage = 'Could not delete warehouse';
+				try {
+					const errorData = JSON.parse(result.data);
+					errorMessage = Array.isArray(errorData) ? errorData[errorData.length - 1] : errorData.message || errorMessage;
+				} catch {}
+				throw new Error(errorMessage);
 			}
+
+			// Actualizar estado local reactivo
+			warehouses = warehouses.filter((w: any) => w.id !== warehouseToDelete!.id);
+			
+			// También actualizar page.data para mantener consistencia
+			page.data.warehouse = warehouses;
+
+			showSuccess(`Warehouse "${warehouseToDelete.name}" deleted successfully`);
 		} catch (error) {
-			console.error('Error deleting warehouse:', error);
-			showError('An error occurred while deleting the warehouse');
+			const errorMessage = error instanceof Error ? error.message : 'Error deleting warehouse';
+			showError(errorMessage);
 		} finally {
 			showDeleteDialog = false;
 			warehouseToDelete = null;
@@ -91,40 +99,10 @@
 
 	function handleEdit(warehouseId: string, event: Event) {
 		event.stopPropagation();
-		const foundWarehouse = warehouse.find(w => w.id === warehouseId);
+		const foundWarehouse = warehouses.find((w: any) => w.id === warehouseId);
 		if (foundWarehouse) {
 			editingwarehouse = foundWarehouse;
 			showEditDrawer = true;
-		}
-	}
-
-	async function handleUpdatewarehouse(formData: FormData) {
-		if (!editingwarehouse) return;
-		try {
-			formData.append('id', editingwarehouse.id);
-			
-			const res = await fetch('?/update', {
-				method: 'POST',
-				body: formData
-			});
-
-			const result = await res.json();
-			
-			if (res.ok && result.success) {
-				// Update the warehouse in the local state with the updated data
-				warehouse = warehouse.map((w) => 
-					w.id === editingwarehouse?.id ? { ...w, ...result.warehouse } : w
-				);
-				showSuccess(`Warehouse "${result.warehouse.name}" updated successfully`);
-			} else {
-				const error = result.message || 'Failed to update warehouse';
-				showError(`Failed to update warehouse: ${error}`);
-			}
-		} catch (error) {
-			console.error('Update error:', error);
-			showError('An error occurred while updating the warehouse');
-		} finally {
-			closeEditDrawer();
 		}
 	}
 
@@ -140,14 +118,13 @@
 
 <!-- Main Content Section -->
 <section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<PageHeader title="Warehouse Management" subtitle="{warehouse.length} warehouse{warehouse.length !== 1 ? 's' : ''}">
+	<PageHeader title="Warehouse Management" subtitle="{warehouses.length} warehouse{warehouses.length !== 1 ? 's' : ''}">
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
 				<SearchBar bind:search placeholder="Search by name or location..." extraClasses="w-full" />
 			</div>
 			<div class="flex w-full justify-end md:w-auto">
 				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-					
 					<span class="hidden md:inline">Add warehouse</span>
 				</Button>
 			</div>
@@ -161,19 +138,13 @@
 				<button 
 					onclick={() => handleCardClick(warehouse.id)}
 					class="w-full text-left overflow-hidden rounded-2xl bg-white p-6 shadow-md transition-all hover:shadow-lg hover:bg-gray-50 active:scale-[0.99] focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-					aria-label={`Ver detalles de ${warehouse.name}. Presione Enter para más información.`}
+					aria-label={`Warehouse ${warehouse.name}`}
 				>
-					<!-- Contenido de la tarjeta -->
 					<div class="flex flex-col items-center text-center">
-						<!-- Ícono de la tienda -->
 						<div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
 							<img src="/icons/svg/warehouse.svg" class="w-12 h-12" alt="warehouse" />
 						</div>
-
-						<!-- Nombre de la tienda -->
 						<h3 class="mb-1 text-lg font-semibold text-gray-900">{warehouse.name}</h3>
-
-						<!-- Ubicación -->
 						<div class="flex items-center text-sm text-gray-500">
 							<Icon icon="location" size={18} />
 							<div class="text-sm text-gray-600">{warehouse.location || 'No location'}</div>
@@ -181,7 +152,6 @@
 					</div>
 				</button>
 
-				<!-- Botones de acción -->
 				<div class="absolute right-4 top-4 flex gap-2">
 					<button
 						onclick={(e) => handleEdit(warehouse.id, e)}
@@ -200,19 +170,46 @@
 						<Icon icon="delete" size={16} />
 					</button>
 				</div>
-
 			</div>
 		{/each}
 	</div>
 </section>
 
-<!-- Drawer Component (Moved outside the main section) -->
+<!-- Drawer de creación -->
 <Drawer 
 	title="Create New warehouse" 
 	onClose={closeDrawer}
 	show={showDrawer}
 >
-	<form method="POST" action="?/create" class="space-y-4">
+	<form 
+		method="POST"
+		action="?/create"
+		use:enhance={({ formData }) => {
+			return async ({ result, update }) => {
+				console.log('Enhanced result:', result);
+				
+				if (result.type === 'success' && result.data?.success) {
+					// El warehouse ya está en result.data.warehouse
+					const newWarehouse = result.data.warehouse;
+					if (newWarehouse) {
+						warehouses = [...warehouses, newWarehouse];
+						page.data.warehouse = warehouses;
+					}
+					
+					showSuccess('Warehouse created successfully');
+					closeDrawer();
+					await update(); // Actualiza page.data automáticamente
+				} else if (result.type === 'failure') {
+					const errorMessage = result.data?.message || 'Could not create warehouse';
+					showError(String(errorMessage));
+				} else {
+					console.error('Unexpected result:', result);
+					showError('Unexpected response from server');
+				}
+			};
+		}}
+		class="space-y-4"
+	>
 		<TextInput name="name" required placeholder="warehouse Name" />
 		<TextInput name="location" required placeholder="Location" />
 		<TextInput name="description" placeholder="Description" />
@@ -229,7 +226,7 @@
 				type="submit" 
 				class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
 			>
-			Create
+				Create
 			</button>
 		</div>
 	</form>
@@ -242,24 +239,45 @@
 	show={showEditDrawer}
 >
 	<form 
-		onsubmit={async (e) => {
-			e.preventDefault();
+		method="POST"
+		action="?/update"
+		use:enhance={({ formData }) => {
 			if (!editingwarehouse) return;
 			
-			const form = e.target as HTMLFormElement;
-			const formData = new FormData(form);
+			// Agregar el ID al formData
+			formData.append('id', editingwarehouse.id);
 			
-			editingwarehouse = {
-				...editingwarehouse,
-				name: formData.get('name')?.toString().trim() || '',
-				location: formData.get('location')?.toString().trim() || '',
-				description: formData.get('description')?.toString().trim() || ''
+			return async ({ result, update }) => {
+				console.log('Update result:', result);
+				
+				if (result.type === 'success' && result.data?.success) {
+					const name = formData.get('name')?.toString() || editingwarehouse!.name;
+					const location = formData.get('location')?.toString() || editingwarehouse!.location;
+					const description = formData.get('description')?.toString() || editingwarehouse!.description;
+
+					// Actualizar estado local reactivo
+					warehouses = warehouses.map((w: any) =>
+						w.id === editingwarehouse!.id
+							? { ...w, name, location, description, updatedAt: new Date().toISOString() }
+							: w
+					);
+					
+					page.data.warehouse = warehouses;
+					showSuccess(`Warehouse "${name}" updated successfully`);
+					closeEditDrawer();
+					await update();
+				} else if (result.type === 'failure') {
+					const errorMessage = result.data?.message || 'An error occurred while updating the warehouse';
+					showError(String(errorMessage));
+				} else {
+					console.error('Unexpected update result:', result);
+					showError('Unexpected response from server');
+				}
 			};
-			
-			await handleUpdatewarehouse(formData);
-			closeEditDrawer();
 		}}
-		class="space-y-4">
+		class="space-y-4"
+	>
+		<input type="hidden" name="id" value={editingwarehouse?.id || ''} />
 		<TextInput 
 			name="name"
 			required 
@@ -296,7 +314,7 @@
 	</form>
 </Drawer>
 
-<!-- Diálogo de confirmación de eliminación -->
+
 <ConfirmDialog
 	show={showDeleteDialog}
 	message={`Are you sure you want to delete warehouse "${warehouseToDelete?.name || ''}"? This action cannot be undone.`}
@@ -307,5 +325,5 @@
 	}}
 />
 
-<!-- Notificaciones Toast -->
+
 <ToastList bind:this={toastList} />

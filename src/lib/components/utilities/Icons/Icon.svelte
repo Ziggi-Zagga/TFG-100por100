@@ -25,6 +25,8 @@
 	import CancelledIcon from './CancelledIcon.svelte';
 	import MenuIcon from './Menu.svelte';
 	import ArrowIcon from './Arrow.svelte';
+	import GapIcon from './GapIcon.svelte';
+	
 	
 	const {
 		icon,
@@ -110,4 +112,7 @@
 {/if}
 {#if icon === 'arrow'}
 	<ArrowIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'gap'}
+	<GapIcon {size} {extraStyles} />
 {/if}
