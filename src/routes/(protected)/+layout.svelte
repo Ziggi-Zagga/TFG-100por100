@@ -5,6 +5,7 @@
   import type { AuthUser } from '$lib/types/auth.types';
   import Icon from '$lib/components/utilities/Icons/Icon.svelte';
   import { cubicOut } from 'svelte/easing';
+  import ChatWidget from '$lib/components/utilities/ChatWidget/ChatWidget.svelte';
   
   // Estado para controlar cuando la animación de apertura ha terminado
   let isSidebarOpen = $state(true);
@@ -307,4 +308,8 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
   <main class="flex-1 pl-2 rounded-2xl overflow-y-auto">
     {@render children()}
   </main>
+
+  {#if !$page.url.pathname.startsWith('/dashboard/aiChat')}
+	  <ChatWidget />
+  {/if}
 </div>
