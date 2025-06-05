@@ -138,7 +138,7 @@ export const repoGetProductsByGapId = async (gapId: string) => {
         ...item,
         product: {
             ...item.product,
-            price: parseFloat(item.product.price as string) || 0,
+            price: item.product.price || 0,
             active: item.product.active ?? true, // Default to true if null
             description: item.product.description ?? undefined,
             dimensions: item.product.dimensions ?? undefined,
