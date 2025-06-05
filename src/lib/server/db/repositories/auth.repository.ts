@@ -1,5 +1,5 @@
 import { db } from "..";
-import { eq } from "drizzle-orm";
+import { eq } from "drizzle-orm/expressions";
 import { users, userSessions, roles } from "../schema";
 
 // --- USUARIOS ---

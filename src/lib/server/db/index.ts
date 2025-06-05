@@ -1,14 +1,22 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { env } from '$env/dynamic/public';
 import * as schema from './schema';
-import { env } from '$env/dynamic/private';
 
-if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+// Use the DATABASE_URL from environment variables
+// If during build, use a dummy connection that won't actually be used
+const connectionString = env.PUBLIC_DATABASE_URL || 'dummy:postgres';
 
-const client = new Database(env.DATABASE_URL);
+// Create the PostgreSQL connection with connection pooling configuration
+const client = postgres(connectionString as string, {
+  max: 10, // maximum number of connections
+  idle_timeout: 20, // how long a connection can stay idle before being closed (in seconds)
+  connect_timeout: 10 // connection timeout (in seconds)
+});
 
+// Initialize drizzle with the schema
 export const db = drizzle(client, { schema });
 
-// Inicializar la base de datos
+// Initialize database
 import { initDatabase } from './init';
 initDatabase().catch(console.error);

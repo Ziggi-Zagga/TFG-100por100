@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm/expressions';
 
 
 export const repoGetInventoryView = async () => {
@@ -101,13 +101,13 @@ export const repoGetInventoryWithFullLocationByProductId = async (productId: str
         Gap: table.warehouseGaps.name,
         Row: table.warehouseRows.name,
         Section: table.sections.name,
-        warehouse: table.warehouse.name
+        warehouse: table.warehouses.name
       })
       .from(table.inventory)
       .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
       .innerJoin(table.warehouseRows, eq(table.warehouseGaps.rowId, table.warehouseRows.id))
       .innerJoin(table.sections, eq(table.warehouseRows.sectionId, table.sections.id))
-      .innerJoin(table.warehouse, eq(table.sections.warehouseId, table.warehouse.id))
+      .innerJoin(table.warehouses, eq(table.sections.warehouseId, table.warehouses.id))
       .where(eq(table.inventory.productId, productId));
   };
   
@@ -123,7 +123,7 @@ export const repoGetInventoryById = async (id: string) => {
 }
 
 export const repoGetProductsByGapId = async (gapId: string) => {
-    return await db
+    const results = await db
         .select({
             product: table.products,
             gapName: table.warehouseGaps.name
@@ -132,4 +132,22 @@ export const repoGetProductsByGapId = async (gapId: string) => {
         .innerJoin(table.products, eq(table.inventory.productId, table.products.id))
         .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
         .where(eq(table.inventory.warehouseGapId, gapId));
+
+    // Transform the data to match the expected types
+    return results.map(item => ({
+        ...item,
+        product: {
+            ...item.product,
+            price: parseFloat(item.product.price as string) || 0,
+            active: item.product.active ?? true, // Default to true if null
+            description: item.product.description ?? undefined,
+            dimensions: item.product.dimensions ?? undefined,
+            material: item.product.material ?? undefined,
+            specifications: item.product.specifications ?? undefined,
+            supplierId: item.product.supplierId ?? undefined,
+            manufacturerId: item.product.manufacturerId ?? undefined,
+            categoryId: item.product.categoryId ?? undefined,
+            unit: item.product.unit ?? ''
+        }
+    }));
 }

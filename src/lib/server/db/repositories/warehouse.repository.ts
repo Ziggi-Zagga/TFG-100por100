@@ -1,13 +1,13 @@
 	import { db } from '$lib/server/db';
-import { warehouse, sections, warehouseRows, warehouseGaps, orders } from '$lib/server/db/schema';
+import { warehouses, sections, warehouseRows, warehouseGaps } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const getFullwarehouseTree = async () => {
 	return await db
 		.select({
-			warehouseId: warehouse.id,
-			warehouseName: warehouse.name,
-			warehouseLocation: warehouse.location,
+			warehouseId: warehouses.id,
+			warehouseName: warehouses.name,
+			warehouseLocation: warehouses.location,
 			sectionId: sections.id,
 			sectionName: sections.name,
 			rowId: warehouseRows.id,
@@ -15,14 +15,14 @@ export const getFullwarehouseTree = async () => {
 			gapId: warehouseGaps.id,
 			gapName: warehouseGaps.name
 		})
-		.from(warehouse)
-		.leftJoin(sections, eq(sections.warehouseId, warehouse.id))
+		.from(warehouses)
+		.leftJoin(sections, eq(sections.warehouseId, warehouses.id))
 		.leftJoin(warehouseRows, eq(warehouseRows.sectionId, sections.id))
 		.leftJoin(warehouseGaps, eq(warehouseGaps.rowId, warehouseRows.id));
 };
 
 export const getAllwarehouse = async () => {
-	return await db.select().from(warehouse);
+	return await db.select().from(warehouses);
 };
 
 export const getSectionsByWarehouseId = async (warehouseId: string) => {
@@ -34,7 +34,7 @@ export const getSectionsByWarehouseId = async (warehouseId: string) => {
 
 export const getwarehouseAndSections = async (warehouseId: string) => {
     try {
-        const warehouseData = await db.query.warehouse.findFirst({
+        const warehouseData = await db.query.warehouses.findFirst({
             where: (wh, { eq }) => eq(wh.id, warehouseId)
         });
         
@@ -82,7 +82,7 @@ export const insertwarehouse = async ({
 	location: string;
 	description?: string;
 }) => {
-	await db.insert(warehouse).values({ id, name, location, description });
+	await db.insert(warehouses).values({ id, name, location, description });
 	return {
 	id,
 	name,
@@ -167,23 +167,23 @@ export const insertGap = async ({
 
 export const updatewarehouse = async (id: string, data: { 
    	warehouseId: string,
-	updatedData: Partial<typeof warehouse.$inferInsert>
+	updatedData: Partial<typeof warehouses.$inferInsert>
 }) => {
     const [updatedwarehouse] = await db
-        .update(warehouse)
+        .update(warehouses)
         .set({
             name: data.updatedData.name,
             location: data.updatedData.location ?? null,
             description: data.updatedData.description ?? null,
         })
-        .where(eq(warehouse.id, id))
+        .where(eq(warehouses.id, id))
         .returning();
 
     return updatedwarehouse;
 };
 
 export const removewarehouse = async (id: string) => {
-	await db.delete(warehouse).where(eq(warehouse.id, id));
+	await db.delete(warehouses).where(eq(warehouses.id, id));
 };
 
 export const removeSection = async (id: string) => {
@@ -256,9 +256,9 @@ export const updateGap = async (id: string, data: Partial<typeof warehouseGaps.$
 export const repoGetTreeFromGapId = async (gapId: string) => {
 	return await db
 		.select({
-			warehouseId: warehouse.id,
-			warehouseName: warehouse.name,
-			warehouseLocation: warehouse.location,
+			warehouseId: warehouses.id,
+			warehouseName: warehouses.name,
+			warehouseLocation: warehouses.location,
 			sectionId: sections.id,
 			sectionName: sections.name,
 			rowId: warehouseRows.id,
@@ -266,8 +266,8 @@ export const repoGetTreeFromGapId = async (gapId: string) => {
 			gapId: warehouseGaps.id,
 			gapName: warehouseGaps.name
 		})
-		.from(warehouse)
-		.innerJoin(sections, eq(sections.warehouseId, warehouse.id))
+		.from(warehouses)
+		.innerJoin(sections, eq(sections.warehouseId, warehouses.id))
 		.innerJoin(warehouseRows, eq(warehouseRows.sectionId, sections.id))
 		.innerJoin(warehouseGaps, eq(warehouseGaps.rowId, warehouseRows.id))
 		.where(eq(warehouseGaps.id, gapId));

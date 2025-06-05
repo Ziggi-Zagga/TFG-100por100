@@ -11,6 +11,7 @@
     import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
     import { page } from '$app/state';
     import type { warehouse as warehouseType, Section } from '$lib/types/warehouse.types';
+    import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 
     const { data } = $props();
     let sections = $state(data.sections || []);
@@ -186,9 +187,9 @@
         }}
         class="space-y-4"
     >
-        <TextInput name="name" required placeholder="Section Name" />
-        <TextInput name="location" required placeholder="Location" />
-        <TextInput name="description" placeholder="Description" />
+        <TextInput name="name" label="Section Name" required placeholder="Section Name" />
+        <TextInput name="location" label="Location" required placeholder="Location" />
+        <TextArea name="description" label="Description" placeholder="Description" />
 
         <div class="mt-6 flex justify-end gap-4">
             <button 
@@ -256,18 +257,21 @@
             <input type="hidden" name="id" value={editingSection?.id || ''} />
             <TextInput 
                 name="name" 
+                label="Section Name"
                 required 
                 placeholder="Section Name" 
                 value={editingSection?.name || ''}
             />
             <TextInput 
                 name="location"
+                label="Location"
                 required 
                 placeholder="Location" 
                 value={editingSection?.location || ''}
             />
-            <TextInput 
+            <TextArea 
                 name="description" 
+                label="Description" 
                 placeholder="Description" 
                 value={editingSection?.description || ''}
             />

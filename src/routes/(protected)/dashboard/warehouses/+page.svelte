@@ -10,6 +10,7 @@
 	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
+	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 
 	let showDrawer = $state(false);
 	let showEditDrawer = $state(false);
@@ -210,9 +211,9 @@
 		}}
 		class="space-y-4"
 	>
-		<TextInput name="name" required placeholder="warehouse Name" />
-		<TextInput name="location" required placeholder="Location" />
-		<TextInput name="description" placeholder="Description" />
+		<TextInput name="name" label="Warehouse Name" required placeholder="warehouse Name" />
+		<TextInput name="location" label="Location" required placeholder="Location" />
+		<TextArea name="description" label="Description" placeholder="Description" />
 
 		<div class="mt-6 flex justify-end gap-4">
 			<button 
@@ -280,18 +281,21 @@
 		<input type="hidden" name="id" value={editingwarehouse?.id || ''} />
 		<TextInput 
 			name="name"
+			label="Warehouse Name"
 			required 
 			placeholder="warehouse Name" 
 			value={editingwarehouse?.name || ''}
 		/>
 		<TextInput 
 			name="location" 
+			label="Location"
 			required 
 			placeholder="Location" 
 			value={editingwarehouse?.location || ''}
 		/>
-		<TextInput 
+		<TextArea
 			name="description" 
+			label="Description"
 			placeholder="Description" 
 			value={editingwarehouse?.description || ''}
 		/>
