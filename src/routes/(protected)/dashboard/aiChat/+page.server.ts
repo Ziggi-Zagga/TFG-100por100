@@ -9,7 +9,7 @@ export const actions: Actions = {
 		if (!question) return fail(400, { message: 'Question is required' });
 
 		try {
-			const res = await fetch('https://inventory-ai-production.up.railway.app/interpreter', {
+			const res = await fetch('https://inventory-ai-production.up.railway.app', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ text: question })
