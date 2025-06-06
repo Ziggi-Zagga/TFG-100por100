@@ -59,7 +59,7 @@
 			<div class="flex justify-between items-start mb-4">
 				<div class="flex items-center gap-4">
 					<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-						<img src="/logo/logo.png" class="w-13 h-16 object-contain" alt="Logo" />
+						<img src="/icons/svg/robot-svgrepo-com.svg" class="w-13 h-16 object-contain" alt="Logo" />
 					</div>
 					<div>
 						<h2 class="text-xl font-semibold text-gray-800">AI Assistant</h2>
