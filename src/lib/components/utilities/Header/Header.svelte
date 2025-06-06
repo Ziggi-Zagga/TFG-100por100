@@ -26,8 +26,10 @@
       <!-- Left side - Title section clean and minimal -->
       <div class="flex items-center space-x-4">
         <h1 class="text-2xl font-bold text-gray-900">{title}</h1>
-        <span class="text-sm text-gray-500">•</span>
-        <span class="text-sm text-gray-600">{subtitle}</span>
+        {#if subtitle}
+          <span class="text-sm text-gray-500">•</span>
+          <span class="text-sm text-gray-600">{subtitle}</span>
+        {/if}
       </div>
       
       <!-- Right side - Actions -->
