@@ -15,7 +15,7 @@ const securityHeaders = {
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': `default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';`
+  'Content-Security-Policy': `default-src 'self'; connect-src 'self' http://127.0.0.1:8000; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';`
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -98,3 +98,4 @@ function addSecurityHeaders(response: Response) {
     response.headers.set(header, value);
   });
 }
+
