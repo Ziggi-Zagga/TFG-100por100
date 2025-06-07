@@ -27,7 +27,7 @@
     <Toast
       message={toast.message}
       type={toast.type}
-      on:close={() => removeToast(toast.id)}
+      onClose={() => removeToast(toast.id)}
     />
   {/each}
 </div>

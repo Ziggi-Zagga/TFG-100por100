@@ -1,11 +1,21 @@
 import { defineConfig } from 'drizzle-kit';
+import * as dotenv from 'dotenv';
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+
+dotenv.config();
+
+const DATABASE_URL = process.env.PUBLIC_DATABASE_URL || 'dummy:postgres';
+
+if (!DATABASE_URL) {
+	console.warn('DATABASE_URL is not set. Drizzle operations may fail.');
+}
 
 export default defineConfig({
 	schema: './src/lib/server/db/schema.ts',
-	dbCredentials: { url: process.env.DATABASE_URL },
+	dbCredentials: {
+		url: DATABASE_URL || ''
+	},
 	verbose: true,
 	strict: true,
-	dialect: 'sqlite'
+	dialect: 'postgresql'
 });

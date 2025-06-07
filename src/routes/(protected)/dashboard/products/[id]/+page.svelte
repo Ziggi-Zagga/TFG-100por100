@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount } from 'svelte';
+  import { currency } from '$lib/components/helpers/currencies';
   import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
@@ -14,20 +15,19 @@
 
   const { data } = $props();
   let id: string;
-  let product = data.product;
+  let product = $state(data.product);
   let isEditing = $state(false);
-  let activeText: string;
 
   let suppliers = $state([...data.suppliers]);
   let manufacturers = $state([...data.manufacturers]);
   let categories = $state([...data.categories]);
+  let inventory = $state([...data.inventory]);
+  let orderItems = $state([...data.orderItems]);
 
   let showConfirm = $state(false);
 
   onMount(() => {
     id = page.params.id;
-    activeText = product.active ? 'Yes' : 'No';
-
     const urlParams = new URLSearchParams(page.url.search);
     if (urlParams.get('edit') === 'true') {
         isEditing = true;
@@ -36,6 +36,10 @@
 
   function toggleEdit() {
     isEditing = !isEditing;
+  }
+
+  function goToDetails(item: any) {
+    goto(`/dashboard/inventory/${item.id}`);
   }
 
   async function confirmDeletion() {
@@ -52,7 +56,7 @@
     if (res.ok) {
       goto('/dashboard/products');
     } else {
-      console.error('Failed to delete store');
+      console.error('Failed to delete warehouse');
     }
   }
 
@@ -142,7 +146,7 @@
         </Modal>
         {/if}
           <h2 class="text-4xl font-bold text-gray-800">{product.name}</h2>
-          <p class="text-indigo-600 text-2xl mt-1">${product.price?.toFixed(2) ?? 'N/A'}</p>
+          <p class="text-indigo-600 text-2xl mt-1">{product.price ? `${product.price.toFixed(2)} ${currency}` : 'N/A'}</p>
           <ShowText label="Description" value={product.description} />
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <ShowText label="Unit" value={product.unit} />
@@ -158,16 +162,26 @@
       </div>
     </div>
 
-    <Header title={selectedOption === 'orders' ? 'Order History' : 'Inventory History'} subtitle={product.name}>
+    <Header title={selectedOption === 'orders' ? 'Order History' : 'Inventory'} subtitle={product.name}>
       <div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
         <Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />
       </div>
     </Header>
 
     {#if selectedOption === 'orders'}
-      <Table columns={["order_id", "date", "quantity", "customer"]} items={[]}  />
+      <Table columns={["orderNumber", "quantity", "discount", "price", "orderDate"]} 
+      items={orderItems} 
+      ifEdit={(item) => false}
+      ifDelete={(item) => false}
+      />
     {:else if selectedOption === 'inventory'}
-      <Table columns={["movement_id", "date", "stock_change", "location"]} items={[]} />
+      <Table 
+        columns={["warehouse", "Section", "Row", "Gap", "Stock", "Date"]} 
+        items={inventory} 
+        onRowClick={(item) => goToDetails(item)}
+        ifEdit={(item) => false}
+        ifDelete={(item) => false}
+      />
     {/if}
   </div>
 </section>

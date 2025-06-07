@@ -3,12 +3,11 @@
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
-	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
-	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
-	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
-	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 	import OrderDetails from '$lib/components/dashboard/Orders/OrderDetails.svelte';
-	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
+	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
+	import type { Supplier } from '$lib/types/products.types';
+	import CreateOrders from '$lib/components/dashboard/Orders/CreateOrders.svelte';
+	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
@@ -18,8 +17,35 @@
 	let showOrderDetails = $state(false);
 	let search = $state('');
 	let selectedProducts = $state<any[]>([]);
-	let selectedSupplier = $state<{ id: string; name: string } | null>(null);
 	let selectedOrder = $state<any>(null);
+	let currentSupplier = $state<Supplier | null>(null);
+	let showDeleteDialog = $state(false);
+	let orderToDelete: { id: string, orderNumber: string } | null = $state(null);
+
+	// Toast state
+	let toasts = $state<Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>>([]);
+
+	// Helper functions for showing toasts
+	function showSuccess(message: string) {
+		const id = crypto.randomUUID();
+		toasts = [...toasts, { id, message, type: 'success' }];
+		setTimeout(() => removeToast(id), 3000);
+	}
+
+	function showError(message: string) {
+		const id = crypto.randomUUID();
+		toasts = [...toasts, { id, message, type: 'error' }];
+		setTimeout(() => removeToast(id), 3000);
+	}
+
+	function removeToast(id: string) {
+		toasts = toasts.filter(t => t.id !== id);
+	}
+
+	// Estados para la ordenación
+	let sortColumn = $state<string | null>('orderDate');
+	let sortDirection = $state<'asc' | 'desc'>('desc');
+
 	let formData = $state({
 		orderNumber: '',
 		supplierId: '',
@@ -27,21 +53,22 @@
 		expectedArrival: '',
 		notes: ''
 	});
-	const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
 
-	const productColumnTypes: Record<string, any> = {
-		quantity: { type: 'input' as const, inputType: 'number', min: 1, step: 1 },
-		discount: { type: 'input' as const, inputType: 'number', min: 0, max: 100, step: 1 },
-		actions: {
-			type: 'actions' as const,
-			actions: [
-				{
-					label: 'Delete',
-					onClick: (item: any) => handleDeleteProduct(item.id)
-				}
-			]
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const id = urlParams.get('id');
+		if (id) {
+			const order = orders.find(order => order.id === id);
+			if (order) {
+				search = order.orderNumber;
+				urlParams.delete('id');
+				const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+				window.history.replaceState({}, '', newUrl);
+			}
 		}
-	};
+	});
 
 	const ordersColumns = ['', 'orderNumber', 'status', 'orderDate'];
 
@@ -94,23 +121,90 @@
 	}
 
 	function handleViewOrder(order: any) {
-		const orderWithProducts = {
-			...order,
-			products: Array.isArray(order.products) ? order.products : [order.products].filter(Boolean)
-		};
-		selectedOrder = orderWithProducts;
-		showOrderDetails = true;
+    try {
+        if (!selectedOrder || order.id !== selectedOrder.id) {
+            const orderWithProducts = {
+                ...order,
+                products: Array.isArray(order.products) ? order.products : [order.products].filter(Boolean)
+            };
+
+            selectedOrder = orderWithProducts;
+            currentSupplier = null;
+
+            const supplierId = orderWithProducts.supplierId || orderWithProducts.supplierid;
+            
+            if (supplierId) {
+                const foundSupplier = suppliers.find((s: any) => 
+                    s.id === supplierId || 
+                    s.id.toString() === supplierId.toString()
+                );
+                
+                if (foundSupplier) {
+                    currentSupplier = foundSupplier;
+                } else {
+                    console.warn('Supplier not found for ID:', supplierId);
+                }
+            }
+
+            showOrderDetails = true;
+        } else {
+            showOrderDetails = !showOrderDetails;
+        }
+    } catch (error) {
+        console.error('Error in handleViewOrder:', error);
+        showOrderDetails = false;
+    }
+}
+
+	const filteredAndSortedOrders = $derived(() => {
+		let result = [...orders];
+
+		// Aplicar búsqueda
+		if (search) {
+			const searchTerm = search.toLowerCase();
+			result = result.filter(
+				(order) =>
+					order.orderNumber?.toLowerCase().includes(searchTerm) ||
+					order.status?.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		// Aplicar ordenación
+		if (sortColumn) {
+			result.sort((a, b) => {
+				let aValue = a[sortColumn as keyof typeof a];
+				let bValue = b[sortColumn as keyof typeof b];
+
+				// Manejar valores nulos o indefinidos
+				if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+				if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+
+				// Convertir a string para comparación
+				aValue = String(aValue).toLowerCase();
+				bValue = String(bValue).toLowerCase();
+
+				// Ordenar según la dirección
+				if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+				if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+				return 0;
+			});
+		}
+
+		return result;
+	});
+
+	async function handleSort(column: string) {
+	if (sortColumn === column) {
+		// Cambiar dirección si se hace clic en la misma columna
+		sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+	} else {
+		// Ordenar por nueva columna en orden ascendente
+		sortColumn = column;
+		sortDirection = 'asc';
 	}
+}
 
-	const filteredOrders = $derived(() =>
-		orders.filter(
-			(order) =>
-				order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
-				order.status.toLowerCase().includes(search.toLowerCase())
-		)
-	);
-
-	async function handleStatusChange(order: any, column: string, newStatus: string) {
+async function handleStatusChange(order: any, column: string, newStatus: string) {
 		const oldStatus = order[column];
 		
 		try {
@@ -130,239 +224,159 @@
 			}
 
 			const result = await response.json();
-			if (result.error) {
-				throw new Error(result.message || 'Error al actualizar el pedido');
-			}
+				if (result.error) {
+					const errorMessage = result.message || 'Error al actualizar el pedido';
+					showError(errorMessage);
+					throw new Error(errorMessage);
+				}
+				showSuccess('Order status updated successfully');
 
 			return true;
 		} catch (error) {
-			console.error('Error al actualizar el estado:', error);
+			const errorMessage = 'Error updating order status: ' + (error instanceof Error ? error.message : 'Unknown error');
+			console.error(errorMessage, error);
+			showError(errorMessage);
 			order[column] = oldStatus;
 			return false;
 		}
 	}
 
-	function handleSupplierSelect(supplierName: string) {
-		const supplier = suppliers.find((s) => s.name === supplierName);
-		if (supplier) {
-			selectedSupplier = supplier;
-			formData.supplierId = supplier.id;
-		} else {
-			selectedSupplier = null;
-			formData.supplierId = '';
-		}
+	// Open delete confirmation dialog
+	function confirmDelete(order: { id: string, orderNumber: string }) {
+		orderToDelete = order;
+		showDeleteDialog = true;
 	}
 
-	async function handleDelete(orderId: string) {
-		const formData = new FormData();
-		formData.append('id', orderId);
-
-		const res = await fetch('/dashboard/orders?/delete', {
-			method: 'POST',
-			body: formData
-		});
-
-		if (res.ok) {
-			orders = orders.filter((o) => o.id !== orderId);
-		} else {
-			console.error('Failed to delete order');
-		}
-	}
-
-	async function handleDeleteProduct(productId: string) {
-		selectedProducts = selectedProducts.filter((p) => p.id !== productId);
-	}
-
-	function handleProductSelect(productId: string) {
-		const product = products.find((p) => p.id === productId);
-		if (!product) return;
-
-		if (selectedProducts.some((p) => p.id === productId)) return;
-
-		selectedProducts = [
-			...selectedProducts,
-			{
-				id: product.id,
-				code: product.code,
-				name: product.name,
-				price: product.price,
-				quantity: 1,
-				discount: 0,
-				get total() {
-					return this.price * this.quantity * (1 - this.discount / 100);
-				}
-			}
-		];
-	}
-
-	function handleProductChange(item: any, column: string, value: number) {
-		const newValue = Number(value);
-		if (item[column] === newValue) return;
-
-		selectedProducts = selectedProducts.map((p) =>
-			p.id === item.id ? { ...p, [column]: newValue } : p
-		);
-	}
-
-	async function handleSubmit(event: Event) {
-		event.preventDefault();
-		const form = event.target as HTMLFormElement;
-		const formData = new FormData(form);
-
-		const items = selectedProducts.map((p) => ({
-			productId: p.id,
-			quantity: p.quantity,
-			price: p.price,
-			discount: p.discount || 0
-		}));
-
-		formData.set('items', JSON.stringify(items));
-
+	// Handle confirmed deletion
+	async function handleDelete() {
+		if (!orderToDelete) return;
+		
 		try {
-			const response = await fetch(form.action, {
+			const formData = new FormData();
+			formData.append('id', orderToDelete.id);
+
+			const response = await fetch('?/delete', {
 				method: 'POST',
 				body: formData
 			});
 
-			if (response.redirected) {
-				window.location.href = response.url;
-			} else if (!response.ok) {
-				console.error('Error al crear la orden');
+			if (response.ok) {
+				// Update the orders list by removing the deleted order
+				orders = orders.filter(order => order.id !== orderToDelete?.id);
+				// Show success toast
+				showSuccess('Order deleted successfully');
+			} else {
+				const result = await response.json();
+				const errorMessage = 'Error deleting order: ' + (result.message || 'Unknown error');
+				console.error(errorMessage);
+				showError(errorMessage);
 			}
 		} catch (error) {
-			console.error('Error al enviar el formulario:', error);
+			const errorMessage = 'Error deleting order. ' + (error instanceof Error ? error.message : 'Please try again.');
+			console.error(errorMessage, error);
+			showError(errorMessage);
+		} finally {
+			showDeleteDialog = false;
+			orderToDelete = null;
+		}
+	}
+	async function handleSubmit(orderData: any) {
+		try {
+			const formData = new FormData();
+			
+			// Add all form fields to formData
+			Object.entries(orderData).forEach(([key, value]) => {
+				if (key === 'items') {
+					formData.set('items', JSON.stringify(value));
+				} else if (value !== null && value !== undefined) {
+					formData.set(key, String(value));
+				}
+			});
+
+			// Add the current user ID to the form data
+			if (data.user?.id) {
+				formData.set('userId', data.user.id);
+			}
+
+			const response = await fetch('?/create', {
+				method: 'POST',
+				body: formData
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				if (result.error) {
+					throw new Error(result.message || 'Error creating order');
+				}
+				
+				// Refresh the page to show the new order
+				window.location.reload();
+			} else {
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage = errorData.message || 'Error creating order';
+				console.error(errorMessage);
+				showError(errorMessage);
+			}
+		} catch (error) {
+				const errorMessage = `Error creating order: ${error instanceof Error ? error.message : 'Unknown error'}`;
+				console.error(errorMessage, error);
+				showError(errorMessage);
 		}
 	}
 </script>
 
-<section class="min-h-screen w-full bg-gradient-to-b from-gray-50 to-blue-50 p-8">
-	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`} />
-
-	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row">
-		<div class="w-full md:flex-1">
-			<SearchBar bind:search placeholder="Search by order number or status..." />
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`}>	
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-72 md:flex-[3] lg:flex-[4]">
+				<SearchBar bind:search placeholder="Search by order number or status..." extraClasses="w-full" />
+			</div>
+			<div class="w-full md:w-auto">
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					Add Order
+				</Button>
+			</div>
 		</div>
-		<div class="-mt-6 flex w-full justify-end md:w-auto">
-			<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-				{@html '<span class="hidden md:inline">Add Order</span>'}
-			</Button>
-		</div>
-	</div>
-
+	</PageHeader>
 	<Table
 		columns={ordersColumns}
 		columnTypes={ordersColumnTypes}
-		items={filteredOrders()}
-		onRowClick={(item) => handleViewOrder(item)}
-		onDelete={(item) => handleDelete(item.id)}
+		items={filteredAndSortedOrders()}
+		onRowClick={(item: any) => handleViewOrder(item)}
+		onDelete={confirmDelete}
 		onCellChange={handleStatusChange}
+		onSort={handleSort}
+		sortable={true}
+		sortColumn={sortColumn}
+		sortDirection={sortDirection}
+		ifEdit={() => false}
+		
 	/>
-
 	{#if showDrawer}
-		<Modal title="➕ Create New Order" onClose={closeDrawer} size="lg">
-			<form method="POST" action="?/create" class="space-y-4" onsubmit={handleSubmit}>
-				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-					<!-- Primera fila -->
-					<div class="space-y-4">
-						<TextInput
-							name="orderNumber"
-							label="Order Number"
-							bind:value={formData.orderNumber}
-							required
-							placeholder="Order Number"
-						/>
-					</div>
-					<div class="space-y-4">
-						<ComboBox
-							name="supplierName"
-							label="Supplier"
-							items={suppliers || []}
-							bind:value={formData.supplierId}
-							onValueChange={(supplier) => handleSupplierSelect(supplier.name)}
-							required
-						/>
-						<input type="hidden" name="supplierId" value={formData.supplierId} />
-						{#if suppliers && suppliers.length === 0}
-							<p class="text-sm text-red-500">
-								No hay proveedores disponibles. Por favor, añade proveedores primero.
-							</p>
-						{/if}
-					</div>
-
-					<!-- Segunda fila -->
-					<div class="space-y-4">
-						<TextInput
-							name="orderDate"
-							bind:value={formData.orderDate}
-							label="Order Date"
-							type="datetime-local"
-							required
-						/>
-					</div>
-					<div class="space-y-4">
-						<TextInput
-							name="expectedArrival"
-							bind:value={formData.expectedArrival}
-							label="Expected Arrival"
-							type="datetime-local"
-							required
-						/>
-					</div>
-				</div>
-				<TextArea
-					name="notes"
-					bind:value={formData.notes}
-					label="Notes"
-					rows={4}
-					placeholder="Enter any additional notes..."
-				/>
-
-				<ComboBox
-					label="Products"
-					items={products}
-					quickSearch={true}
-					bind:searchQuery={search}
-					onQuickSelect={(item) => {
-						handleProductSelect(item.id);
-					}}
-					placeholder="Search products..."
-				/>
-
-				<Table
-					columns={productColumns}
-					items={selectedProducts}
-					columnTypes={productColumnTypes}
-					onCellChange={handleProductChange}
-					onDelete={(item) => handleDeleteProduct(item.id)}
-					ifEdit={(item) => false}
-				/>
-
-				<!-- Campo oculto para los ítems del pedido -->
-				<input type="hidden" name="items" value={JSON.stringify(selectedProducts)} />
-
-				<div class="mt-6 flex justify-end gap-4">
-					<button
-						type="button"
-						onclick={closeDrawer}
-						class="rounded-xl bg-gray-200 px-6 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-300"
-					>
-						Cancel
-					</button>
-					<button
-						type="submit"
-						class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-2 font-semibold text-white shadow-md hover:from-blue-600 hover:to-indigo-600"
-					>
-						Create
-					</button>
-				</div>
-			</form>
-		</Modal>
+	<CreateOrders
+		suppliers={suppliers}
+		products={products}
+		onClose={closeDrawer}
+		onSubmit={handleSubmit}
+	/>
 	{/if}
 	{#if showOrderDetails}
 		<OrderDetails
 			bind:isOpen={showOrderDetails}
 			order={selectedOrder}
+			supplier={currentSupplier || undefined}
 			onClose={onCloseDrawerDetails}
 		/>
 	{/if}
+	<!-- Delete Confirmation Dialog -->
+	<ConfirmDialog
+		show={showDeleteDialog}
+		message={`Are you sure you want to delete order #${orderToDelete?.orderNumber || ''}? This action cannot be undone.`}
+		onConfirm={handleDelete}
+		onCancel={() => {
+			showDeleteDialog = false;
+			orderToDelete = null;
+		}}
+	/>
+	<ToastList {toasts} on:removeToast={e => removeToast(e.detail.id)} />
 </section>

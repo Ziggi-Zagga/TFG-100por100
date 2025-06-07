@@ -1,35 +1,37 @@
 import {
 	repoGetInventoryView,
-	repoGetAvailableProducts,
 	repoInsertInventoryItem,
 	repoDeleteInventoryItem,
 	repoGetInventoryById,
-	repoUpdateInventoryItem
+	repoUpdateInventoryItem,
+	repoGetProductsByGapId
 } from '$lib/server/db/repositories/inventory.repository';
-import { getFullStoresTree, repoGetTreeFromGapId } from '$lib/server/db/repositories/stores.repository';
+import { getFullwarehouseTree, repoGetTreeFromGapId } from '$lib/server/db/repositories/warehouse.repository';
 import { getCategoriesById } from '$lib/server/db/repositories/category.repository';
 import { getSuppliersById } from '$lib/server/db/repositories/supplier.repository';
 import { getManufacturersById } from '$lib/server/db/repositories/manufacturers.repository';
+import type { Product } from '$lib/types/products.types';
 
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
-import { repoGetProductById } from '../db/repositories/products.repository';
+import { getFullProductsList, repoGetProductById } from '../db/repositories/products.repository';
+import { repoGetInventoryHistoryByInventoryId, repoGetInventoryHistoryView, repoInsertInventoryHistory } from '../db/repositories/inventoryHistory.repository';
 
 export const getInventoryData = async () => {
 	const items = await repoGetInventoryView();
-	const safeAvailableProducts = await repoGetAvailableProducts();
-	const fullStoreTree = await getFullStoresTree();
+	const safeAvailableProducts = await getFullProductsList();
+	const fullwarehouseTree = await getFullwarehouseTree();
 	
 	return {
 		inventoryItems: items,
 		availableProducts: safeAvailableProducts,
-		fullStoreTree: fullStoreTree,
+		fullwarehouseTree: fullwarehouseTree,
 		totalProducts: items.length
 	};
 }
 
 export const createInventoryEntry = async ({
 	productId,
-	storeGapId,
+	warehouseGapId,
 	stock,
 	minQuantity,
 	reorderQuantity,
@@ -38,7 +40,7 @@ export const createInventoryEntry = async ({
 	updatedAt = new Date()
 }: {
 	productId: string;
-	storeGapId: string;
+	warehouseGapId: string;
 	stock: number;
 	minQuantity: number;
 	reorderQuantity: number;
@@ -49,7 +51,7 @@ export const createInventoryEntry = async ({
 	if (!productId) {
 		throw new ServiceError('Product ID is required', ERROR_TYPES.VALIDATION, 400);
 	}
-	if (!storeGapId) {
+	if (!warehouseGapId) {
 		throw new ServiceError('Location ID is required', ERROR_TYPES.VALIDATION, 400);
 	}
 	if (isNaN(stock) || stock < 0) {
@@ -62,7 +64,7 @@ export const createInventoryEntry = async ({
 		throw new ServiceError('Reorder quantity must be a valid non-negative number', ERROR_TYPES.VALIDATION, 400);
 	}
 
-	await repoInsertInventoryItem({ productId, storeGapId, stock, minQuantity, reorderQuantity, lastCount, createdAt, updatedAt });
+	await repoInsertInventoryItem({ productId, warehouseGapId, stock, minQuantity, reorderQuantity, lastCount, createdAt, updatedAt });
 }
 
 export const deleteInventoryEntry = async (id: string) => {
@@ -77,7 +79,7 @@ export const updateInventoryEntry = async ({
 	stock,
 	minQuantity,
 	reorderQuantity,
-	storeGapId,
+	warehouseGapId,
 	lastCount,
 	updatedAt
 }: {
@@ -85,14 +87,14 @@ export const updateInventoryEntry = async ({
 	stock: number;
 	minQuantity: number;
 	reorderQuantity: number;
-	storeGapId: string;
+	warehouseGapId: string;
 	lastCount?: Date;
 	updatedAt?: Date;
 }) => {
 	if (!id) {
 		throw new ServiceError('Invalid or missing inventory ID', ERROR_TYPES.VALIDATION, 400);
 	}
-	await repoUpdateInventoryItem({ id, stock, minQuantity, reorderQuantity, storeGapId, lastCount, updatedAt });
+	await repoUpdateInventoryItem({ id, stock, minQuantity, reorderQuantity, warehouseGapId, lastCount, updatedAt });
 }
 
 export const getCategorie = async (id: string) => {
@@ -119,3 +121,76 @@ export const getTreeFromGapId = async (gapId: string) => {
 	return await repoGetTreeFromGapId(gapId);
 }
 
+export const getInventoryHistory = async () => {
+	return await repoGetInventoryHistoryView();
+}
+
+export const getInventoryHistoryByInventoryId = async (inventoryId: string) => {
+	return await repoGetInventoryHistoryByInventoryId(inventoryId);
+}
+
+export interface ProductWithGapName {
+    product: Product;
+    gapName: string;
+}
+
+export const getProductsByGapId = async (gapId: string): Promise<ProductWithGapName[]> => {
+    if (!gapId) {
+        throw new ServiceError('Gap ID is required', ERROR_TYPES.VALIDATION, 400);
+    }
+    return await repoGetProductsByGapId(gapId);
+};
+
+export const createInventoryHistoryEntry = async ({
+	id,
+	productId,
+	inventoryId,
+	fromGapId,
+	toGapId,
+	previousQuantity,
+	newQuantity,
+	quantityChanged,
+	userId,
+	notes,
+	createdAt = new Date(),
+  }: {
+	id: string;
+	productId: string;
+	inventoryId: string;
+	fromGapId?: string;
+	toGapId?: string;
+	previousQuantity?: number;
+	newQuantity?: number;
+	quantityChanged: number;
+	userId?: string;
+	notes?: string;
+	createdAt?: Date;
+  }) => {
+	if (!id) {
+	  throw new ServiceError('ID is required', ERROR_TYPES.VALIDATION, 400);
+	}
+	if (!productId) {
+	  throw new ServiceError('Product ID is required', ERROR_TYPES.VALIDATION, 400);
+	}
+	if (!inventoryId) {
+	  throw new ServiceError('Inventory ID is required', ERROR_TYPES.VALIDATION, 400);
+	}
+	if (isNaN(quantityChanged)) {
+	  throw new ServiceError('Quantity changed must be a valid number', ERROR_TYPES.VALIDATION, 400);
+	}
+  
+	await repoInsertInventoryHistory({
+	  id,
+	  productId,
+	  inventoryId,
+	  fromGapId,
+	  toGapId,
+	  previousQuantity,
+	  newQuantity,
+	  quantityChanged,
+	  userId,
+	  notes,
+	  createdAt,
+	});
+  };
+  

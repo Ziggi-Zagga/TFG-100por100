@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { currency } from '$lib/components/helpers/currencies';
+    
     export let orders: {
       id: string;
       product: string;
@@ -65,7 +67,7 @@
         >
           <span class="font-semibold">{order.id}</span>
           <span class="text-gray-700">{order.product} ×{order.quantity}</span>
-          <span class="text-gray-800 font-medium">${order.total.toFixed(2)}</span>
+          <span class="text-gray-800 font-medium">{order.total.toFixed(2)} {currency}</span>
           <span class={`px-2 py-0.5 rounded text-xs font-semibold ${getStatusStyle(order.status)}`}>
             {order.status}
           </span>

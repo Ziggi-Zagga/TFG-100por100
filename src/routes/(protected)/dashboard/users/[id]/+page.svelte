@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import ShowText from '$lib/components/utilities/ShowText/ShowText.svelte';
@@ -11,8 +10,16 @@
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
 	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
+	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 
-	const { data } = $props();
+	const { data } = $props<PageData>();
+	let selectedOption = $state<'orders' | 'inventory'>('orders');
+	const historyOptions = [
+		{ id: 'orders', name: 'Orders' },
+		{ id: 'inventory', name: 'Inventory' }
+	];
 	let id = $state(get(page).params.id);
 	let user = data.user;
 	let isEditing = $state(false);
@@ -82,13 +89,17 @@
 					onclick={toggleEdit}
 					class="text-2xl text-yellow-500 transition hover:scale-110 hover:text-yellow-600"
 				>
-					{isEditing ? '✖️' : '✏️'}
+					{#if isEditing}
+						<Icon icon="close" size={30} />
+					{:else}
+						<Icon icon="edit" size={30} />
+					{/if}
 				</button>
 				<button
 					onclick={handleDelete}
 					class="text-2xl text-red-500 transition hover:scale-110 hover:text-red-600"
 				>
-					🗑️
+					<Icon icon="delete" size={30} />
 				</button>
 			</div>
 		</div>
@@ -96,7 +107,7 @@
 		<div class="flex flex-col gap-12 md:flex-row">
 			<div class="flex w-full justify-center md:w-1/3">
 				<div
-					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md"
+					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md hidden md:block"
 				>
 				
 				<!-- Atribuir imagen de usuario -->
@@ -170,18 +181,16 @@
 
 		<Header title="User History" subtitle={user.username}>
 			<div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
-				<!--<Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />-->
+				<Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />
 			</div>
 		</Header>
 
-		<!-- TODO: Implement history -->
-		<!--
       {#if selectedOption === 'orders'}
-        <Table columns={["order_id", "date", "quantity", "customer"]} items={[]} />
+        <Table columns={["orderNumber", "supplierName", "createdAt", "status"]} ifEdit={() => false} ifDelete={() => false} items={data.orders} onRowClick={(item) => goto(`/dashboard/orders/ordersList?id=${item.id}`)}/>
       {:else if selectedOption === 'inventory'}
-        <Table columns={["movement_id", "date", "stock_change", "location"]} items={[]} />
+        <Table columns={["id", "productName", "fromLocation", "toLocation", "previousQuantity", "newQuantity" ]} ifEdit={() => false} ifDelete={() => false} items={data.inventoryHistory} onRowClick={(item) => goto(`/dashboard/inventory?id=${item.inventoryId}`)}/>
       {/if}
-      -->
+      
 	</div>
 </section>
 

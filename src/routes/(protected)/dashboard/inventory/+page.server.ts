@@ -8,7 +8,6 @@ export const load: PageServerLoad = async () => {
 		const data = await getInventoryData();
 		return data;
 	} catch (err) {
-		console.error('Inventory load error:', err);
 		throw error(500, 'Failed to load inventory');
 	}
 };
@@ -16,21 +15,17 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	create: async ({ request }) => {
 		try {
-			console.log('LLEGÓ A CREATE');
 			const formData = await request.formData();
 			const productId = formData.get('productId')?.toString() ?? "";
-			const storeGapId = formData.get('storeGapId')?.toString() ?? "";
+			const warehouseGapId = formData.get('warehouseGapId')?.toString() ?? "";
 			const stock = Number(formData.get('stock'));
 			const minQuantity = Number(formData.get('minQuantity'));
 			const reorderQuantity = Number(formData.get('reorderQuantity'));
 
-			console.log("productId: ", productId, "storeGapId: ", storeGapId, "stock: ", stock, "minQuantity: ", minQuantity, "reorderQuantity: ", reorderQuantity);
-
-			await createInventoryEntry({ productId, storeGapId, stock, minQuantity, reorderQuantity });
+			await createInventoryEntry({ productId, warehouseGapId, stock, minQuantity, reorderQuantity });
 
 			return redirect(303, '/dashboard/inventory');
 		} catch (err) {
-			console.error('Inventory create error:', err);
 			return basicErrorHandler(err as Error);
 		}
 	},
@@ -39,13 +34,11 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const id = formData.get('id')?.toString() ?? "";
-			console.log('[DELETE] Recibido ID:', id);
 
 			await deleteInventoryEntry(id);
 
 			return redirect(303, '/dashboard/inventory');
 		} catch (err) {
-			console.error('Inventory delete error:', err);
 			return basicErrorHandler(err as Error);
 		}
 	}

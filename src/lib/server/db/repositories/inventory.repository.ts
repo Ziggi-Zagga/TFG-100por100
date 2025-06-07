@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq, and, notExists } from 'drizzle-orm';
+import { eq } from 'drizzle-orm/expressions';
 
 
 export const repoGetInventoryView = async () => {
@@ -14,58 +14,23 @@ export const repoGetInventoryView = async () => {
             unit: table.products.unit,
             quantity: table.inventory.quantity,
             lastCount: table.inventory.lastCount,
-            location: table.storeGaps.name,
+            location: table.warehouseGaps.name,
             supplier: table.suppliers.name,
             category: table.categories.name,
             manufacturer: table.manufacturers.name
         })
         .from(table.products)
         .innerJoin(table.inventory, eq(table.products.id, table.inventory.productId))
-        .innerJoin(table.storeGaps, eq(table.inventory.storeGapId, table.storeGaps.id))
+        .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
         .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
         .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
         .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
         .where(eq(table.products.active, true));
 }
 
-
-export const repoGetAvailableProducts = async () => {
-    const result = await db
-        .select({
-            id: table.products.id,
-            name: table.products.name,
-            code: table.products.code,
-            category: table.categories.name,
-            supplier: table.suppliers.name,
-            manufacturer: table.manufacturers.name
-        })
-        .from(table.products)
-        .leftJoin(table.categories, eq(table.products.categoryId, table.categories.id))
-        .leftJoin(table.suppliers, eq(table.products.supplierId, table.suppliers.id))
-        .leftJoin(table.manufacturers, eq(table.products.manufacturerId, table.manufacturers.id))
-        .where(
-            and(
-                eq(table.products.active, true),
-                notExists(
-                    db
-                        .select()
-                        .from(table.inventory)
-                        .where(eq(table.inventory.productId, table.products.id))
-                )
-            )
-        );
-
-    return result.map((p) => ({
-        ...p,
-        category: p.category ?? undefined,
-        supplier: p.supplier ?? undefined,
-        manufacturer: p.manufacturer ?? undefined
-    }));
-}
-
 export const repoInsertInventoryItem = async ({
     productId,
-    storeGapId,
+    warehouseGapId,
     stock,
     minQuantity,
     reorderQuantity,
@@ -74,7 +39,7 @@ export const repoInsertInventoryItem = async ({
     updatedAt
 }: {
     productId: string;
-    storeGapId: string;
+    warehouseGapId: string;
     stock: number;
     minQuantity: number;
     reorderQuantity: number;
@@ -85,7 +50,7 @@ export const repoInsertInventoryItem = async ({
     return db.insert(table.inventory).values({
         id: crypto.randomUUID(),
         productId,
-        storeGapId,
+        warehouseGapId,
         quantity: stock,
         minQuantity: minQuantity ?? 0,
         reorderQuantity: reorderQuantity ?? 0,
@@ -100,7 +65,7 @@ export const repoUpdateInventoryItem = async ({
     stock,
     minQuantity,
     reorderQuantity,
-    storeGapId,
+    warehouseGapId,
     lastCount,
     updatedAt
 }: {
@@ -108,7 +73,7 @@ export const repoUpdateInventoryItem = async ({
     stock: number;
     minQuantity: number;
     reorderQuantity: number;
-    storeGapId: string;
+    warehouseGapId: string;
     lastCount?: Date;
     updatedAt?: Date;
 }) => {
@@ -116,16 +81,73 @@ export const repoUpdateInventoryItem = async ({
         quantity: stock,
         minQuantity: minQuantity ?? 0,
         reorderQuantity: reorderQuantity ?? 0,
-        storeGapId: storeGapId,
+        warehouseGapId: warehouseGapId,
         lastCount: lastCount ?? new Date(),
         updatedAt: updatedAt ?? new Date(),
     }).where(eq(table.inventory.id, id));
 }
+
+export const repoGetInventoryByProductId = async (productId: string) => {
+    return db.select().from(table.inventory).where(eq(table.inventory.productId, productId));
+}
+
+export const repoGetInventoryWithFullLocationByProductId = async (productId: string) => {
+    return await db
+      .select({
+        id: table.inventory.id,
+        productId: table.inventory.productId,
+        Stock: table.inventory.quantity,
+        Date: table.inventory.createdAt,
+        Gap: table.warehouseGaps.name,
+        Row: table.warehouseRows.name,
+        Section: table.sections.name,
+        warehouse: table.warehouses.name
+      })
+      .from(table.inventory)
+      .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
+      .innerJoin(table.warehouseRows, eq(table.warehouseGaps.rowId, table.warehouseRows.id))
+      .innerJoin(table.sections, eq(table.warehouseRows.sectionId, table.sections.id))
+      .innerJoin(table.warehouses, eq(table.sections.warehouseId, table.warehouses.id))
+      .where(eq(table.inventory.productId, productId));
+  };
+  
 
 export const repoDeleteInventoryItem = async (id: string) => {
     return db.delete(table.inventory).where(eq(table.inventory.id, id));
 }
 
 export const repoGetInventoryById = async (id: string) => {
-    return db.select().from(table.inventory).where(eq(table.inventory.id, id));
+    return await db.query.inventory.findFirst({
+        where: (inventory, { eq }) => eq(inventory.id, id)
+    })
+}
+
+export const repoGetProductsByGapId = async (gapId: string) => {
+    const results = await db
+        .select({
+            product: table.products,
+            gapName: table.warehouseGaps.name
+        })
+        .from(table.inventory)
+        .innerJoin(table.products, eq(table.inventory.productId, table.products.id))
+        .innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
+        .where(eq(table.inventory.warehouseGapId, gapId));
+
+    // Transform the data to match the expected types
+    return results.map(item => ({
+        ...item,
+        product: {
+            ...item.product,
+            price: item.product.price || 0,
+            active: item.product.active ?? true, // Default to true if null
+            description: item.product.description ?? undefined,
+            dimensions: item.product.dimensions ?? undefined,
+            material: item.product.material ?? undefined,
+            specifications: item.product.specifications ?? undefined,
+            supplierId: item.product.supplierId ?? undefined,
+            manufacturerId: item.product.manufacturerId ?? undefined,
+            categoryId: item.product.categoryId ?? undefined,
+            unit: item.product.unit ?? ''
+        }
+    }));
 }

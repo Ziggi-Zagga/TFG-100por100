@@ -1,9 +1,8 @@
 import { db } from '$lib/server/db';
 import { products, suppliers, manufacturers, categories } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-import { eq, or, ilike } from 'drizzle-orm';
 
-// Obtener productos filtrados por proveedor
 export const getProductsBySupplier = async (supplierId: string) => {
 	return await db
 		.select({
@@ -37,22 +36,21 @@ export const getFullProductsList = async () => {
       material: products.material,
       specifications: products.specifications,
       active: products.active,
-
       supplierId: suppliers.id,
       supplierName: suppliers.name,
-
       manufacturerId: manufacturers.id,
       manufacturerName: manufacturers.name,
-
       categoryId: categories.id,
       categoryName: categories.name,
       categoryDescription: categories.description,
       categoryParentId: categories.parentId,
     })
     .from(products)
-    .leftJoin(suppliers, eq(suppliers.id, products.supplierId))
-    .leftJoin(manufacturers, eq(manufacturers.id, products.manufacturerId))
-    .leftJoin(categories, eq(categories.id, products.categoryId));
+    .leftJoin(suppliers, eq(products.supplierId, suppliers.id))
+    .leftJoin(manufacturers, eq(products.manufacturerId, manufacturers.id))
+    .leftJoin(categories, eq(products.categoryId, categories.id))
+
+  
 };
 
 export const getAllProducts = async () => {
@@ -68,13 +66,13 @@ export const insertProduct = async ({
   manufacturerId,
   categoryId,
   price,
-  unit,
+  unit = '',
   dimensions,
   material,
   specifications,
-  active,
-  createdAt,
-  updatedAt,
+  active = true,
+  createdAt = new Date(),
+  updatedAt = new Date(),
 }: {
   id: string;
   name: string;
@@ -92,41 +90,40 @@ export const insertProduct = async ({
   createdAt?: Date;
   updatedAt?: Date;
 }) => {
-  await db.insert(products).values({
-    id,
-    code,
-    name,
-    description: description ?? null,
-    supplierId: supplierId ?? null,
-    manufacturerId: manufacturerId ?? null,
-    categoryId: categoryId ?? null,
-    price: price ?? null,
-    unit: unit ?? null,
-    dimensions: dimensions ?? null,
-    material: material ?? null,
-    specifications: specifications ?? null,
-    active: active ?? true,
-    createdAt: createdAt ?? new Date(),
-    updatedAt: updatedAt ?? new Date(), 
-  });
+  try {
+    const productData = {
+      id,
+      code,
+      name,
+      description: description || undefined,
+      price: price || 0,
+      unit: unit || '',
+      dimensions: dimensions || undefined,
+      material: material || undefined,
+      specifications: specifications || undefined,
+      active: active !== undefined ? active : true,
+      supplierId: supplierId || undefined,
+      manufacturerId: manufacturerId || undefined,
+      categoryId: categoryId || undefined,
+    };
+    
+    // Añadir campos de auditoría solo si existen en el esquema
+    const withTimestamps = {
+      ...productData,
+      ...(createdAt && { createdAt }),
+      ...(updatedAt && { updatedAt })
+    };
 
-  return {
-    id,
-    code,
-    name,
-    description,
-    supplierId,
-    manufacturerId,
-    categoryId,
-    price,
-    unit,
-    dimensions,
-    material,
-    specifications,
-    active: active ?? true,
-    createdAt,
-    updatedAt,
-  };
+    const [newProduct] = await db
+      .insert(products)
+      .values(withTimestamps)
+      .returning();
+    
+    return newProduct;
+  } catch (error) {
+    console.error('Error al insertar el producto:', error);
+    throw error;
+  }
 };
 
 export const removeProduct = async (id: string) => {
@@ -173,13 +170,12 @@ export const updateProduct = async ({
       supplierId: supplierId ?? null,
       manufacturerId: manufacturerId ?? null,
       categoryId: categoryId ?? null,
-      price: price ?? null,
-      unit: unit ?? null,
+      price: price || 0,
+      unit: unit ?? '',
       dimensions: dimensions ?? null,
       material: material ?? null,
       specifications: specifications ?? null,
       active: active ?? true,
-      updatedAt: updatedAt ?? new Date(),
     })
     .where(eq(products.id, id));
 
@@ -202,7 +198,9 @@ export const updateProduct = async ({
 };
 
 export const repoGetProductById = async (id: string) => {
-    return db.select().from(products).where(eq(products.id, id));
-}
+	return await db.query.products.findFirst({
+		where: (products, { eq }) => eq(products.id, id)
+	});
+};
 
 

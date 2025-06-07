@@ -23,6 +23,10 @@
 	import SpaceIcon from './SpaceIcon.svelte';
 	import TodoIcon from './TodoIcon.svelte';
 	import CancelledIcon from './CancelledIcon.svelte';
+	import MenuIcon from './Menu.svelte';
+	import ArrowIcon from './Arrow.svelte';
+	import GapIcon from './GapIcon.svelte';
+	
 	
 	const {
 		icon,
@@ -53,10 +57,10 @@
 	<TemplateIcon {size} />
 {/if}
 {#if icon === 'edit'}
-	<EditIcon {size} />
+	<EditIcon {size} {extraStyles} />
 {/if}
 {#if icon === 'delete'}
-	<DeleteIcon {size} />
+	<DeleteIcon {size} {extraStyles} />
 {/if}
 {#if icon === 'send'}
 	<SendIcon {size} />
@@ -102,4 +106,13 @@
 {/if}
 {#if icon === 'cancelled'}
 	<CancelledIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'menu'}
+	<MenuIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'arrow'}
+	<ArrowIcon {size} {extraStyles} />
+{/if}
+{#if icon === 'gap'}
+	<GapIcon {size} {extraStyles} />
 {/if}

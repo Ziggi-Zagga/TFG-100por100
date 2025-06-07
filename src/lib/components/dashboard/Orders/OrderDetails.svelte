@@ -2,36 +2,20 @@
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import Modal from '$lib/components/utilities/Modal/Modal.svelte';
   import Table from '$lib/components/utilities/table/Table.svelte';
+  import type { Supplier } from '$lib/types/products.types';
+  import { currency,formatCurrency } from '$lib/components/helpers/currencies';
 
-  let { isOpen = $bindable<boolean>(), order, onClose } = $props<{
+  let { isOpen = $bindable<boolean>(), order, onClose, supplier } = $props<{
     isOpen?: boolean;
     order?: any;
     onClose?: () => void;
+    supplier?: Supplier;
   }>();
-
-  $effect (() => {
-    if (order) {
-      if (!order.products) {
-        order.products = [];
-      } else if (!Array.isArray(order.products)) {
-        order.products = [order.products];
-      }
-      
-      order.products = order.products.map((product: any) => ({
-        code: product.code || '',
-        name: product.name || product.product?.name || 'Producto desconocido',
-        quantity: product.quantity || 1,
-        price: product.price || product.product?.price || 0,
-        discount: product.discount || 0,
-        total: product.total || 0
-      }));
-    }
-  });
 
   function formatDate(dateString: string) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
+    return date.toLocaleDateString('es-GB', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -46,42 +30,43 @@
   }
 
   function calculateSubtotal(products: any[]) {
-    if (!products || !products.length) return 0;
-    return products.reduce((total: number, item: any) => {
+    if (!products || !products.length) return '0.00';
+    const subtotal = products.reduce((total: number, item: any) => {
       const price = parseFloat(item.price || 0);
       const quantity = parseFloat(item.quantity || 0);
       return total + (price * quantity);
-    }, 0).toFixed(2);
+    }, 0);
+    return formatCurrency(subtotal);
   }
 
   function calculateDiscounts(products: any[]) {
-    if (!products || !products.length) return 0;
-    return products.reduce((total: number, item: any) => {
+    if (!products || !products.length) return '0.00';
+    const totalDiscount = products.reduce((total: number, item: any) => {
       const price = parseFloat(item.price || 0);
       const quantity = parseFloat(item.quantity || 0);
       const discount = parseFloat(item.discount || 0);
       const subtotal = price * quantity;
       const discountAmount = subtotal * (discount / 100);
       return total + discountAmount;
-    }, 0).toFixed(2);
+    }, 0);
+    return formatCurrency(totalDiscount);
   }
 
   function calculateTotal(products: any[]) {
-    if (!products || !products.length) return 0;
-    return products.reduce((total: number, item: any) => {
+    if (!products || !products.length) return '0.00';
+    const total = products.reduce((total: number, item: any) => {
       const price = parseFloat(item.price || 0);
       const quantity = parseFloat(item.quantity || 0);
       const discount = parseFloat(item.discount || 0);
       const subtotal = price * quantity;
       const discountAmount = subtotal * (discount / 100);
       return total + (subtotal - discountAmount);
-    }, 0).toFixed(2);
+    }, 0);
+    return formatCurrency(total);
   }
 
-  // Configuración de columnas para la tabla de productos
   const productColumns = ['code', 'name', 'quantity', 'price', 'discount', 'total'];
 
-  // Tipos de columnas para la tabla
   const productColumnTypes = {
     price: { type: 'text' as const, extraStyles: 'text-right' },
     discount: { type: 'text' as const, extraStyles: 'text-center' },
@@ -89,30 +74,32 @@
     quantity: { type: 'text' as const, extraStyles: 'text-center' }
   };
 
-  // Preparar los datos para la tabla
   let productItems = $state<any[]>([]);
   
   $effect(() => {
-    if (!order?.products?.length) {
+    const items = order?.items || order?.products || [];
+    
+    if (!items.length) {
       productItems = [];
       return;
     }
     
-    productItems = order.products.map((product: any) => {
-      const price = parseFloat(product.price || 0);
-      const quantity = parseInt(product.quantity || 0);
-      const discount = parseFloat(product.discount || 0);
-      const total = (price * quantity * (1 - discount / 100)).toFixed(2);
+    productItems = items.map((item: any) => {
+      const price = parseFloat(item.price || 0);
+      const quantity = parseFloat(item.quantity || 0);
+      const discount = parseFloat(item.discount || 0);
+      const subtotal = price * quantity;
+      const discountAmount = subtotal * (discount / 100);
+      const total = subtotal - discountAmount;
       
       return {
-        ...product,
-        code: product.code || 'N/A',
-        name: product.name || 'Producto sin nombre',
-        price: price.toFixed(2) + ' €',
+        ...item,
+        code: item.code || 'N/A',
+        name: item.name || 'Unnamed Product',
+        price: formatCurrency(price),
         quantity: quantity.toString(),
         discount: discount > 0 ? `${discount}%` : '0%',
-        total: total + ' €',
-        // Clases personalizadas para las celdas
+        total: formatCurrency(total),
         _rowClass: 'hover:bg-gray-50',
         _cellClass: {
           price: 'font-mono',
@@ -123,18 +110,19 @@
       };
     });
   });
+  
 </script>
 
-<Modal title="Detalles del Pedido" size="lg" onClose={onClose}>
+<Modal title="Order Details" size="lg" onClose={onClose}>
   {#if order}
     <div class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="text-sm font-medium text-gray-500">Número de Pedido</h3>
+          <h3 class="text-sm font-medium text-gray-500">Order Number</h3>
           <p class="mt-1 text-lg font-semibold">{order.orderNumber || 'N/A'}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="text-sm font-medium text-gray-500">Estado</h3>
+          <h3 class="text-sm font-medium text-gray-500">Status</h3>
           <div class="mt-1">
             <span class="px-3 py-1 text-sm rounded-full" 
                   class:bg-green-100={order.status === 'completed'}
@@ -145,69 +133,78 @@
                   class:text-red-800={order.status === 'cancelled'}
                   class:bg-gray-100={!['completed', 'pending', 'cancelled'].includes(order.status)}
                   class:text-gray-800={!['completed', 'pending', 'cancelled'].includes(order.status)}>
-              {order.status || 'N/A'}
+              {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'N/A'}
             </span>
           </div>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="text-sm font-medium text-gray-500">Fecha de Pedido</h3>
+          <h3 class="text-sm font-medium text-gray-500">Order Date</h3>
           <p class="mt-1">{formatDate(order.orderDate)}</p>
         </div>
       </div>
 
-      <!-- Información del proveedor -->
+      <!-- Supplier Information -->
       <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Información del Proveedor</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Supplier Information</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Nombre</h4>
-            <p>{order.supplier?.name || 'N/A'}</p>
+            <h4 class="text-sm font-medium text-gray-500">Name</h4>
+            <p>{supplier?.name || 'N/A'}</p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Contacto</h4>
-            <p>{order.supplier?.contactPerson || 'N/A'}</p>
+            <h4 class="text-sm font-medium text-gray-500">Contact Person</h4>
+            <p>{supplier?.contactPerson || 'N/A'}</p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Teléfono</h4>
-            <p>{order.supplier?.phone || 'N/A'}</p>
+            <h4 class="text-sm font-medium text-gray-500">Phone</h4>
+            <p>{supplier?.phone || 'N/A'}</p>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-gray-500">Correo Electrónico</h4>
-            <p>{order.supplier?.email || 'N/A'}</p>
+            <h4 class="text-sm font-medium text-gray-500">Email</h4>
+            <p>{supplier?.email || 'N/A'}</p>
           </div>
         </div>
       </div>
+       <!-- Notes -->
+       {#if order.notes}
+       <div class="bg-white shadow rounded-lg p-6">
+         <h3 class="text-lg font-medium text-gray-900 mb-2">Notes</h3>
+         <p class="text-gray-600 whitespace-pre-line">{order.notes}</p>
+       </div>
+     {/if}
 
-      <!-- Productos del pedido -->
+      <!-- Order Products -->
       <div class="bg-white shadow rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Productos</h3>
+          <h3 class="text-lg font-medium text-gray-900">Products</h3>
         </div>
         <div class="p-4">
           {#if order.products && order.products.length > 0}
             <Table
               columns={productColumns}
-               items={productItems}
+              items={productItems}
               onRowClick={() => {}}
+              ifEdit={() => false}
+              ifDelete={() => false}
             />
             
-            <!-- Totales -->
+            <!-- Totals -->
             <div class="mt-4 border-t border-gray-200 pt-4">
               <div class="flex justify-end">
                 <div class="w-full max-w-md">
                   <div class="flex justify-between py-1">
                     <span class="text-sm font-medium text-gray-700">Subtotal:</span>
-                    <span class="text-sm text-gray-900">{calculateSubtotal(order.products)} €</span>
+                    <span class="text-sm text-gray-900">{calculateSubtotal(order.products)}</span>
                   </div>
                   {#if hasDiscounts(order.products)}
                     <div class="flex justify-between py-1">
-                      <span class="text-sm font-medium text-gray-700">Descuentos:</span>
-                      <span class="text-sm text-red-600">-{calculateDiscounts(order.products)} €</span>
+                      <span class="text-sm font-medium text-gray-700">Discounts:</span>
+                      <span class="text-sm text-red-600">-{calculateDiscounts(order.products)}</span>
                     </div>
                   {/if}
                   <div class="flex justify-between pt-2 mt-2 border-t border-gray-200">
                     <span class="text-base font-semibold text-gray-900">Total:</span>
-                    <span class="text-base font-semibold text-gray-900">{calculateTotal(order.products)} €</span>
+                    <span class="text-base font-semibold text-gray-900">{calculateTotal(order.products)}</span>
                   </div>
                 </div>
               </div>
@@ -220,13 +217,7 @@
         </div>
       </div>
 
-      <!-- Notas -->
-      {#if order.notes}
-        <div class="bg-white shadow rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Notas</h3>
-          <p class="text-gray-600 whitespace-pre-line">{order.notes}</p>
-        </div>
-      {/if}
+     
     </div>
   {/if}
 

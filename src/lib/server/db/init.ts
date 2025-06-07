@@ -1,6 +1,6 @@
 import { db } from '.';
 import { roles } from './schema';
-import { eq } from 'drizzle-orm';
+
 
 export async function initDatabase() {
   // Inicializar roles si no existen

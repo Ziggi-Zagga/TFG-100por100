@@ -2,6 +2,8 @@ import * as prod from '../db/repositories/products.repository';
 import * as manufac from '../db/repositories/manufacturers.repository';
 import * as categories from '../db/repositories/category.repository';
 import * as supp from '../db/repositories/supplier.repository';
+import * as inv from '../db/repositories/inventory.repository';
+import * as orders from '../db/repositories/orders.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 
@@ -11,6 +13,15 @@ export const getAllProducts = async () => {
 
 export const getFullProductsList = async () => {
     return await prod.getFullProductsList();
+}
+
+export const getProductFromInventoryById = async (id: string) => {
+	return await inv.repoGetInventoryWithFullLocationByProductId(id);
+  };
+
+// =========== ORDER ITEMS ===========
+export const getOrderItemsByProductId = async (productId: string) => {
+	return await orders.getOrderItemsByProductId(productId);
 }
 
 // =========== CATEGORIES ===========

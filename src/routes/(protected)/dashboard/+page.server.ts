@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { getDashboardStats } from '$lib/server/services/dashboard.service';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -11,11 +12,14 @@ export const load: PageServerLoad = async ({ locals }) => {
     const unreadAlerts = 3;
     const today = new Date().toLocaleDateString("en-GB");
 
+    // Obtener estadísticas del dashboard incluyendo pedidos pendientes
+    const dashboardStats = await getDashboardStats();
+    
     const metrics = [
         { title: "Total Incidents", value: 1204, change: "5.2%", color: "bg-blue-200", route: "dashboard/incidents" },
-        { title: "Resolved Incidents", value: 984, change: "4.7%", color: "bg-indigo-200", route: "dasboards/incidents/resolved" },
+        { title: "Resolved Incidents", value: 984, change: "4.7%", color: "bg-indigo-200", route: "dashboard/incidents/resolved" },
         { title: "Products in Stock", value: 3210, change: "1.1%", color: "bg-violet-200", route: "dashboard/inventory" },
-        { title: "Total Orders", value: 75, change: "-2.5%", color: "bg-purple-200", route: "dashboard/orders" },
+        { title: "Pending Orders", value: dashboardStats.pendingOrdersCount, change: "", color: "bg-purple-200", route: "dashboard/orders" },
     ];
 
     const topProducts = [

@@ -34,12 +34,12 @@ export const actions: Actions = {
         const notes = formData.get('notes')?.toString() ?? '';
         const userId = locals.user?.id;
         const itemsJson = formData.get('items')?.toString() ?? '[]';
-        
+       
         if (!userId) {
             return fail(401, { message: 'No autorizado' });
         }
         
-        let items: { productId: string; quantity: number; price: number; status?: string }[] = [];
+        let items: { productId: string; quantity: number; price: number; discount?: number; status?: string }[] = [];
         
         try {
             items = JSON.parse(itemsJson);
@@ -58,6 +58,7 @@ export const actions: Actions = {
                     productId: item.productId,
                     quantity: Number(item.quantity),
                     price: Number(item.price),
+                    discount: Number(item.discount) || 0,
                     status: 'pending'
                 }))
             });

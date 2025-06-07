@@ -1,5 +1,5 @@
 import { db } from "..";
-import { eq } from "drizzle-orm";
+import { eq } from "drizzle-orm/expressions";
 import { users, userSessions, roles } from "../schema";
 
 // --- USUARIOS ---
@@ -25,7 +25,8 @@ export async function getSessionWithUser(token: string) {
 			user: {
 				id: users.id,
 				username: users.username,
-				email: users.email
+				email: users.email,
+				roleId: users.roleId
 			},
 			session: userSessions
 		})

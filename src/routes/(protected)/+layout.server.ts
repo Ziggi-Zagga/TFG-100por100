@@ -1,16 +1,13 @@
-import { redirect } from '@sveltejs/kit';
 import type { ServerLoad } from '@sveltejs/kit';
-import type { AuthUser } from '$lib/types/auth.types';
+import type { AuthUser, SafeUser } from '$lib/types/auth.types';
 
-export const load: ServerLoad = async ({ locals }: { locals: App.Locals }) => {
+function toSafeUser(user: AuthUser): SafeUser {
+  const { id, username, email, roleId } = user;
+  return { id, username, email, roleId };
+}
 
-
-	if (!locals.user) {
-		throw redirect(302, '/onboarding/login');
-	}
-
-	return {
-		user: locals.user
-	};
+export const load: ServerLoad = async ({ locals }) => {
+  return {
+    user: toSafeUser(locals.user!)
+  };
 };
-

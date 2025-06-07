@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { categories } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm/expressions';
 
 export const getAllCategories = async () => {
     return await db.select().from(categories);
@@ -23,7 +23,7 @@ export const insertCategory = async ({
     id: string;
     name: string;
     description: string;
-    parentId: string;
+    parentId?: string | null;
 }) => {
     await db.insert(categories).values({
         id,
@@ -46,7 +46,7 @@ export const repoUpdateCategory = async ({
     id: string;
     name: string;
     description: string;
-    parentId: string;
+    parentId?: string | null;
 }) => {
     await db.update(categories).set({
         name,

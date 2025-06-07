@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Header from "$lib/components/utilities/Header/Header.svelte";
 	import Button from "$lib/components/utilities/Button/Button.svelte";
 	import Drawer from "$lib/components/utilities/Drawer/Drawer.svelte";
 	import TextInput from "$lib/components/utilities/Form/TextInput.svelte";
     import Table from "$lib/components/utilities/table/Table.svelte";
     import ConfirmDialog from "$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte";
-    import type { Category } from "$lib/types/products.types";
+    import type { Category } from "$lib/types/products.types.js";
 	import Select from "$lib/components/utilities/Form/Select.svelte";
     import SearchBar from "$lib/components/utilities/SearchBar/SearchBar.svelte";
-    import Modal from "$lib/components/utilities/Modal/Modal.svelte";
+    import PageHeader from "$lib/components/utilities/Header/Header.svelte";
+ 
 
     const { data } = $props();
     let showDrawer = $state(false);
@@ -86,13 +86,19 @@
 
 </script>
 
-<section class="p-8 bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<Header title="Categories" subtitle={`${totalCategories} Categories`}>
-        <SearchBar bind:search placeholder="Search by name..." />
-		<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-			{@html '<span class="hidden md:inline">Add Category</span>'}
-		</Button>
-	</Header>
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+	<PageHeader title="Categories Management" subtitle={`${totalCategories} Categories`}>
+		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+			<div class="w-60 md:flex-[3] lg:flex-[4]">
+				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
+			</div>
+			<div class="flex w-full justify-end md:w-auto">
+				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+					<span class="hidden md:inline">Add Category</span>
+				</Button>
+			</div>
+		</div>
+	</PageHeader>
 
     <Table
         columns={['name', 'description']}
@@ -101,13 +107,14 @@
         onEdit={(item) => openEdit(item)}
     />
 
-    {#if isEditing}
-    <Modal title="➕ Edit Category" onClose={closeEdit}>
+    <Drawer title="Edit Category" onClose={closeEdit} show={isEditing}>
         <form method="POST" action="?/update">
             <input type="hidden" name="id" value={editId} />
-            <TextInput label="Name" name="name" value={editName} required />
-            <TextInput label="Description" name="description" value={editDescription} />
-            <Select label="Parent Category" name="parentId" options={data.categories} value={editParentId ?? undefined} />
+            <div class="space-y-4">
+                <TextInput label="Name" name="name" value={editName} required />
+                <TextInput label="Description" name="description" value={editDescription} />
+                <Select label="Parent Category" name="parentId" options={data.categories} value={editParentId ?? undefined} />
+            </div>
             <div class="mt-6 flex justify-end gap-4">
                 <Button onclick={cancelDeletion} variant="secondary" size="md" extraStyles="w-full md:w-auto">
                     {@html '<span class="hidden md:inline">Cancel</span>'}
@@ -117,11 +124,9 @@
                 </Button>
             </div>
         </form>
-    </Modal>
-    {/if}
+    </Drawer>
 
-    {#if showDrawer}
-        <Drawer title="➕ Add Category" onClose={closeDrawer}>
+    <Drawer title=" Add Category" onClose={closeDrawer} show={showDrawer}>
             <form method="POST" action="?/create">
                 <TextInput label="Name" name="name" required />
                 <TextInput label="Description" name="description" />
@@ -136,7 +141,6 @@
                 </div>
             </form>
         </Drawer>
-    {/if}
 
     <ConfirmDialog
     show={showConfirm}
