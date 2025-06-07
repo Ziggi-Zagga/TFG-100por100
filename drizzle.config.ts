@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const DATABASE_URL = process.env.PUBLIC_DATABASE_URL || 'dummy:postgres';
+const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
 	console.warn('DATABASE_URL is not set. Drizzle operations may fail.');
