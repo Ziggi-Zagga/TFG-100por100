@@ -198,7 +198,9 @@ export const updateProduct = async ({
 };
 
 export const repoGetProductById = async (id: string) => {
-    return db.select().from(products).where(eq(products.id, id));
-}
+	return await db.query.products.findFirst({
+		where: (products, { eq }) => eq(products.id, id)
+	});
+};
 
 

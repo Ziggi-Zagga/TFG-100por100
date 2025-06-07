@@ -15,7 +15,7 @@
 
   const { data } = $props();
   let id: string;
-  let product = data.product;
+  let product = $state(data.product);
   let isEditing = $state(false);
 
   let suppliers = $state([...data.suppliers]);
