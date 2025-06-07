@@ -36,7 +36,7 @@
 
 <!-- Drawer con animación de slide -->
 <div
-	class="fixed top-0 right-0 z-50 h-full w-full max-w-md overflow-y-auto bg-white shadow-xl"
+	class="fixed top-0 right-0 z-50 h-full w-full max-w-xl overflow-y-auto bg-white shadow-xl"
 	in:fly={{ x: '100%', duration: 300, easing: cubicOut }}
 	out:fly={{ x: '100%', duration: 200, easing: cubicIn }}
 	style="will-change: transform;"
