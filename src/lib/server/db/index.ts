@@ -1,11 +1,11 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { env } from '$env/dynamic/public';
+import { env } from '$env/dynamic/private';
 import * as schema from './schema';
 
 // Use the DATABASE_URL from environment variables
 // If during build, use a dummy connection that won't actually be used
-const connectionString = env.PUBLIC_DATABASE_URL || 'dummy:postgres';
+const connectionString = env.DATABASE_URL;
 
 // Create the PostgreSQL connection with connection pooling configuration
 const client = postgres(connectionString as string, {
