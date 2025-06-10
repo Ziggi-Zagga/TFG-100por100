@@ -11,11 +11,10 @@ export class SessionManager {
     return encodeBase64url(buffer);
   }
 
-  static createSessionData(userId: string, username: string, token: string, ip?: string, userAgent?: string): userSession {
+  static createSessionData(userId: string, token: string, ip?: string, userAgent?: string): userSession {
     return {
       sessionId: crypto.randomUUID(),
       userId,
-      username,
       sessionToken: token,
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + AUTH_CONSTANTS.SESSION.EXPIRY_DAYS * 24 * 60 * 60 * 1000),

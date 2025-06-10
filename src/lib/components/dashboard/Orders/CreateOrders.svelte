@@ -28,6 +28,12 @@ let selectedProducts = $state<any[]>([]);
 let supplierSearch = $state('');
 let productSearch = $state('');
 
+let filteredProducts = $derived(
+  formData.supplierId 
+    ? products.filter((p: Product) => p.supplierId === formData.supplierId)
+    : []
+);
+
 const productColumns = ['code', 'name', 'price', 'quantity', 'discount', 'total'];
 
 const productColumnTypes: Record<string, any> = {
@@ -67,14 +73,14 @@ function handleProductSelect(productId: string) {
       ...product,
       quantity: 1,
       price: product.price || 0,
-      discount: 0, // Inicializar descuento en 0
+      discount: 0, 
       total: product.price || 0
     };
     updatedProducts.push(newProduct);
   }
 
   selectedProducts = updatedProducts;
-  productSearch = ''; // Limpiar la búsqueda de productos después de agregar uno
+  productSearch = ''; 
  
 
 }
@@ -95,30 +101,23 @@ function handleProductChange(item: any, field: string, value: any) {
   const oldValue = updatedItem[field];
   
 
-  // Actualizar el valor del campo
   updatedItem[field] = value;
 
-  // Si es un campo numérico, asegurarse de que sea un número
   if (field === 'quantity' || field === 'price' || field === 'discount') {
     const numValue = parseFloat(value);
     updatedItem[field] = isNaN(numValue) ? 0 : numValue;
   }
 
-  // Calcular el total basado en cantidad, precio y descuento
   const quantity = field === 'quantity' ? updatedItem[field] : updatedItem.quantity;
   const price = field === 'price' ? updatedItem[field] : updatedItem.price;
   const discount = field === 'discount' ? updatedItem[field] : (updatedItem.discount || 0);
   
-  // Calcular subtotal (precio * cantidad)
   updatedItem.subtotal = quantity * price;
   
-  // Calcular descuento en valor absoluto
   updatedItem.discountValue = updatedItem.subtotal * (discount / 100);
   
-  // Calcular total (subtotal - descuento)
   updatedItem.total = updatedItem.subtotal - updatedItem.discountValue;
   
-  // Redondear a 2 decimales
   updatedItem.subtotal = parseFloat(updatedItem.subtotal.toFixed(2));
   updatedItem.discountValue = parseFloat(updatedItem.discountValue.toFixed(2));
   updatedItem.total = parseFloat(updatedItem.total.toFixed(2));
@@ -130,7 +129,7 @@ function handleProductChange(item: any, field: string, value: any) {
   }
 
   updatedProducts[itemIndex] = updatedItem;
-  selectedProducts = [...updatedProducts]; // Forzar la reactividad
+  selectedProducts = [...updatedProducts]; 
 }
 
 function handleDeleteProduct(productId: string) {
@@ -140,9 +139,8 @@ function handleDeleteProduct(productId: string) {
 async function handleSubmit(e: SubmitEvent) {
   e.preventDefault();
   
-  if (isLoading) return; // Evitar múltiples envíos
+  if (isLoading) return; 
   
-  // Validate required fields
   if (!formData.supplierId) {
     alert('Please select a supplier');
     return;
@@ -156,7 +154,6 @@ async function handleSubmit(e: SubmitEvent) {
   isLoading = true;
   
   try {
-    // Prepare the order data
     const orderData = {
       ...formData,
       items: selectedProducts.map(p => ({
@@ -167,16 +164,13 @@ async function handleSubmit(e: SubmitEvent) {
       }))
     };
     
-    // Cerrar el modal antes de esperar a que termine el envío
     onClose();
     
-    // Llamar a onSubmit después de cerrar el modal para evitar problemas de sincronización
     await onSubmit(orderData);
     
   } catch (error) {
     console.error('Error submitting form:', error);
-    // No mostramos alerta aquí ya que el modal se cerró
-    throw error; // Re-lanzamos el error para que el componente padre pueda manejarlo si es necesario
+    throw error; 
   } finally {
     isLoading = false;
   }
@@ -201,6 +195,12 @@ function closeModal() {
                   onSelect={(supplier) => {
                     formData.supplierId = supplier.id;
                     supplierSearch = supplier.name; 
+                  }}
+                  onFocus={() => {
+                    
+                    if (selectedProducts.length > 0) {
+                      selectedProducts = [];
+                    }
                   }}
                   displayField="name"
                   placeholder="Search suppliers..."
@@ -243,20 +243,27 @@ function closeModal() {
           />
 
 
-          <ComboBox
-            name="productSearch"
-            label="Add Products"
-            items={products}
-            searchQuery={productSearch}
-            value={productSearch}
-            onSelect={(item: any) => {
-              handleProductSelect(item.id);
-            }}
-            displayField="name"
-            placeholder="Search products..."
-            filterInternally={true}
-            quickSearch={true}
-          />
+          {#if !formData.supplierId}
+            <div class="p-4 bg-yellow-50 text-yellow-700 rounded-md mb-4">
+              Please select a supplier first to see available products
+            </div>
+          {:else}
+            <ComboBox
+              name="productSearch"
+              label="Add Products"
+              items={filteredProducts}
+              searchQuery={productSearch}
+              value={productSearch}
+              onSelect={(item: any) => {
+                handleProductSelect(item.id);
+              }}
+              displayField="name"
+              placeholder="Search products..."
+              filterInternally={true}
+              quickSearch={true}
+              disabled={!formData.supplierId}
+            />
+          {/if}
 
           <div class="overflow-x-auto">
             <Table

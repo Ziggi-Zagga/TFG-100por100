@@ -39,7 +39,7 @@ export interface Product {
   dimensions?: string | null;
   material?: string | null;
   specifications?: string | null;
-  active: boolean;
+  active: boolean | null;
 }
 
 export interface ProductFormData {
