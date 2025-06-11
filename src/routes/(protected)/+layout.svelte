@@ -31,7 +31,7 @@
       showLoading = false;
       const timer = setTimeout(() => {
         isPageLoaded = true;
-      }, 200);
+      }, 150);
       return () => clearTimeout(timer);
     }
     
