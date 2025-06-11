@@ -19,7 +19,7 @@ psql -U postgres
 # Inside the shell, create a new database:
 CREATE DATABASE kgbBooking;
 
-# (Optional) Create a new user with password
+#  Create a new user with password
 CREATE USER kgb_user WITH PASSWORD 'your_secure_password';
 GRANT ALL PRIVILEGES ON DATABASE kgbBooking TO kgb_user;
 ```
