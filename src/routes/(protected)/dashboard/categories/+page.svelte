@@ -8,6 +8,7 @@
 	import Select from "$lib/components/utilities/Form/Select.svelte";
     import SearchBar from "$lib/components/utilities/SearchBar/SearchBar.svelte";
     import PageHeader from "$lib/components/utilities/Header/Header.svelte";
+    import { fade } from 'svelte/transition';
  
 
     const { data } = $props();
@@ -86,7 +87,7 @@
 
 </script>
 
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
 	<PageHeader title="Categories Management" subtitle={`${totalCategories} Categories`}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">

@@ -6,12 +6,37 @@
   import Icon from '$lib/components/utilities/Icons/Icon.svelte';
   import { cubicOut } from 'svelte/easing';
   import ChatWidget from '$lib/components/utilities/ChatWidget/ChatWidget.svelte';
+ 
   
   // Estado para controlar cuando la animación de apertura ha terminado
   let isSidebarOpen = $state(true);
   let isTransitioning = $state(false);
   let openInventoryMenu = $state(false);
   let inventoryMenuRef: HTMLElement;
+  let isPageLoaded = $state(false);
+  let showLoading = $state(false);
+  let loadingTimer: NodeJS.Timeout;
+  
+  // Manejar el estado de carga de la página
+  $effect(() => {
+    if ($navigating) {
+      // Mostrar el loading solo si la navegación tarda más de 100ms
+      loadingTimer = setTimeout(() => {
+        showLoading = true;
+      }, 100);
+      isPageLoaded = false;
+    } else {
+      // Limpiar el timer y ocultar el loading
+      clearTimeout(loadingTimer);
+      showLoading = false;
+      const timer = setTimeout(() => {
+        isPageLoaded = true;
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+    
+    return () => clearTimeout(loadingTimer);
+  });
   
   // Función para verificar si una ruta está activa
   function isActive(href: string) {
@@ -312,12 +337,16 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 
   <!-- Main Content -->
   <main class="flex-1 pl-2 rounded-2xl overflow-y-auto relative">
-    {@render children()}
+    {#if isPageLoaded}
+      <div in:fade={{ duration: 300 }}>
+        {@render children()}
+      </div>
+    {/if}
     
-    {#if $navigating}
-      <div
+    {#if showLoading}
+      <div 
         class="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm"
-        in:fly={{ y: -5, duration: 200 }}
+        in:fly={{ y: -5, duration: 200 }} out:fly={{ y: 5, duration: 200 }}
       >
         <div
           class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"

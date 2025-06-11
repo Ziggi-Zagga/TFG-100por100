@@ -42,7 +42,7 @@
 
 {#if isVisible}
   <div
-    class="fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-lg {bgColor}"
+    class="fixed bottom-6 right-22 z-50 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-lg {bgColor}"
     transition:fly={{ y: 50, duration: 300 }}
     role="alert"
   >

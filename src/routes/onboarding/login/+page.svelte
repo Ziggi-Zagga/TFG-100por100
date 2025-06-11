@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
 	import { scale } from 'svelte/transition';
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import { fade } from 'svelte/transition';
 
 	const { form } = $props<{ 
 		form?: { 
@@ -57,7 +57,7 @@
 	}
 </script>
 
-<div class="font-inter flex min-h-screen w-full items-center justify-center">
+<div class="font-inter flex min-h-screen w-full items-center justify-center "in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
 	<div
 		class="flex w-full max-w-md flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white/90 p-10 shadow-xl"
 		in:scale={{ duration: 1500, start: 0.8 }}

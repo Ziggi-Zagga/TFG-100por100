@@ -105,7 +105,7 @@ export async function createSession({
   const [session] = await db.insert(userSessions).values({
     sessionId,
     userId,
-    sessionHash: sessionToken, // Store the token directly without hashing
+    sessionHash: sessionToken,
     createdAt,
     expiresAt,
     ipAddress,
@@ -116,7 +116,6 @@ export async function createSession({
 }
 
 export async function findSessionByToken(sessionToken: string) {
-  // Find session by token directly
   const [session] = await db.select()
     .from(userSessions)
     .where(eq(userSessions.sessionHash, sessionToken));

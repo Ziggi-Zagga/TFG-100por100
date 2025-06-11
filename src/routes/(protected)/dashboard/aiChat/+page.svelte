@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
 	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import { fade } from 'svelte/transition';
 
 	type Message = { role: 'user' | 'assistant'; text: string };
 
@@ -52,7 +53,7 @@
 	}
 </script>
 
-<section class="h-screen w-full flex" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="h-screen w-full flex" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
 	<div class="pl-8 pb-8 pr-8 w-full h-full flex flex-col items-stretch">
 		<div class="w-full h-full flex-grow bg-white shadow-xl rounded-2xl p-8 flex flex-col justify-between">
 			<!-- Cabecera del asistente -->

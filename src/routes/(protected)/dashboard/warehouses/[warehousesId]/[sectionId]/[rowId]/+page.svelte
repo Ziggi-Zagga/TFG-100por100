@@ -12,6 +12,7 @@
   import { page } from '$app/state';
   import type { warehouse as warehouseType, Section, Row, Gap } from '$lib/types/warehouse.types';
   import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
+  import { fade } from 'svelte/transition';
 
   const { data } = $props();
   let sections = $state(data.sections || []);
@@ -108,7 +109,7 @@
   }
 </script>
 
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
   <CircleNavigation 
       currentView="gaps"
       onNavigate={(view) => {

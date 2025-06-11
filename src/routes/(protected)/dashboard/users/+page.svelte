@@ -3,6 +3,7 @@
 	import Header from '$lib/components/utilities/Header/Header.svelte';
 	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
 	import Table from '$lib/components/utilities/table/Table.svelte';
+	import { fade } from 'svelte/transition';
 
 	const { data } = $props();
 	let search = $state('');
@@ -27,7 +28,8 @@
 <section
 	class="min-h-screen w-full p-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
->
+	in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}
+	>
 	<!-- HEADER & SEARCHBAR -->
 	<Header title="Users" subtitle={totalUsers().toString() + ' users'} />
 

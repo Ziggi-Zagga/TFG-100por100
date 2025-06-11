@@ -2,7 +2,8 @@
   import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
   import Button from '$lib/components/utilities/Button/Button.svelte';
   import { scale } from 'svelte/transition';
-  
+	import { fade } from 'svelte/transition';
+
 	const { data } = $props();
 	const error = data.error;
   
@@ -17,7 +18,7 @@
   
 </script>
 
-<div class="min-h-screen w-full flex items-center justify-center font-inter">
+<div class="min-h-screen w-full flex items-center justify-center font-inter" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
     <div class="w-full max-w-md flex flex-col items-center justify-center bg-white/90 shadow-xl rounded-3xl p-10 border border-gray-200"
     in:scale={{ duration: 1500, start: 0.8 }}>
       <div class="w-50 h-50 mx-auto rounded flex items-center justify-center text-xs text-gray-600">

@@ -8,6 +8,7 @@
 	import type { Supplier } from '$lib/types/products.types';
 	import CreateOrders from '$lib/components/dashboard/Orders/CreateOrders.svelte';
 	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
+	import { fade } from 'svelte/transition';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
@@ -325,7 +326,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 	}
 </script>
 
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<main class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
 	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`}>	
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-72 md:flex-[3] lg:flex-[4]">
@@ -379,4 +380,4 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 		}}
 	/>
 	<ToastList {toasts} on:removeToast={e => removeToast(e.detail.id)} />
-</section>
+</main>

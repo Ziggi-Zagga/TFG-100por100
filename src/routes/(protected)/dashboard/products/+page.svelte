@@ -14,6 +14,7 @@
   import type { Supplier, Manufacturer, Category, Product } from '$lib/types/products.types.js';
   import { formatCurrency } from '$lib/components/helpers/currencies';
   import type { PageData } from './$types';
+  import { fade } from 'svelte/transition';
 
   // Get props
   const { data } = $props<{ data: PageData }>();
@@ -102,7 +103,7 @@
 
 </script>
 
-<section class="bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="bg-white w-full min-h-screen" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
   <PageHeader 
     title="Products Management" 
     subtitle={`Total: ${totalProducts} productos`}

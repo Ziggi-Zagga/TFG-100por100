@@ -10,6 +10,7 @@
 	import { goto } from '$app/navigation';
 	import type { warehouse, Section, Row, Gap } from '$lib/types/warehouse.types';
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	const { data } = $props();
 	let inventoryItems = $state([...data.inventoryItems]);
@@ -175,7 +176,7 @@
 	}
 </script>
 
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
 	<PageHeader title="Inventory Management" subtitle={`${totalProducts} Products`}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">

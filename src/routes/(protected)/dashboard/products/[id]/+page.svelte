@@ -12,6 +12,7 @@
   import { goto } from '$app/navigation';
   import Modal from '$lib/components/utilities/Modal/Modal.svelte';
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
+  import { fade } from 'svelte/transition';
 
   const { data } = $props();
   let id: string;
@@ -87,7 +88,7 @@
 </script>
 
 {#if product}
-<section class="pt-0 pb-4 md:pb-8 px-4 md:px-8 min-h-screen flex justify-center" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="pt-0 pb-4 md:pb-8 px-4 md:px-8 min-h-screen flex justify-center" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
   <div class="bg-white rounded-2xl shadow-xl px-6 md:px-10 py-6 md:py-8 w-full max-w-7xl space-y-12">
     
     <div class="flex justify-between items-center">

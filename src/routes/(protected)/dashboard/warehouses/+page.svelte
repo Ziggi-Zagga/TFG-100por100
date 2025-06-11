@@ -11,6 +11,7 @@
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
+	import { fade } from 'svelte/transition';
 
 	let showDrawer = $state(false);
 	let showEditDrawer = $state(false);
@@ -118,7 +119,7 @@
 </script>
 
 <!-- Main Content Section -->
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
 	<PageHeader title="Warehouse Management" subtitle="{warehouses.length} warehouse{warehouses.length !== 1 ? 's' : ''}">
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">

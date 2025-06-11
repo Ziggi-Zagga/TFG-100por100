@@ -13,6 +13,7 @@
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
+	import { fade } from 'svelte/transition';
 
 	const { data } = $props<PageData>();
 	let selectedOption = $state<'orders' | 'inventory'>('orders');
@@ -78,7 +79,8 @@
 <section
 	class="flex min-h-screen justify-center px-4 pt-0 pb-4 md:px-8 md:pb-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
->
+	in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}
+	>
 	<div
 		class="w-full max-w-7xl space-y-12 rounded-2xl bg-white px-6 py-6 shadow-xl md:px-10 md:py-8"
 	>

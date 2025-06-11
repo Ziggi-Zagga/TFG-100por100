@@ -11,6 +11,7 @@
   import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import { goto } from '$app/navigation';
 	import ComboBox from '$lib/components/utilities/Form/ComboBox.svelte';
+  import { fade } from 'svelte/transition';
 
     const { data } = $props();
     let inventory = $state(data.inventory);
@@ -147,7 +148,7 @@
 
 </script>
 
-<section class="pt-0 pb-4 md:pb-8 px-4 md:px-8 min-h-screen flex justify-center" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<section class="pt-0 pb-4 md:pb-8 px-4 md:px-8 min-h-screen flex justify-center" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
     <div class="flex flex-col md:flex-row gap-6 w-full max-w-screen-xl px-4 py-6">
         <div class="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-6 space-y-6">
           <Header title={product.name} subtitle="">

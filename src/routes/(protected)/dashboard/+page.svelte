@@ -2,6 +2,7 @@
   import MetricCard from "$lib/components/dashboard/MetricCard.svelte";
   import TopProductsTable from "$lib/components/dashboard/TopProductsTable.svelte";
   import WelcomeHeader from "$lib/components/dashboard/WelcomeCard.svelte";
+  import { fade } from 'svelte/transition';
 
   //DATOS 
   // TODOS LOS DATOS ESTAN HARDCODEADOS
@@ -14,7 +15,7 @@
 
 </script>
 
-<main class="p-6 space-y-6" style="min-height: 100vh; background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
+<main class="p-6 space-y-6" style="min-height: 100vh; background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
   
   <!-- Cabecera bienvenida -->
   <WelcomeHeader userName={userName} unreadAlerts={unreadAlerts} date={today} />
