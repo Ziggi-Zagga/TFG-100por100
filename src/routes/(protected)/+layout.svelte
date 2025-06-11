@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fly, fade, scale, slide } from 'svelte/transition';
-  import { page } from '$app/stores';
+  import { page, navigating } from '$app/stores';
   import { onMount, onDestroy } from 'svelte';
   import type { AuthUser } from '$lib/types/auth.types';
   import Icon from '$lib/components/utilities/Icons/Icon.svelte';
@@ -311,8 +311,19 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
   </aside>
 
   <!-- Main Content -->
-  <main class="flex-1 pl-2 rounded-2xl overflow-y-auto">
+  <main class="flex-1 pl-2 rounded-2xl overflow-y-auto relative">
     {@render children()}
+    
+    {#if $navigating}
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm"
+        in:fly={{ y: -5, duration: 200 }}
+      >
+        <div
+          class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
+        ></div>
+      </div>
+    {/if}
   </main>
 
   {#if !$page.url.pathname.startsWith('/dashboard/aiChat')}

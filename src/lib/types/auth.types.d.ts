@@ -8,7 +8,7 @@ export interface AuthUser {
 export interface userSession {
   sessionId: string;
   userId: string;
-  sessionToken: string;
+  sessionHash: string;
   createdAt: Date;
   expiresAt: Date;
   ipAddress?: string | null;

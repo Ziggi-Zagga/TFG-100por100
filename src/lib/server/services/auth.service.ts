@@ -14,46 +14,55 @@ setInterval(() => {
   SessionManager.cleanupLoginAttempts();
 }, 60 * 60 * 1000); 
 
-// --- Actualizar expiración de sesión ---
-export const updateSessionExpiry = async (token: string, expiryDate: Date): Promise<void> => {
-  return await authRepository.updateSessionExpiry(token, expiryDate);
+// --- Update session expiry ---
+export const updateSessionExpiry = async (token: string, expiryDate: Date): Promise<boolean> => {
+  return await authRepository.updateSessionExpiry(token, expiryDate) ?? false;
 };
 
-// --- Validar sesión existente ---
+// --- Validate existing session ---
 export async function validateSession(token: string) {
-	const result = await authRepository.getSessionWithUser(token);
-	if (!result) return { session: null, user: null };
+  const result = await authRepository.getSessionWithUser(token);
+  if (!result) return { session: null, user: null };
 
-	const { session, user } = result;
-	const now = Date.now();
+  const { session, user } = result;
+  const now = Date.now();
 
-	if (now >= session.expiresAt.getTime()) {
-		await authRepository.deleteSession(session.sessionId);
-		return { session: null, user: null };
-	}
+  if (!session) {
+    console.error('Session not found');
+    return { session: null, user: null };
+  }
 
-	const shouldRenew = now >= session.expiresAt.getTime() - 15 * 24 * 60 * 60 * 1000;
-	if (shouldRenew) {
-		const newExpiry = new Date(now + 30 * 24 * 60 * 60 * 1000);
-		await authRepository.updateSessionExpiry(session.sessionId, newExpiry);
-		session.expiresAt = newExpiry;
-	}
+  if (now >= session.expiresAt.getTime()) {
+    await authRepository.deleteSession(session.sessionId);
+    return { session: null, user: null };
+  }
 
-	return { session, user };
+  const shouldRenew = now >= session.expiresAt.getTime() - 15 * 24 * 60 * 60 * 1000; // 15 días antes de expirar
+  if (shouldRenew) {
+    const newExpiry = new Date(now + 30 * 24 * 60 * 60 * 1000);
+    const updated = await updateSessionExpiry(session.sessionId, newExpiry);
+    if (updated) {
+      session.expiresAt = newExpiry;
+    } else {
+      console.error('Failed to update session expiry');
+    }
+  }
+
+  return { session, user };
 }
 
 
-// --- Crear sesión ---
+// --- Create session ---
 export async function createSession(
   token: string,
   userId: string,
   ip?: string,
   userAgent?: string
-): Promise<userSession> {
+): Promise<userSession | null> {
   const now = Date.now();
-  const expiresAt = new Date(now + 30 * 24 * 60 * 60 * 1000); // 30 días
+  const expiresAt = new Date(now + 30 * 24 * 60 * 60 * 1000); // 30 days
 
-  return await authRepository.createSession({
+  const session = await authRepository.createSession({
     sessionId: crypto.randomUUID(),
     userId,
     sessionToken: token,
@@ -62,15 +71,22 @@ export async function createSession(
     ipAddress: ip || null,
     userAgent: userAgent || null
   });
+
+  if (!session) {
+    console.error('Failed to create session');
+    return null;
+  }
+
+  return session;
 }
 
-// --- Login ---
+// --- User login ---
 export async function login(
   identifier: string,
   password: string,
   ip: string = 'unknown',
   userAgent?: string
-): Promise<{ user: AuthUser; session: userSession; token: string }> {
+): Promise<{ user: AuthUser; session: userSession; token: string } | null> {
   try {
     SessionManager.checkLoginAttempts(ip);
     ValidationUtils.validateRequiredFields({ identifier, password }, ['identifier', 'password']);
@@ -96,6 +112,11 @@ export async function login(
     const token = SessionManager.generateToken();
     const session = await createSession(token, user.id, ip, userAgent);
     
+    if (!session) {
+      console.error('Failed to create session');
+      return null;
+    }
+    
     if (typeof session.expiresAt === 'number') {
       session.expiresAt = new Date(session.expiresAt);
     }
@@ -116,11 +137,11 @@ export async function login(
     };
   } catch (error) {
     console.error('[authService.login][ERROR]', error);
-    throw error;
+    return null;
   }
 }
 
-// --- Signup ---
+// --- User signup ---
 export async function signup(
   email: string,
   username: string,
@@ -129,7 +150,7 @@ export async function signup(
   ip: string,
   userAgent?: string,
   event?: RequestEvent
-): Promise<{ user: AuthUser; session: userSession; token: string }> {
+): Promise<{ user: AuthUser; session: userSession; token: string } | null> {
   try {
     ValidationUtils.validateRequiredFields({ email, username, password, confirmPassword, ip, userAgent }, [
       'email',
@@ -163,6 +184,11 @@ export async function signup(
 
     const token = SessionManager.generateToken();
     const session = await createSession(token, user.id, ip, userAgent);
+    
+    if (!session) {
+      console.error('Failed to create session');
+      return null;
+    }
 
     // Set session cookie and validate it immediately
     if (event) {
@@ -187,11 +213,11 @@ export async function signup(
     };
   } catch (error) {
     console.error('Signup error:', error);
-    throw error;
+    return null;
   }
 }
 
-// --- Hash y verificación ---
+// --- Password hashing and verification ---
 export async function hash(password: string): Promise<string> {
   return await argon2.hash(password, {
     type: argon2.argon2id,

@@ -23,7 +23,7 @@ export const userSessions = pgTable('user_sessions', {
   userId: text('user_id').references(() => users.id).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   expiresAt: timestamp('expires_at').notNull(),
-  sessionToken: text('session_token').unique().notNull(),
+  sessionHash: text('session_hash').unique().notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
 });

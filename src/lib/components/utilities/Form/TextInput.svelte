@@ -77,9 +77,5 @@
 				disabled && 'bg-gray-100'
 			)}
 		/>
-
-		{#if error}
-			<span class="mt-1 text-xs font-medium text-red-500">{error}</span>
-		{/if}
 	</div>
 </div>

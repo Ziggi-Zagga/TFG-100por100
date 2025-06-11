@@ -1,8 +1,12 @@
 import { db } from "..";
 import { eq } from "drizzle-orm/expressions";
 import { users, userSessions, roles } from "../schema";
+import * as argon2 from 'argon2';
 
-// --- USUARIOS ---
+// Re-export hash and verify functions to be used in other modules
+export const { hash, verify } = argon2;
+
+// --- USERS ---
 
 export async function findUserById(id: string) {
   return db.select().from(users).where(eq(users.id, id)).then(r => r[0]);
@@ -20,20 +24,22 @@ export async function findRoleByName(name: string) {
   return db.select().from(roles).where(eq(roles.name, name)).then(r => r[0]);
 }
 export async function getSessionWithUser(token: string) {
-	const [result] = await db
-		.select({
-			user: {
-				id: users.id,
-				username: users.username,
-				email: users.email,
-				roleId: users.roleId
-			},
-			session: userSessions
-		})
-		.from(userSessions)
-		.innerJoin(users, eq(userSessions.userId, users.id))
-		.where(eq(userSessions.sessionToken, token));
-	return result;
+  const result = await db
+    .select({
+      user: {
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        roleId: users.roleId
+      },
+      session: userSessions
+    })
+    .from(userSessions)
+    .innerJoin(users, eq(userSessions.userId, users.id))
+    .where(eq(userSessions.sessionHash, token))
+    .then(r => r[0]);
+    
+  return result || null;
 }
 
 export async function createUser({
@@ -77,7 +83,7 @@ export async function setActiveStatus(userId: string, active: boolean) {
   await db.update(users).set({ active }).where(eq(users.id, userId));
 }
 
-// --- SESIONES ---
+// --- SESSIONS ---
 
 export async function createSession({
   sessionId,
@@ -96,27 +102,41 @@ export async function createSession({
   ipAddress?: string | null;
   userAgent?: string | null;
 }) {
-  await db.insert(userSessions).values({
+  const [session] = await db.insert(userSessions).values({
     sessionId,
     userId,
-    sessionToken,
+    sessionHash: sessionToken, // Store the token directly without hashing
     createdAt,
     expiresAt,
     ipAddress,
     userAgent
-  });
+  }).returning();
 
-  return findSessionByToken(sessionToken);
+  return session;
 }
 
 export async function findSessionByToken(sessionToken: string) {
-  return db.select().from(userSessions).where(eq(userSessions.sessionToken, sessionToken)).then(r => r[0]);
+  // Find session by token directly
+  const [session] = await db.select()
+    .from(userSessions)
+    .where(eq(userSessions.sessionHash, sessionToken));
+    
+  return session || null;
 }
 
 export async function deleteSession(sessionToken: string) {
-  await db.delete(userSessions).where(eq(userSessions.sessionToken, sessionToken));
+  // Delete session directly by token
+  await db.delete(userSessions)
+    .where(eq(userSessions.sessionHash, sessionToken));
+  
+  return true;
 }
 
 export async function updateSessionExpiry(sessionToken: string, expiresAt: Date) {
-  await db.update(userSessions).set({ expiresAt }).where(eq(userSessions.sessionToken, sessionToken));
+  // Update expiry date directly by token
+  await db.update(userSessions)
+    .set({ expiresAt })
+    .where(eq(userSessions.sessionHash, sessionToken));
+    
+  return true;
 }
