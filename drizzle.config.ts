@@ -1,7 +1,6 @@
 import { defineConfig } from 'drizzle-kit';
 import * as dotenv from 'dotenv';
 
-
 dotenv.config();
 
 console.log('👉 DATABASE_URL en ejecución:', process.env.DATABASE_URL);

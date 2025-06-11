@@ -7,52 +7,52 @@ import { getOrdersByUser } from '$lib/server/services/orders.service';
 import { getInventoryHistoryByUserId } from '$lib/server/services/inventoryHistory.service';
 
 export const load: PageServerLoad = async ({ params }) => {
-  const { id } = params;
+	const { id } = params;
 
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, id)
-  });
-  if (!user) throw fail(404, { message: 'User not found' });
+	const user = await db.query.users.findFirst({
+		where: eq(users.id, id)
+	});
+	if (!user) throw fail(404, { message: 'User not found' });
 
-  const roles = await db.query.roles.findMany();
-  const orders = await getOrdersByUser(id);
-  const inventoryHistory = await getInventoryHistoryByUserId(id);
+	const roles = await db.query.roles.findMany();
+	const orders = await getOrdersByUser(id);
+	const inventoryHistory = await getInventoryHistoryByUserId(id);
 
-  return {
-    user,
-    roles,
-    orders,
-    inventoryHistory
-  };
+	return {
+		user,
+		roles,
+		orders,
+		inventoryHistory
+	};
 };
 
 export const actions: Actions = {
-  update: async ({ request }) => {
-    const formData = await request.formData();
-    
-    const id = formData.get('id')?.toString() ?? '';
-    const username = formData.get('username')?.toString() ?? '';
-    const email = formData.get('email')?.toString() ?? '';
-    const role = formData.get('role')?.toString() ?? '';
+	update: async ({ request }) => {
+		const formData = await request.formData();
 
-    await db.update(users)
-      .set({
-        username,
-        email,
-        roleId: role,
-      })
-      .where(eq(users.id, id));
+		const id = formData.get('id')?.toString() ?? '';
+		const username = formData.get('username')?.toString() ?? '';
+		const email = formData.get('email')?.toString() ?? '';
+		const role = formData.get('role')?.toString() ?? '';
 
-    return { success: true };
-  },
+		await db
+			.update(users)
+			.set({
+				username,
+				email,
+				roleId: role
+			})
+			.where(eq(users.id, id));
 
-  delete: async ({ request }) => {
-    const formData = await request.formData();
-    const id = formData.get('id')?.toString() ?? '';
+		return { success: true };
+	},
 
-    await db.delete(users)
-      .where(eq(users.id, id));
+	delete: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id')?.toString() ?? '';
 
-    return { success: true };
-  }
+		await db.delete(users).where(eq(users.id, id));
+
+		return { success: true };
+	}
 };

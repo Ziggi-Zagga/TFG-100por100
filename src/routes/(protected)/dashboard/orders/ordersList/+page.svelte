@@ -8,6 +8,7 @@
 	import type { Supplier } from '$lib/types/products.types';
 	import CreateOrders from '$lib/components/dashboard/Orders/CreateOrders.svelte';
 	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
+	import { fade } from 'svelte/transition';
 
 	const { data } = $props();
 	let orders = $state([...data.orders]);
@@ -20,10 +21,12 @@
 	let selectedOrder = $state<any>(null);
 	let currentSupplier = $state<Supplier | null>(null);
 	let showDeleteDialog = $state(false);
-	let orderToDelete: { id: string, orderNumber: string } | null = $state(null);
+	let orderToDelete: { id: string; orderNumber: string } | null = $state(null);
 
 	// Toast state
-	let toasts = $state<Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>>([]);
+	let toasts = $state<Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>>(
+		[]
+	);
 
 	// Helper functions for showing toasts
 	function showSuccess(message: string) {
@@ -39,7 +42,7 @@
 	}
 
 	function removeToast(id: string) {
-		toasts = toasts.filter(t => t.id !== id);
+		toasts = toasts.filter((t) => t.id !== id);
 	}
 
 	// Estados para la ordenación
@@ -60,7 +63,7 @@
 		const urlParams = new URLSearchParams(window.location.search);
 		const id = urlParams.get('id');
 		if (id) {
-			const order = orders.find(order => order.id === id);
+			const order = orders.find((order) => order.id === id);
 			if (order) {
 				search = order.orderNumber;
 				urlParams.delete('id');
@@ -77,7 +80,7 @@
 			type: 'icon' as const,
 			icon: (item: any) => {
 				const status = item.status?.toLowerCase();
-				
+
 				if (status === 'completed') {
 					return { icon: 'check', color: 'text-green-500' };
 				} else if (status === 'cancelled') {
@@ -121,40 +124,41 @@
 	}
 
 	function handleViewOrder(order: any) {
-    try {
-        if (!selectedOrder || order.id !== selectedOrder.id) {
-            const orderWithProducts = {
-                ...order,
-                products: Array.isArray(order.products) ? order.products : [order.products].filter(Boolean)
-            };
+		try {
+			if (!selectedOrder || order.id !== selectedOrder.id) {
+				const orderWithProducts = {
+					...order,
+					products: Array.isArray(order.products)
+						? order.products
+						: [order.products].filter(Boolean)
+				};
 
-            selectedOrder = orderWithProducts;
-            currentSupplier = null;
+				selectedOrder = orderWithProducts;
+				currentSupplier = null;
 
-            const supplierId = orderWithProducts.supplierId || orderWithProducts.supplierid;
-            
-            if (supplierId) {
-                const foundSupplier = suppliers.find((s: any) => 
-                    s.id === supplierId || 
-                    s.id.toString() === supplierId.toString()
-                );
-                
-                if (foundSupplier) {
-                    currentSupplier = foundSupplier;
-                } else {
-                    console.warn('Supplier not found for ID:', supplierId);
-                }
-            }
+				const supplierId = orderWithProducts.supplierId || orderWithProducts.supplierid;
 
-            showOrderDetails = true;
-        } else {
-            showOrderDetails = !showOrderDetails;
-        }
-    } catch (error) {
-        console.error('Error in handleViewOrder:', error);
-        showOrderDetails = false;
-    }
-}
+				if (supplierId) {
+					const foundSupplier = suppliers.find(
+						(s: any) => s.id === supplierId || s.id.toString() === supplierId.toString()
+					);
+
+					if (foundSupplier) {
+						currentSupplier = foundSupplier;
+					} else {
+						console.warn('Supplier not found for ID:', supplierId);
+					}
+				}
+
+				showOrderDetails = true;
+			} else {
+				showOrderDetails = !showOrderDetails;
+			}
+		} catch (error) {
+			console.error('Error in handleViewOrder:', error);
+			showOrderDetails = false;
+		}
+	}
 
 	const filteredAndSortedOrders = $derived(() => {
 		let result = [...orders];
@@ -194,22 +198,22 @@
 	});
 
 	async function handleSort(column: string) {
-	if (sortColumn === column) {
-		// Cambiar dirección si se hace clic en la misma columna
-		sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-	} else {
-		// Ordenar por nueva columna en orden ascendente
-		sortColumn = column;
-		sortDirection = 'asc';
+		if (sortColumn === column) {
+			// Cambiar dirección si se hace clic en la misma columna
+			sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+		} else {
+			// Ordenar por nueva columna en orden ascendente
+			sortColumn = column;
+			sortDirection = 'asc';
+		}
 	}
-}
 
-async function handleStatusChange(order: any, column: string, newStatus: string) {
+	async function handleStatusChange(order: any, column: string, newStatus: string) {
 		const oldStatus = order[column];
-		
+
 		try {
 			order[column] = newStatus;
-			
+
 			const formData = new FormData();
 			formData.append('id', order.id);
 			formData.append('status', newStatus);
@@ -224,16 +228,18 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			}
 
 			const result = await response.json();
-				if (result.error) {
-					const errorMessage = result.message || 'Error al actualizar el pedido';
-					showError(errorMessage);
-					throw new Error(errorMessage);
-				}
-				showSuccess('Order status updated successfully');
+			if (result.error) {
+				const errorMessage = result.message || 'Error al actualizar el pedido';
+				showError(errorMessage);
+				throw new Error(errorMessage);
+			}
+			showSuccess('Order status updated successfully');
 
 			return true;
 		} catch (error) {
-			const errorMessage = 'Error updating order status: ' + (error instanceof Error ? error.message : 'Unknown error');
+			const errorMessage =
+				'Error updating order status: ' +
+				(error instanceof Error ? error.message : 'Unknown error');
 			console.error(errorMessage, error);
 			showError(errorMessage);
 			order[column] = oldStatus;
@@ -242,7 +248,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 	}
 
 	// Open delete confirmation dialog
-	function confirmDelete(order: { id: string, orderNumber: string }) {
+	function confirmDelete(order: { id: string; orderNumber: string }) {
 		orderToDelete = order;
 		showDeleteDialog = true;
 	}
@@ -250,7 +256,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 	// Handle confirmed deletion
 	async function handleDelete() {
 		if (!orderToDelete) return;
-		
+
 		try {
 			const formData = new FormData();
 			formData.append('id', orderToDelete.id);
@@ -262,7 +268,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 
 			if (response.ok) {
 				// Update the orders list by removing the deleted order
-				orders = orders.filter(order => order.id !== orderToDelete?.id);
+				orders = orders.filter((order) => order.id !== orderToDelete?.id);
 				// Show success toast
 				showSuccess('Order deleted successfully');
 			} else {
@@ -272,7 +278,8 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 				showError(errorMessage);
 			}
 		} catch (error) {
-			const errorMessage = 'Error deleting order. ' + (error instanceof Error ? error.message : 'Please try again.');
+			const errorMessage =
+				'Error deleting order. ' + (error instanceof Error ? error.message : 'Please try again.');
 			console.error(errorMessage, error);
 			showError(errorMessage);
 		} finally {
@@ -283,7 +290,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 	async function handleSubmit(orderData: any) {
 		try {
 			const formData = new FormData();
-			
+
 			// Add all form fields to formData
 			Object.entries(orderData).forEach(([key, value]) => {
 				if (key === 'items') {
@@ -308,7 +315,7 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 				if (result.error) {
 					throw new Error(result.message || 'Error creating order');
 				}
-				
+
 				// Refresh the page to show the new order
 				window.location.reload();
 			} else {
@@ -318,18 +325,27 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 				showError(errorMessage);
 			}
 		} catch (error) {
-				const errorMessage = `Error creating order: ${error instanceof Error ? error.message : 'Unknown error'}`;
-				console.error(errorMessage, error);
-				showError(errorMessage);
+			const errorMessage = `Error creating order: ${error instanceof Error ? error.message : 'Unknown error'}`;
+			console.error(errorMessage, error);
+			showError(errorMessage);
 		}
 	}
 </script>
 
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);">
-	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`}>	
+<main
+	class="min-h-screen w-full"
+	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
+	in:fade={{ duration: 300 }}
+	out:fade={{ duration: 200 }}
+>
+	<PageHeader title="Orders Management" subtitle={`${orders.length} orders`}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-72 md:flex-[3] lg:flex-[4]">
-				<SearchBar bind:search placeholder="Search by order number or status..." extraClasses="w-full" />
+				<SearchBar
+					bind:search
+					placeholder="Search by order number or status..."
+					extraClasses="w-full"
+				/>
 			</div>
 			<div class="w-full md:w-auto">
 				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
@@ -347,18 +363,12 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 		onCellChange={handleStatusChange}
 		onSort={handleSort}
 		sortable={true}
-		sortColumn={sortColumn}
-		sortDirection={sortDirection}
+		{sortColumn}
+		{sortDirection}
 		ifEdit={() => false}
-		
 	/>
 	{#if showDrawer}
-	<CreateOrders
-		suppliers={suppliers}
-		products={products}
-		onClose={closeDrawer}
-		onSubmit={handleSubmit}
-	/>
+		<CreateOrders {suppliers} {products} onClose={closeDrawer} onSubmit={handleSubmit} />
 	{/if}
 	{#if showOrderDetails}
 		<OrderDetails
@@ -378,5 +388,5 @@ async function handleStatusChange(order: any, column: string, newStatus: string)
 			orderToDelete = null;
 		}}
 	/>
-	<ToastList {toasts} on:removeToast={e => removeToast(e.detail.id)} />
-</section>
+	<ToastList {toasts} on:removeToast={(e) => removeToast(e.detail.id)} />
+</main>

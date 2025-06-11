@@ -1,101 +1,122 @@
 import type { Handle } from '@sveltejs/kit';
 import * as authService from '$lib/server/services/auth.service';
-import { redirect } from '@sveltejs/kit';
 import type { SafeUser } from '$lib/types/auth.types';
 
 const sessionCookieName = 'auth-session';
 
-const CORS_ORIGIN = 'http://localhost:5173'; 
+const CORS_ORIGIN = 'http://localhost:5173';
 const ALLOWED_FILE_TYPES = 'image/*, application/pdf';
 
+const PUBLIC_ROUTES: string[] = [
+	'/api',
+	'/onboarding/login',
+	'/onboarding/signup',
+	'/onboarding/forgot-password',
+	'/onboarding/reset-password',
+	'/onboarding/verify-email',
+	'/onboarding/verify-email/success',
+	'/onboarding/verify-email/error',
+	'/onboarding/reset-password/success',
+	'/onboarding/reset-password/error',
+	'/onboarding/forgot-password/success',
+	'/onboarding/forgot-password/error',
+	'/onboarding/signup/success',
+	'/onboarding/signup/error',
+	'/onboarding/login/error',
+	'/onboarding/logout',
+	'/onboarding/logout/callback',
+	'/onboarding/error'
+];
+
 const securityHeaders = {
-  'X-Frame-Options': 'DENY',
-  'X-Content-Type-Options': 'nosniff',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': `default-src 'self'; connect-src 'self' https://inventory-ai-production.up.railway.app; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';`
+	'X-Frame-Options': 'DENY',
+	'X-Content-Type-Options': 'nosniff',
+	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+	'X-XSS-Protection': '1; mode=block',
+	'Referrer-Policy': 'strict-origin-when-cross-origin',
+	'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+	'Cross-Origin-Embedder-Policy': 'require-corp',
+	'Cross-Origin-Opener-Policy': 'same-origin',
+	'Cross-Origin-Resource-Policy': 'same-site',
+	'Access-Control-Allow-Origin': 'http://localhost:5173',
+	'Access-Control-Allow-Credentials': 'true',
+	Accept: 'application/json, text/plain, */*'
+};
+
+const createRedirectResponse = (url: string) =>
+	new Response(null, { status: 302, headers: { location: url } });
+
+const setAuthCookie = (event: any, token: string, expires: Date) => {
+	event.cookies.set('auth-session', token, {
+		path: '/',
+		expires,
+		httpOnly: true,
+		secure: process.env.NODE_ENV === 'production',
+		sameSite: 'lax'
+	});
+};
+
+const clearAuthCookie = (event: any) => {
+	event.cookies.delete('auth-session', {
+		path: '/',
+		httpOnly: true,
+		secure: process.env.NODE_ENV === 'production',
+		sameSite: 'lax'
+	});
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-  // Manejar CORS preflight
-  if (event.request.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Origin': CORS_ORIGIN,
-        'Access-Control-Allow-Credentials': 'true'
-      }
-    });
-  }
+	const sessionToken = event.cookies.get('auth-session');
+	const isPublicRoute = PUBLIC_ROUTES.some((route) => event.url.pathname.startsWith(route));
+	const { pathname } = event.url;
 
-  // Handle session
-  const sessionToken = event.cookies.get(sessionCookieName);
-  
-  try {
-    if (!sessionToken) {
-      event.locals.user = null;
-      event.locals.session = null;
-      const response = await resolve(event);
-      addSecurityHeaders(response);
-      response.headers.set('Access-Control-Allow-Origin', CORS_ORIGIN);
-      response.headers.set('Access-Control-Allow-Credentials', 'true');
-      response.headers.set('Accept', ALLOWED_FILE_TYPES);
-      return response;
-    }
+	try {
+		if (!sessionToken) {
+			event.locals = { user: null, session: null };
+			if (!isPublicRoute && !pathname.startsWith('/onboarding')) {
+				console.log('No session, redirecting to login');
+				return createRedirectResponse(`/onboarding/login?redirect=${encodeURIComponent(pathname)}`);
+			}
+		} else {
+			try {
+				const result = await authService.validateSession(sessionToken);
 
-    const { session, user } = await authService.validateSession(sessionToken);
-    
-    if (session && user) {
-      event.cookies.set('auth-session', sessionToken, {
-        path: '/',
-        expires: session.expiresAt,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
-      });
+				if (result?.session && result?.user) {
+					const { session, user } = result;
+					setAuthCookie(event, sessionToken, session.expiresAt);
+					const { id, username, email, roleId } = user;
+					event.locals = {
+						user: { id, username, email, roleId } as SafeUser,
+						session
+					};
+					return await addSecurityHeaders(await resolve(event));
+				}
+			} catch (error) {
+				console.error('Session validation error:', error);
+			}
 
-      // Convertir a SafeUser antes de asignar a event.locals
-      const { id, username, email, roleId } = user;
-      event.locals.user = { id, username, email, roleId } as SafeUser;
-      event.locals.session = session;
+			clearAuthCookie(event);
+			event.locals = { user: null, session: null };
 
-    
-    
-    } else {
-      event.cookies.delete('auth-session', { path: '/' });
-      event.locals.user = null;
-      event.locals.session = null;
-    }
-    
+			if (!isPublicRoute) {
+				console.log('Invalid session, redirecting to login');
+				return createRedirectResponse(`/onboarding/login?redirect=${encodeURIComponent(pathname)}`);
+			}
+		}
 
-    const response = await resolve(event);
-    addSecurityHeaders(response);
-    response.headers.set('Access-Control-Allow-Origin', CORS_ORIGIN);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Accept', ALLOWED_FILE_TYPES);
-    return response;
-
-  } catch (error) {
-    console.error('Error:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', error.message, error.stack);
-    }
-    return new Response('Internal Server Error', { 
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-  }
+		return await addSecurityHeaders(await resolve(event));
+	} catch (error) {
+		console.error('Error:', error instanceof Error ? error.message : 'Unknown error');
+		return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+			status: 500,
+			headers: { 'Content-Type': 'application/json' }
+		});
+	}
 };
 
-// Helper function to add security headers to the response
-function addSecurityHeaders(response: Response) {
-  Object.entries(securityHeaders).forEach(([header, value]) => {
-    response.headers.set(header, value);
-  });
+async function addSecurityHeaders(response: Response) {
+	Object.entries(securityHeaders).forEach(([key, value]) =>
+		response.headers.set(key, value as string)
+	);
+	return response;
 }
-

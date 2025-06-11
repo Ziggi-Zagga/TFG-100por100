@@ -51,7 +51,7 @@
 {#if isOpen}
 	<Modal title="Información del Producto" {onClose} size="md">
 		<div class="space-y-6">
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<div>
 					<h3 class="text-lg font-medium text-gray-900">Información General</h3>
 					<dl class="mt-2 space-y-2">
@@ -80,7 +80,9 @@
 						<div class="flex justify-between">
 							<dt class="text-sm font-medium text-gray-500">Fabricante</dt>
 							<dd class="text-sm text-gray-900">
-								{product?.manufacturerId ? getManufacturerName(product.manufacturerId) : 'No especificado'}
+								{product?.manufacturerId
+									? getManufacturerName(product.manufacturerId)
+									: 'No especificado'}
 							</dd>
 						</div>
 						<div class="flex justify-between">

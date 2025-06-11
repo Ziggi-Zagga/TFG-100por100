@@ -6,8 +6,7 @@ export const basicErrorHandler = (error: any) => {
 		return fail(error.status, {
 			message: error.message,
 			type: error.type,
-			details: error?.details,
-
+			details: error?.details
 		});
 	} else {
 		return fail(500, {

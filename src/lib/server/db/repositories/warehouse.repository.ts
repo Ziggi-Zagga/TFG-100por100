@@ -1,4 +1,4 @@
-	import { db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { warehouses, sections, warehouseRows, warehouseGaps } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -26,38 +26,39 @@ export const getAllwarehouse = async () => {
 };
 
 export const getSectionsByWarehouseId = async (warehouseId: string) => {
-    return await db
-        .select()
-        .from(sections)
-        .where(eq(sections.warehouseId, warehouseId));
+	return await db.select().from(sections).where(eq(sections.warehouseId, warehouseId));
 };
 
 export const getwarehouseAndSections = async (warehouseId: string) => {
-    try {
-        const warehouseData = await db.query.warehouses.findFirst({
-            where: (wh, { eq }) => eq(wh.id, warehouseId)
-        });
-        
-        if (!warehouseData) {
-            return { warehouse: null, sections: [] };
-        }
-        
-        const sectionsList = await db.select()
-            .from(sections)
-            .where(eq(sections.warehouseId, warehouseId));
-            
-        return { 
-            warehouse: warehouseData, 
-            sections: sectionsList 
-        };
-    } catch (error) {
-        throw error;
-    }
+	try {
+		const warehouseData = await db.query.warehouses.findFirst({
+			where: (wh, { eq }) => eq(wh.id, warehouseId)
+		});
+
+		if (!warehouseData) {
+			return { warehouse: null, sections: [] };
+		}
+
+		const sectionsList = await db
+			.select()
+			.from(sections)
+			.where(eq(sections.warehouseId, warehouseId));
+
+		return {
+			warehouse: warehouseData,
+			sections: sectionsList
+		};
+	} catch (error) {
+		throw error;
+	}
 };
 
 export const getSectionAndRows = async (sectionId: string) => {
 	const section = await db.query.sections.findFirst({ where: eq(sections.id, sectionId) });
-	const rowsList = await db.select().from(warehouseRows).where(eq(warehouseRows.sectionId, sectionId));
+	const rowsList = await db
+		.select()
+		.from(warehouseRows)
+		.where(eq(warehouseRows.sectionId, sectionId));
 	return { section, rows: rowsList };
 };
 
@@ -84,12 +85,11 @@ export const insertwarehouse = async ({
 }) => {
 	await db.insert(warehouses).values({ id, name, location, description });
 	return {
-	id,
-	name,
-	location,
-	description
-};
-
+		id,
+		name,
+		location,
+		description
+	};
 };
 
 export const insertSection = async ({
@@ -165,21 +165,24 @@ export const insertGap = async ({
 	});
 };
 
-export const updatewarehouse = async (id: string, data: { 
-   	warehouseId: string,
-	updatedData: Partial<typeof warehouses.$inferInsert>
-}) => {
-    const [updatedwarehouse] = await db
-        .update(warehouses)
-        .set({
-            name: data.updatedData.name,
-            location: data.updatedData.location ?? null,
-            description: data.updatedData.description ?? null,
-        })
-        .where(eq(warehouses.id, id))
-        .returning();
+export const updatewarehouse = async (
+	id: string,
+	data: {
+		warehouseId: string;
+		updatedData: Partial<typeof warehouses.$inferInsert>;
+	}
+) => {
+	const [updatedwarehouse] = await db
+		.update(warehouses)
+		.set({
+			name: data.updatedData.name,
+			location: data.updatedData.location ?? null,
+			description: data.updatedData.description ?? null
+		})
+		.where(eq(warehouses.id, id))
+		.returning();
 
-    return updatedwarehouse;
+	return updatedwarehouse;
 };
 
 export const removewarehouse = async (id: string) => {
@@ -199,21 +202,21 @@ export const removeGap = async (id: string) => {
 };
 
 export const updateSection = async (id: string, data: Partial<typeof sections.$inferInsert>) => {
-    try {
-        const [updatedSection] = await db
-            .update(sections)
-            .set({
-                name: data.name,
-                location: data.location ?? null,
-                description: data.description ?? null,
-            })
-            .where(eq(sections.id, id))
-            .returning();
+	try {
+		const [updatedSection] = await db
+			.update(sections)
+			.set({
+				name: data.name,
+				location: data.location ?? null,
+				description: data.description ?? null
+			})
+			.where(eq(sections.id, id))
+			.returning();
 
-        return updatedSection;
-    } catch (error) {
-        throw error;
-    }
+		return updatedSection;
+	} catch (error) {
+		throw error;
+	}
 };
 
 export const updateRow = async (id: string, data: Partial<typeof warehouseRows.$inferInsert>) => {
@@ -240,17 +243,17 @@ export const updateRow = async (id: string, data: Partial<typeof warehouseRows.$
 };
 
 export const updateGap = async (id: string, data: Partial<typeof warehouseGaps.$inferInsert>) => {
-    const [updatedGap] = await db
-        .update(warehouseGaps)
-        .set({
-            name: data.name,
-            capacity: data.capacity ?? null,
-            description: data.description ?? null,
-        })
-        .where(eq(warehouseGaps.id, id))
-        .returning();
+	const [updatedGap] = await db
+		.update(warehouseGaps)
+		.set({
+			name: data.name,
+			capacity: data.capacity ?? null,
+			description: data.description ?? null
+		})
+		.where(eq(warehouseGaps.id, id))
+		.returning();
 
-    return updatedGap;
+	return updatedGap;
 };
 
 export const repoGetTreeFromGapId = async (gapId: string) => {

@@ -1,8 +1,8 @@
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import * as authService from '$lib/server/services/auth.service';
-import { redirect } from '@sveltejs/kit';
 import { ServiceError } from '$lib/utils/errors/ServiceError';
-import { storeError, getStoredError } from '$lib/stores/error.store'; 
+import { storeError, getStoredError } from '$lib/stores/error.store';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -24,33 +24,51 @@ export const actions: Actions = {
 
 		try {
 			const result = await authService.login(identifier, password, ip, userAgent);
+
+			if (!result) {
+				return fail(400, {
+					success: false,
+					error: {
+						message: 'Invalid credentials',
+						field: 'identifier'
+					}
+				});
+			}
+
 			const { session, token } = result;
+			const expires = new Date(session.expiresAt);
+
+			// Set the auth cookie
 			event.cookies.set('auth-session', token, {
 				path: '/',
-				expires: new Date(session.expiresAt),
+				expires: expires,
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax'
 			});
-			throw redirect(302, '/dashboard');
+
+			// Return success response with redirect
+			return {
+				success: true,
+				redirect: '/dashboard',
+				error: null
+			};
 		} catch (error: any) {
-			let message = 'Unexpected error';
-			let type = 'INTERNAL';
+			console.error('Login error:', error);
+
+			let message = 'An unexpected error occurred';
 			let field = '';
 
 			if (error instanceof ServiceError) {
 				message = error.message;
-				type = error.type;
-				field = error.field ?? '';
+				field = error.field || '';
 			}
 
-			storeError({
-				message,
-				type,
-				field
+			return fail(400, {
+				success: false,
+				error: { message, field },
+				redirect: null
 			});
-
-			throw redirect(302, `/onboarding/login`);
 		}
 	}
 };

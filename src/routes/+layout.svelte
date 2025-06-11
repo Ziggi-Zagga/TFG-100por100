@@ -1,11 +1,12 @@
 <script lang="ts">
-	import "../app.css";
+	import '../app.css';
+
 	let { children } = $props();
 </script>
 
-<head>
+<svelte:head>
 	<link rel="icon" type="image/png" href="/favicon.png" />
-</head>
+</svelte:head>
 
 <main class="min-h-screen w-full">
 	{@render children()}
