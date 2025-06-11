@@ -24,6 +24,11 @@ export async function findRoleByName(name: string) {
   return db.select().from(roles).where(eq(roles.name, name)).then(r => r[0]);
 }
 export async function getSessionWithUser(token: string) {
+  // Primero encontramos la sesión usando el token
+  const session = await findSessionByToken(token);
+  if (!session) return null;
+  
+  // Luego obtenemos los datos del usuario
   const result = await db
     .select({
       user: {
@@ -36,7 +41,7 @@ export async function getSessionWithUser(token: string) {
     })
     .from(userSessions)
     .innerJoin(users, eq(userSessions.userId, users.id))
-    .where(eq(userSessions.sessionHash, token))
+    .where(eq(userSessions.sessionId, session.sessionId))
     .then(r => r[0]);
     
   return result || null;
@@ -102,10 +107,13 @@ export async function createSession({
   ipAddress?: string | null;
   userAgent?: string | null;
 }) {
+  // Hashear el token de sesión antes de guardarlo
+  const sessionHash = await hash(sessionToken);
+  
   const [session] = await db.insert(userSessions).values({
     sessionId,
     userId,
-    sessionHash: sessionToken,
+    sessionHash,
     createdAt,
     expiresAt,
     ipAddress,
@@ -116,26 +124,57 @@ export async function createSession({
 }
 
 export async function findSessionByToken(sessionToken: string) {
-  const [session] = await db.select()
-    .from(userSessions)
-    .where(eq(userSessions.sessionHash, sessionToken));
+  // Primero, obtener todas las sesiones existentes
+  const allSessions = await db.select().from(userSessions);
     
-  return session || null;
+  // Buscar la sesión cuyo hash coincida con el token proporcionado
+  for (const session of allSessions) {
+    try {
+      // Si el hash comienza con $, es un hash de Argon2
+      if (session.sessionHash.startsWith('$argon2')) {
+        if (await verify(session.sessionHash, sessionToken)) {
+          return session;
+        }
+      } 
+      // Si no comienza con $, es un token en texto plano (compatibilidad hacia atrás)
+      else if (session.sessionHash === sessionToken) {
+        // Si encontramos un token en texto plano, lo actualizamos a hash
+        const hashedToken = await hash(sessionToken);
+        await db.update(userSessions)
+          .set({ sessionHash: hashedToken })
+          .where(eq(userSessions.sessionId, session.sessionId));
+        return session;
+      }
+    } catch (error) {
+      // Ignorar errores de verificación
+      console.error('Error verifying session token:', error);
+    }
+  }
+  
+  return null;
 }
 
 export async function deleteSession(sessionToken: string) {
-  // Delete session directly by token
+  // Encontrar la sesión por el token
+  const session = await findSessionByToken(sessionToken);
+  if (!session) return false;
+  
+  // Eliminar la sesión por su ID
   await db.delete(userSessions)
-    .where(eq(userSessions.sessionHash, sessionToken));
+    .where(eq(userSessions.sessionId, session.sessionId));
   
   return true;
 }
 
 export async function updateSessionExpiry(sessionToken: string, expiresAt: Date) {
-  // Update expiry date directly by token
+  // Encontrar la sesión por el token
+  const session = await findSessionByToken(sessionToken);
+  if (!session) return false;
+  
+  // Actualizar la fecha de expiración por el ID de sesión
   await db.update(userSessions)
     .set({ expiresAt })
-    .where(eq(userSessions.sessionHash, sessionToken));
+    .where(eq(userSessions.sessionId, session.sessionId));
     
   return true;
 }
