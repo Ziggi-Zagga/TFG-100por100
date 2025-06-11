@@ -38,7 +38,7 @@
 
 <div class="flex flex-col gap-1.5">
 	{#if label}
-		<label for={name} class="text-sm font-medium tracking-wide text-fresh-300">
+		<label for={name} class="text-fresh-300 text-sm font-medium tracking-wide">
 			{label}{#if required}<span class="text-coral-500">*</span>{/if}
 		</label>
 	{/if}
@@ -46,22 +46,22 @@
 	<div class="relative">
 		<select
 			id={name}
-			name={name}
+			{name}
 			bind:value
 			{disabled}
 			{required}
 			{...rest}
 			class={cn(
-				'w-full rounded-lg border border-brand-300 bg-white/50',
+				'border-brand-300 w-full rounded-lg border bg-white/50',
 				'font-inter text-brand-700 placeholder:text-brand-400/70',
 				'transition-all duration-300',
 				'hover:border-purple-600',
-				'focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/20',
+				'focus:border-purple-600 focus:ring-1 focus:ring-purple-600/20 focus:outline-none',
 				'disabled:cursor-not-allowed disabled:opacity-50',
 				{
-					'py-0.5 px-2 text-xs h-7': size === 'sm',
-					'py-1.5 px-3 text-base h-9': size === 'md',
-					'py-2 px-4 text-base h-11': size === 'lg'
+					'h-7 px-2 py-0.5 text-xs': size === 'sm',
+					'h-9 px-3 py-1.5 text-base': size === 'md',
+					'h-11 px-4 py-2 text-base': size === 'lg'
 				},
 				extraStyles,
 				error && 'border-error-500',

@@ -38,7 +38,7 @@
 		const urlParams = new URLSearchParams(window.location.search);
 		const id = urlParams.get('id');
 		if (id) {
-			const inventory = inventoryItems.find(inventory => inventory.id === id);
+			const inventory = inventoryItems.find((inventory) => inventory.id === id);
 			if (inventory) {
 				search = inventory.code;
 				urlParams.delete('id');
@@ -57,9 +57,10 @@
 	}
 
 	const filteredInventory = $derived(() =>
-		inventoryItems.filter((p) =>
-			p.name.toLowerCase().includes(search.toLowerCase()) ||
-			(p.code ?? '').toLowerCase().includes(search.toLowerCase())
+		inventoryItems.filter(
+			(p) =>
+				p.name.toLowerCase().includes(search.toLowerCase()) ||
+				(p.code ?? '').toLowerCase().includes(search.toLowerCase())
 		)
 	);
 
@@ -99,7 +100,9 @@
 
 	const warehouses = $derived(() =>
 		Array.from(
-			new Map(fullwarehouseTree.map(i => [i.warehouseId, { id: i.warehouseId, name: i.warehouseName }])).values()
+			new Map(
+				fullwarehouseTree.map((i) => [i.warehouseId, { id: i.warehouseId, name: i.warehouseName }])
+			).values()
 		)
 	);
 
@@ -108,10 +111,10 @@
 			? Array.from(
 					new Map(
 						fullwarehouseTree
-							.filter(i => i.warehouseId === selectedwarehouse?.id && i.sectionId)
-							.map(i => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
+							.filter((i) => i.warehouseId === selectedwarehouse?.id && i.sectionId)
+							.map((i) => [i.sectionId, { id: i.sectionId, name: i.sectionName }])
 					).values()
-			  )
+				)
 			: []
 	);
 
@@ -120,10 +123,10 @@
 			? Array.from(
 					new Map(
 						fullwarehouseTree
-							.filter(i => i.sectionId === selectedSection?.id && i.rowId)
-							.map(i => [i.rowId, { id: i.rowId, name: i.rowName }])
+							.filter((i) => i.sectionId === selectedSection?.id && i.rowId)
+							.map((i) => [i.rowId, { id: i.rowId, name: i.rowName }])
 					).values()
-			  )
+				)
 			: []
 	);
 
@@ -132,10 +135,10 @@
 			? Array.from(
 					new Map(
 						fullwarehouseTree
-							.filter(i => i.rowId === selectedRow?.id && i.gapId)
-							.map(i => [i.gapId, { id: i.gapId, name: i.gapName }])
+							.filter((i) => i.rowId === selectedRow?.id && i.gapId)
+							.map((i) => [i.gapId, { id: i.gapId, name: i.gapName }])
 					).values()
-			  )
+				)
 			: []
 	);
 
@@ -157,7 +160,7 @@
 			});
 
 			if (res.ok) {
-				inventoryItems = inventoryItems.filter(item => item.id !== inventoryIdToDelete);
+				inventoryItems = inventoryItems.filter((item) => item.id !== inventoryIdToDelete);
 				totalProducts = inventoryItems.length;
 				inventoryIdToDelete = null;
 				showConfirm = false;
@@ -176,7 +179,12 @@
 	}
 </script>
 
-<section class="min-h-screen w-full" style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);" in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
+<section
+	class="min-h-screen w-full"
+	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
+	in:fade={{ duration: 300 }}
+	out:fade={{ duration: 200 }}
+>
 	<PageHeader title="Inventory Management" subtitle={`${totalProducts} Products`}>
 		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
 			<div class="w-60 md:flex-[3] lg:flex-[4]">
@@ -199,49 +207,104 @@
 	/>
 
 	<ProductDrawer title="Add Product to Inventory" onClose={closeDrawer} show={showDrawer}>
-			<form method="POST" action="?/create">
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					<div class="col-span-1 sm:col-span-2 lg:col-span-3">
-						<ComboBox 
-							label="Product" 
-							searchQuery={selectedProduct} 
-							items={availableProducts} 
-							onSelect={(item) => handleProductChange(item || item?.id)} 
-							value={selectedProduct} 
-							name="productName"
-							displayField="name"/>
-					</div>
-
-					<TextInput label="Category" name="category" value={selectedCategory} disabled />
-					<TextInput label="Supplier" name="supplier" value={selectedSupplier} disabled />
-					<TextInput label="Manufacturer" name="manufacturer" value={selectedManufacturer} disabled />
-
-					<TextInput label="Stock" name="stock" type="number" min={0} placeholder="Stock quantity" required />
-					<TextInput label="Minimum Quantity" name="minQuantity" type="number" min={0} placeholder="Minimum quantity before restock" required />
-					<TextInput label="Reorder Quantity" name="reorderQuantity" type="number" min={0} placeholder="Default reorder amount" required />
+		<form method="POST" action="?/create">
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				<div class="col-span-1 sm:col-span-2 lg:col-span-3">
+					<ComboBox
+						label="Product"
+						searchQuery={selectedProduct}
+						items={availableProducts}
+						onSelect={(item) => handleProductChange(item || item?.id)}
+						value={selectedProduct}
+						name="productName"
+						displayField="name"
+					/>
 				</div>
 
-				<h1>Location</h1>
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<ComboBox label="warehouse" name="warehouseId" items={warehouses()} onSelect={handlewarehouseChange} value={selectedwarehouse?.name || ''} searchQuery={selectedwarehouse?.name || ''} displayField="name" />
-					<ComboBox label="Section" name="sectionId" items={sections()} onSelect={handleSectionChange} value={selectedSection?.name || ''} searchQuery={selectedSection?.name || ''} displayField="name" />
-					<ComboBox label="Row" name="rowId" items={rows()} onSelect={handleRowChange} value={selectedRow?.name || ''} searchQuery={selectedRow?.name || ''} displayField="name" />
-					<ComboBox label="Gap" name="gapId" items={gaps()} onSelect={handleGapChange} value={selectedGap?.name || ''} searchQuery={selectedGap?.name || ''} displayField="name" required />
-				</div>
+				<TextInput label="Category" name="category" value={selectedCategory} disabled />
+				<TextInput label="Supplier" name="supplier" value={selectedSupplier} disabled />
+				<TextInput label="Manufacturer" name="manufacturer" value={selectedManufacturer} disabled />
 
-				<input type="hidden" name="productId" value={selectedProductId} />
-				<input type="hidden" name="warehouseGapId" value={selectedGap?.id || ''} />
+				<TextInput
+					label="Stock"
+					name="stock"
+					type="number"
+					min={0}
+					placeholder="Stock quantity"
+					required
+				/>
+				<TextInput
+					label="Minimum Quantity"
+					name="minQuantity"
+					type="number"
+					min={0}
+					placeholder="Minimum quantity before restock"
+					required
+				/>
+				<TextInput
+					label="Reorder Quantity"
+					name="reorderQuantity"
+					type="number"
+					min={0}
+					placeholder="Default reorder amount"
+					required
+				/>
+			</div>
 
-				<div class="mt-6 flex justify-end gap-4">
-					<Button onclick={closeDrawer} variant="secondary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">Cancel</span>'}
-					</Button>
-					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">+ Add Inventory</span>'}
-					</Button>
-				</div>
-			</form>
-		</ProductDrawer>
+			<h1>Location</h1>
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				<ComboBox
+					label="warehouse"
+					name="warehouseId"
+					items={warehouses()}
+					onSelect={handlewarehouseChange}
+					value={selectedwarehouse?.name || ''}
+					searchQuery={selectedwarehouse?.name || ''}
+					displayField="name"
+				/>
+				<ComboBox
+					label="Section"
+					name="sectionId"
+					items={sections()}
+					onSelect={handleSectionChange}
+					value={selectedSection?.name || ''}
+					searchQuery={selectedSection?.name || ''}
+					displayField="name"
+				/>
+				<ComboBox
+					label="Row"
+					name="rowId"
+					items={rows()}
+					onSelect={handleRowChange}
+					value={selectedRow?.name || ''}
+					searchQuery={selectedRow?.name || ''}
+					displayField="name"
+				/>
+				<ComboBox
+					label="Gap"
+					name="gapId"
+					items={gaps()}
+					onSelect={handleGapChange}
+					value={selectedGap?.name || ''}
+					searchQuery={selectedGap?.name || ''}
+					displayField="name"
+					required
+				/>
+			</div>
+
+			<input type="hidden" name="productId" value={selectedProductId} />
+			<input type="hidden" name="warehouseGapId" value={selectedGap?.id || ''} />
+
+			<div class="mt-6 flex justify-end gap-4">
+				<Button onclick={closeDrawer} variant="secondary" size="md" extraStyles="w-full md:w-auto">
+					{@html '<span class="hidden md:inline">Cancel</span>'}
+				</Button>
+				<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+					{@html '<span class="hidden md:inline">+ Add Inventory</span>'}
+				</Button>
+			</div>
+		</form>
+	</ProductDrawer>
 
 	<ConfirmDialog
 		show={showConfirm}

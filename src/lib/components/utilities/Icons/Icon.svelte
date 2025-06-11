@@ -26,12 +26,11 @@
 	import MenuIcon from './Menu.svelte';
 	import ArrowIcon from './Arrow.svelte';
 	import GapIcon from './GapIcon.svelte';
-	
-	
+
 	const {
 		icon,
 		size = 24,
-		extraStyles = '',
+		extraStyles = ''
 	}: { icon: string; size: number; extraStyles?: string } = $props();
 </script>
 
@@ -93,7 +92,7 @@
 	<AlertIcon {size} {extraStyles} />
 {/if}
 {#if icon === 'right'}
-	<ChevronRight {size} {extraStyles}  />
+	<ChevronRight {size} {extraStyles} />
 {/if}
 {#if icon === 'check'}
 	<CheckIcon {size} {extraStyles} />

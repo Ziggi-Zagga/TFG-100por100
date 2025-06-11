@@ -5,15 +5,15 @@
 	import Button from '$lib/components/utilities/Button/Button.svelte';
 	import { fade } from 'svelte/transition';
 
-	const { form } = $props<{ 
-		form?: { 
-			error?: { 
-				message: string; 
-				field?: string 
+	const { form } = $props<{
+		form?: {
+			error?: {
+				message: string;
+				field?: string;
 			};
 			success?: boolean;
 			redirect?: string;
-		} 
+		};
 	}>();
 
 	let identifier = $state('');
@@ -36,16 +36,18 @@
 	function handleSubmit() {
 		formError = '';
 		errorField = '';
-		
-		return async ({ result }: { 
-			result: { 
-				type: string; 
-				data?: { 
+
+		return async ({
+			result
+		}: {
+			result: {
+				type: string;
+				data?: {
 					success?: boolean;
 					redirect?: string;
-					error?: { message: string; field?: string } 
-				} 
-			} 
+					error?: { message: string; field?: string };
+				};
+			};
 		}) => {
 			if (result.type === 'success' && result.data?.success && result.data.redirect) {
 				window.location.href = result.data.redirect;
@@ -57,7 +59,11 @@
 	}
 </script>
 
-<div class="font-inter flex min-h-screen w-full items-center justify-center "in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
+<div
+	class="font-inter flex min-h-screen w-full items-center justify-center"
+	in:fade={{ duration: 300 }}
+	out:fade={{ duration: 200 }}
+>
 	<div
 		class="flex w-full max-w-md flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white/90 p-10 shadow-xl"
 		in:scale={{ duration: 1500, start: 0.8 }}
@@ -66,29 +72,24 @@
 			<img src="../logo/logo.png" alt="Logo" class="h-100 w-100 object-contain" />
 		</div>
 
-		<form 
-			method="POST" 
-			class="space-y-4" 
-			autocomplete="off"
-			use:enhance={handleSubmit}
-		>
-		<TextInput
-			type="text"
-			name="identifier"
-			placeholder="Email address or username"
-			required
-			bind:value={identifier}			
-		/>
+		<form method="POST" class="space-y-4" autocomplete="off" use:enhance={handleSubmit}>
+			<TextInput
+				type="text"
+				name="identifier"
+				placeholder="Email address or username"
+				required
+				bind:value={identifier}
+			/>
 
 			<div class="relative">
-			<TextInput
-				type={showPassword ? 'text' : 'password'}
-				name="password"
-				placeholder="Password"
-				required
-				bind:value={password}
-				extraStyles="pr-10"
-			/>
+				<TextInput
+					type={showPassword ? 'text' : 'password'}
+					name="password"
+					placeholder="Password"
+					required
+					bind:value={password}
+					extraStyles="pr-10"
+				/>
 				<button
 					type="button"
 					class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
@@ -104,17 +105,17 @@
 				</button>
 			</div>
 
-		{#if formError}
-			<p class="text-sm text-red-600 text-center mt-2">{formError}</p>
-		{/if}
+			{#if formError}
+				<p class="mt-2 text-center text-sm text-red-600">{formError}</p>
+			{/if}
 
-			<Button type="submit" variant="primary" size="lg" extraStyles="w-full">
-				Sign In
-			</Button>
+			<Button type="submit" variant="primary" size="lg" extraStyles="w-full">Sign In</Button>
 
 			<div class="mt-4 text-center">
 				<span class="text-gray-600">Don't have an account?</span>
-				<a href="/onboarding/signup" class="ml-2 font-medium text-blue-600 hover:text-blue-800">Sign Up</a>
+				<a href="/onboarding/signup" class="ml-2 font-medium text-blue-600 hover:text-blue-800"
+					>Sign Up</a
+				>
 			</div>
 		</form>
 	</div>

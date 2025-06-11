@@ -35,13 +35,13 @@
 		onValueChange?: (val: string | number) => void;
 		extraClass?: string;
 	} = $props();
-	
+
 	$effect(() => onValueChange?.(value));
 </script>
 
 <div class="flex flex-col gap-1.5">
 	{#if label}
-		<label for={name} class="text-sm font-medium tracking-wide text-fresh-300">
+		<label for={name} class="text-fresh-300 text-sm font-medium tracking-wide">
 			{label}{#if required}<span class="text-coral-500">*</span>{/if}
 		</label>
 	{/if}
@@ -50,9 +50,9 @@
 		<input
 			{type}
 			id={name}
-			name={name}
+			{name}
 			bind:value
-			placeholder={placeholder}
+			{placeholder}
 			{min}
 			{max}
 			{step}
@@ -60,18 +60,18 @@
 			{disabled}
 			{...rest}
 			class={cn(
-				'w-full rounded-xl border border-brand-300 bg-white/50 px-4 py-2.5',
+				'border-brand-300 w-full rounded-xl border bg-white/50 px-4 py-2.5',
 				'font-inter text-brand-700 placeholder:text-brand-400/70',
 				'transition-all duration-300',
 				'hover:border-purple-600',
-				'focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/20',
+				'focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none',
 				'disabled:cursor-not-allowed disabled:opacity-50',
 				{
-					'py-1 px-1 text-sm h-9': size === 'sm',
-					'py-2.5 px-3 text-sm h-11': size === 'md',
-					'py-3 px-4 text-base h-14': size === 'lg'
+					'h-9 px-1 py-1 text-sm': size === 'sm',
+					'h-11 px-3 py-2.5 text-sm': size === 'md',
+					'h-14 px-4 py-3 text-base': size === 'lg'
 				},
-				type === 'number' && 'text-right',	
+				type === 'number' && 'text-right',
 				extraStyles,
 				error && 'border-error-500',
 				disabled && 'bg-gray-100'

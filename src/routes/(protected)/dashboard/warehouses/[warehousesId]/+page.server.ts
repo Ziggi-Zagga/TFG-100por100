@@ -9,23 +9,23 @@ import type { PageServerLoad, Actions } from './$types';
 import { ERROR_TYPES, ServiceError } from '$lib/utils/errors/ServiceError';
 
 export const load: PageServerLoad = async ({ params }) => {
-    try {
-        const warehousesId = params.warehousesId;
-        if (!warehousesId) return fail(400, { message: 'Missing warehouse ID' });
+	try {
+		const warehousesId = params.warehousesId;
+		if (!warehousesId) return fail(400, { message: 'Missing warehouse ID' });
 
-        const data = await getwarehouseWithSections(warehousesId);
-        if (!data.warehouse) return fail(404, { message: 'Warehouse not found' });
+		const data = await getwarehouseWithSections(warehousesId);
+		if (!data.warehouse) return fail(404, { message: 'Warehouse not found' });
 
-        return {
-            warehouse: data.warehouse,
-            sections: data.sections || []
-        };
-    } catch (error) {
-        return {
-            warehouse: null,
-            sections: []
-        };
-    }
+		return {
+			warehouse: data.warehouse,
+			sections: data.sections || []
+		};
+	} catch (error) {
+		return {
+			warehouse: null,
+			sections: []
+		};
+	}
 };
 
 export const actions: Actions = {
@@ -36,11 +36,11 @@ export const actions: Actions = {
 			const name = formData.get('name')?.toString()?.trim() || '';
 			const location = formData.get('location')?.toString()?.trim() || '';
 			const description = formData.get('description')?.toString()?.trim() || '';
-		   
+
 			await createSection({ warehouseId: warehousesId, name, location, description });
-			
-			return { 
-				success: true, 
+
+			return {
+				success: true
 			};
 		} catch (error) {
 			if (error instanceof ServiceError) {
@@ -61,7 +61,7 @@ export const actions: Actions = {
 			if (!id) {
 				return fail(400, { message: 'Section ID not provided' });
 			}
- 
+
 			const updateData = {
 				name,
 				location,
@@ -69,9 +69,9 @@ export const actions: Actions = {
 			};
 
 			await updateSection(id, updateData);
-			
-			return { 
-				success: true, 
+
+			return {
+				success: true
 			};
 		} catch (error) {
 			if (error instanceof ServiceError) {
@@ -88,20 +88,20 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const id = formData.get('id')?.toString();
-			
+
 			if (!id) {
 				return fail(400, { message: 'Section ID not provided' });
 			}
 
 			await deleteSectionById(id);
-			return { 
-				success: true,
+			return {
+				success: true
 			};
 		} catch (error) {
 			if (error instanceof ServiceError) {
 				const status = error.type === ERROR_TYPES.NOT_FOUND ? 404 : 400;
 				return fail(status, {
-					message: error.message,
+					message: error.message
 				});
 			}
 			return fail(500, {

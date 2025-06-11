@@ -1,6 +1,6 @@
 export interface Category {
-    id: string;
-    name: string;
-    description: string;
-    parentId: string;
+	id: string;
+	name: string;
+	description: string;
+	parentId: string;
 }

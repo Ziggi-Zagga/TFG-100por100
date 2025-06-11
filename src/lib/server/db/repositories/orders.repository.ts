@@ -1,8 +1,6 @@
 import { eq, desc, inArray, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { orders, orderItems, products, suppliers, users } from '$lib/server/db/schema';
-    
-
 
 export const getAllOrders = async () => {
 	return await db
@@ -21,82 +19,75 @@ export const getAllOrders = async () => {
 		.from(orders);
 };
 
-
 export const getOrderWithItems = async (orderId: string) => {
-    const order = await db.query.orders.findFirst({
-        where: eq(orders.id, orderId)
-    });
+	const order = await db.query.orders.findFirst({
+		where: eq(orders.id, orderId)
+	});
 
-    if (!order) {
-        throw new Error('Order not found');
-    }
+	if (!order) {
+		throw new Error('Order not found');
+	}
 
-    const items = await db
-        .select({
-            id: orderItems.id,
-            productId: orderItems.productId,
-            quantity: orderItems.quantity,
-            price: orderItems.price,
-            discount: orderItems.discount,
-            createdAt: orderItems.createdAt,
-            updatedAt: orderItems.updatedAt,
-            code: products.code,
-            name: products.name,
-            productPrice: products.price
-        })
-        .from(orderItems)
-        .leftJoin(products, eq(orderItems.productId, products.id))
-        .where(eq(orderItems.orderId, orderId));
+	const items = await db
+		.select({
+			id: orderItems.id,
+			productId: orderItems.productId,
+			quantity: orderItems.quantity,
+			price: orderItems.price,
+			discount: orderItems.discount,
+			createdAt: orderItems.createdAt,
+			updatedAt: orderItems.updatedAt,
+			code: products.code,
+			name: products.name,
+			productPrice: products.price
+		})
+		.from(orderItems)
+		.leftJoin(products, eq(orderItems.productId, products.id))
+		.where(eq(orderItems.orderId, orderId));
 
-    // Formatear los ítems para incluir la información del producto
-    const formattedItems = items.map(item => ({
-        ...item,
-        code: item.code || 'N/A',
-        name: item.name || 'Producto sin nombre',
-        price: item.price,
-        quantity: item.quantity,
-        discount: item.discount || 0
-    }));
+	// Formatear los ítems para incluir la información del producto
+	const formattedItems = items.map((item) => ({
+		...item,
+		code: item.code || 'N/A',
+		name: item.name || 'Producto sin nombre',
+		price: item.price,
+		quantity: item.quantity,
+		discount: item.discount || 0
+	}));
 
-    return { 
-        ...order, 
-        items: formattedItems,
-        products: formattedItems // Mantener compatibilidad con el código existente
-    };
+	return {
+		...order,
+		items: formattedItems,
+		products: formattedItems // Mantener compatibilidad con el código existente
+	};
 };
 
 export const getItemsByOrderId = async (orderId: string) => {
-    const result = await getOrderWithItems(orderId);
-    return { order: { ...result, items: undefined }, items: result.items };
+	const result = await getOrderWithItems(orderId);
+	return { order: { ...result, items: undefined }, items: result.items };
 };
-
 
 export const insertOrder = async (order: typeof orders.$inferInsert) => {
 	await db.insert(orders).values(order);
 };
 
-
-export const insertOrderItems = async (items: typeof orderItems.$inferInsert[]) => {
+export const insertOrderItems = async (items: (typeof orderItems.$inferInsert)[]) => {
 	if (items.length === 0) return;
 	await db.insert(orderItems).values(items);
 };
 
-
 export const deleteOrder = async (orderId: string) => {
-    const [deletedOrder] = await db.delete(orders)
-        .where(eq(orders.id, orderId))
-        .returning();
-    return deletedOrder;
+	const [deletedOrder] = await db.delete(orders).where(eq(orders.id, orderId)).returning();
+	return deletedOrder;
 };
 
-export const removeOrder = deleteOrder; 
-
+export const removeOrder = deleteOrder;
 
 export const deleteOrderItems = async (orderId: string) => {
-    await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
+	await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
 };
 
-export const removeOrderItemsByOrderId = deleteOrderItems; 
+export const removeOrderItemsByOrderId = deleteOrderItems;
 
 export const updateOrder = async (
 	orderId: string,
@@ -107,116 +98,115 @@ export const updateOrder = async (
 
 export const updateOrderItems = async (
 	orderId: string,
-	items: typeof orderItems.$inferInsert[]
+	items: (typeof orderItems.$inferInsert)[]
 ) => {
 	await removeOrderItemsByOrderId(orderId);
 };
 
 export const getLastOrderNumber = async () => {
-    const result = await db
-        .select({ 
-            orderNumber: orders.orderNumber,
-            num: sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`
-        })
-        .from(orders)
-        .orderBy(desc(sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`))
-        .limit(1);
-    
-    console.log('Último número de orden encontrado:', result[0]?.orderNumber);
-    return result[0]?.orderNumber;
+	const result = await db
+		.select({
+			orderNumber: orders.orderNumber,
+			num: sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`
+		})
+		.from(orders)
+		.orderBy(desc(sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`))
+		.limit(1);
+
+	console.log('Último número de orden encontrado:', result[0]?.orderNumber);
+	return result[0]?.orderNumber;
 };
 
 // Obtener órdenes con información de proveedor y usuario
 export const getOrdersWithDetails = async () => {
-    return await db
-        .select({
-            id: orders.id,
-            orderNumber: orders.orderNumber,
-            status: orders.status,
-            orderDate: orders.orderDate,
-            expectedArrival: orders.expectedArrival,
-            notes: orders.notes,
-            supplierId: orders.supplierId,
-            supplierName: suppliers.name,
-            userId: orders.userId,
-            userName: users.username,
-            createdAt: orders.createdAt,
-            updatedAt: orders.updatedAt
-        })
-        .from(orders)
-        .leftJoin(suppliers, eq(orders.supplierId, suppliers.id))
-        .leftJoin(users, eq(orders.userId, users.id))
-        .orderBy(desc(orders.createdAt));
+	return await db
+		.select({
+			id: orders.id,
+			orderNumber: orders.orderNumber,
+			status: orders.status,
+			orderDate: orders.orderDate,
+			expectedArrival: orders.expectedArrival,
+			notes: orders.notes,
+			supplierId: orders.supplierId,
+			supplierName: suppliers.name,
+			userId: orders.userId,
+			userName: users.username,
+			createdAt: orders.createdAt,
+			updatedAt: orders.updatedAt
+		})
+		.from(orders)
+		.leftJoin(suppliers, eq(orders.supplierId, suppliers.id))
+		.leftJoin(users, eq(orders.userId, users.id))
+		.orderBy(desc(orders.createdAt));
 };
 
 // Obtener órdenes de un usuario específico
 export const getOrdersByUser = async (userId: string) => {
-    const ordersResult = await db
-        .select({
-            id: orders.id,
-            orderNumber: orders.orderNumber,
-            status: orders.status,
-            orderDate: orders.orderDate,
-            expectedArrival: orders.expectedArrival,
-            notes: orders.notes,
-            supplierId: orders.supplierId,
-            supplierName: suppliers.name,
-            createdAt: orders.createdAt,
-            updatedAt: orders.updatedAt
-        })
-        .from(orders)
-        .leftJoin(suppliers, eq(orders.supplierId, suppliers.id))
-        .where(eq(orders.userId, userId))
-        .orderBy(desc(orders.createdAt));
+	const ordersResult = await db
+		.select({
+			id: orders.id,
+			orderNumber: orders.orderNumber,
+			status: orders.status,
+			orderDate: orders.orderDate,
+			expectedArrival: orders.expectedArrival,
+			notes: orders.notes,
+			supplierId: orders.supplierId,
+			supplierName: suppliers.name,
+			createdAt: orders.createdAt,
+			updatedAt: orders.updatedAt
+		})
+		.from(orders)
+		.leftJoin(suppliers, eq(orders.supplierId, suppliers.id))
+		.where(eq(orders.userId, userId))
+		.orderBy(desc(orders.createdAt));
 
-    const orderIds = ordersResult.map(order => order.id);
-    const itemsResult = await db
-        .select({
-            orderId: orderItems.orderId,
-            id: orderItems.id,
-            productId: orderItems.productId,
-            quantity: orderItems.quantity,
-            price: orderItems.price,
-            productName: products.name,
-            productDescription: products.description
-        })
-        .from(orderItems)
-        .leftJoin(products, eq(orderItems.productId, products.id))
-        .where(inArray(orderItems.orderId, orderIds));
+	const orderIds = ordersResult.map((order) => order.id);
+	const itemsResult = await db
+		.select({
+			orderId: orderItems.orderId,
+			id: orderItems.id,
+			productId: orderItems.productId,
+			quantity: orderItems.quantity,
+			price: orderItems.price,
+			productName: products.name,
+			productDescription: products.description
+		})
+		.from(orderItems)
+		.leftJoin(products, eq(orderItems.productId, products.id))
+		.where(inArray(orderItems.orderId, orderIds));
 
-    // Agrupar los items por orderId
-    const itemsByOrderId = new Map<string, typeof itemsResult[number][]>();
-    itemsResult.forEach(item => {
-        if (!itemsByOrderId.has(item.orderId)) {
-            itemsByOrderId.set(item.orderId, []);
-        }
-        itemsByOrderId.get(item.orderId)?.push(item);
-    });
+	// Agrupar los items por orderId
+	const itemsByOrderId = new Map<string, (typeof itemsResult)[number][]>();
+	itemsResult.forEach((item) => {
+		if (!itemsByOrderId.has(item.orderId)) {
+			itemsByOrderId.set(item.orderId, []);
+		}
+		itemsByOrderId.get(item.orderId)?.push(item);
+	});
 
-    // Combinar los resultados
-    return ordersResult.map(order => ({
-        ...order,
-        items: itemsByOrderId.get(order.id) || []
-    }));
+	// Combinar los resultados
+	return ordersResult.map((order) => ({
+		...order,
+		items: itemsByOrderId.get(order.id) || []
+	}));
 };
 export const getOrderItemsByProductId = async (productId: string) => {
-    return await db
-        .select({
-            orderItemId: orderItems.id,
-            orderId: orderItems.orderId,
-            productId: orderItems.productId,
-            quantity: orderItems.quantity,
-            price: orderItems.price,
-            discount: orderItems.discount,
-            orderDate: orders.orderDate,
-            orderNumber: orders.orderNumber,
-            productName: products.name,
-            productCode: products.code
-        })
-        .from(orderItems)
-        .leftJoin(orders, eq(orderItems.orderId, orders.id))
-        .leftJoin(products, eq(orderItems.productId, products.id))
-        .where(eq(orderItems.productId, productId))
-        .orderBy(desc(orders.orderDate));
+	return await db
+		.select({
+			orderItemId: orderItems.id,
+			orderId: orderItems.orderId,
+			productId: orderItems.productId,
+			quantity: orderItems.quantity,
+			price: orderItems.price,
+			discount: orderItems.discount,
+			orderDate: orders.orderDate,
+			orderNumber: orders.orderNumber,
+			productName: products.name,
+			productCode: products.code
+		})
+		.from(orderItems)
+		.leftJoin(orders, eq(orderItems.orderId, orders.id))
+		.leftJoin(products, eq(orderItems.productId, products.id))
+		.where(eq(orderItems.productId, productId))
+		.orderBy(desc(orders.orderDate));
 };
-

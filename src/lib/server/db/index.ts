@@ -9,9 +9,9 @@ const connectionString = env.DATABASE_URL;
 
 // Create the PostgreSQL connection with connection pooling configuration
 const client = postgres(connectionString as string, {
-  max: 10, // maximum number of connections
-  idle_timeout: 20, // how long a connection can stay idle before being closed (in seconds)
-  connect_timeout: 10 // connection timeout (in seconds)
+	max: 10, // maximum number of connections
+	idle_timeout: 20, // how long a connection can stay idle before being closed (in seconds)
+	connect_timeout: 10 // connection timeout (in seconds)
 });
 
 // Initialize drizzle with the schema

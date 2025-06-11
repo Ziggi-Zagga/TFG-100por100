@@ -1,16 +1,12 @@
 <script lang="ts">
-	let { 
-		search = $bindable<string>(), 
-		placeholder = 'Search...',
-		extraClasses = '' 
-	} = $props();
+	let { search = $bindable<string>(), placeholder = 'Search...', extraClasses = '' } = $props();
 </script>
 
-<div class="flex justify-between items-center w-full">
+<div class="flex w-full items-center justify-between">
 	<input
 		type="text"
 		bind:value={search}
-		placeholder={placeholder}
-		class="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent {extraClasses}"
+		{placeholder}
+		class="w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none {extraClasses}"
 	/>
 </div>

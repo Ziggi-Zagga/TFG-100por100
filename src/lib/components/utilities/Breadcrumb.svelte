@@ -4,10 +4,10 @@
 	}>();
 </script>
 
-<nav class="text-sm text-gray-500 flex items-center flex-wrap gap-1">
+<nav class="flex flex-wrap items-center gap-1 text-sm text-gray-500">
 	{#each segments as { name, href }, i}
 		{#if href}
-			<a href={href} class="text-blue-600 hover:underline">{name}</a>
+			<a {href} class="text-blue-600 hover:underline">{name}</a>
 		{:else}
 			<span class="font-semibold text-gray-700">{name}</span>
 		{/if}

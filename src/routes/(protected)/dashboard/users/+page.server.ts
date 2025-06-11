@@ -1,4 +1,10 @@
-import { getUsers, createUser, deletePermanently, getRoles, createRole } from '$lib/server/services/users.service';
+import {
+	getUsers,
+	createUser,
+	deletePermanently,
+	getRoles,
+	createRole
+} from '$lib/server/services/users.service';
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -13,13 +19,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return { users, roles };
 };
 
-
-
 // Función para verificar si el usuario es administrador
 const requireAdmin = (locals: App.Locals) => {
-  if (locals.user?.roleId !== '1') {
-    throw redirect(302, '/dashboard?error=unauthorized');
-  }
+	if (locals.user?.roleId !== '1') {
+		throw redirect(302, '/dashboard?error=unauthorized');
+	}
 };
 
 export const actions: Actions = {

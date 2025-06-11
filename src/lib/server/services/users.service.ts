@@ -32,10 +32,14 @@ export const createUser = async ({
 	roleId: string;
 }) => {
 	if (!username) {
-		throw new ServiceError('Username is required', ERROR_TYPES.VALIDATION, 400, { field: 'username' });
+		throw new ServiceError('Username is required', ERROR_TYPES.VALIDATION, 400, {
+			field: 'username'
+		});
 	}
 	if (!passwordHash) {
-		throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, { field: 'password' });
+		throw new ServiceError('Password is required', ERROR_TYPES.VALIDATION, 400, {
+			field: 'password'
+		});
 	}
 	if (!email) {
 		throw new ServiceError('Email is required', ERROR_TYPES.VALIDATION, 400, { field: 'email' });

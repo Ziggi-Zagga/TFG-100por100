@@ -1,18 +1,18 @@
 <script lang="ts">
-import PageHeader from '$lib/components/utilities/Header/Header.svelte';
-import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
-import Table from '$lib/components/utilities/table/Table.svelte';
-import Button from '$lib/components/utilities/Button/Button.svelte';
-import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
-import Modal from '$lib/components/utilities/Modal/Modal.svelte';
-import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
-import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
-import type { Manufacturer, Supplier } from '$lib/types/products.types.js';
-import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
-import { fail } from '@sveltejs/kit';
-import { fade } from 'svelte/transition';
+	import PageHeader from '$lib/components/utilities/Header/Header.svelte';
+	import SearchBar from '$lib/components/utilities/SearchBar/SearchBar.svelte';
+	import Table from '$lib/components/utilities/table/Table.svelte';
+	import Button from '$lib/components/utilities/Button/Button.svelte';
+	import Drawer from '$lib/components/utilities/Drawer/Drawer.svelte';
+	import Modal from '$lib/components/utilities/Modal/Modal.svelte';
+	import TextInput from '$lib/components/utilities/Form/TextInput.svelte';
+	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
+	import type { Manufacturer, Supplier } from '$lib/types/products.types.js';
+	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
+	import { fail } from '@sveltejs/kit';
+	import { fade } from 'svelte/transition';
 
-	const { data } = $props();	
+	const { data } = $props();
 
 	let showDrawer = $state(false);
 	let isEditing = $state(false);
@@ -45,9 +45,6 @@ import { fade } from 'svelte/transition';
 	let showConfirmManufacturer = $state(false);
 	let manufacturerToDelete = $state<string | null>(null);
 	let manufacturerIdToDelete = $state<string | null>(null);
-
-
-	
 
 	function openEdit(item: Supplier) {
 		isEditing = true;
@@ -176,9 +173,8 @@ import { fade } from 'svelte/transition';
 	);
 
 	const filteredManufacturers = $derived(() =>
-		manufacturers.filter(
-			(manufacturer) =>
-				manufacturer.name.toLowerCase().includes(search.toLowerCase())
+		manufacturers.filter((manufacturer) =>
+			manufacturer.name.toLowerCase().includes(search.toLowerCase())
 		)
 	);
 
@@ -226,76 +222,76 @@ import { fade } from 'svelte/transition';
 <section
 	class="min-h-screen w-full"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
-	in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}
+	in:fade={{ duration: 300 }}
+	out:fade={{ duration: 200 }}
 >
-
-<!-- SUPPLIERS -->
-{#if isSuppliers}
-	<PageHeader title="Suppliers Management" subtitle={totalSuppliers + ' Suppliers'}>
-		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
-			<div class="w-60 md:flex-[3] lg:flex-[4]">
-				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
-			</div>
-			<div class="flex w-full items-center justify-end gap-2 md:w-auto">
-				<Button
-					on:click={() => (isSuppliers = true)}
-					variant={isSuppliers ? 'primary' : 'secondary'}
-					size="md"
-					extraStyles="w-full md:w-auto"
-				>Suppliers</Button>
-				<Button
-					on:click={() => (isSuppliers = false)}
-					variant={!isSuppliers ? 'primary' : 'secondary'}
-					size="md"
-					extraStyles="w-full md:w-auto"
-				>Manufacturers</Button>
-				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
-					<span class="hidden md:inline">Add Supplier</span>
-				</Button>
-			</div>
-		</div>
-	</PageHeader>
-
-	<!-- TABLE -->
-	<Table
-		columns={['name', 'email', 'contactPerson', 'website', 'phone']}
-		items={filteredSuppliers()}
-		onEdit={(item) => openEdit(item)}
-		onDelete={(item) => askDelete(item.id, item.name)}
-	/>
-
-	<!-- MODAL -->
-	{#if isEditing}
-		<Modal title="➕ Edit Supplier" onClose={closeEdit}>
-			<form method="POST" action="?/update">
-				<input type="hidden" name="id" value={editId} />
-				<TextInput label="Name" name="name" value={editName} required />
-				{#if wrongName}
-					<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
-				{/if}
-				<TextInput label="Email" name="email" value={editEmail} />
-				<TextInput label="Contact Person" name="contactPerson" value={editContactPerson} />
-				<TextInput label="Website" name="website" value={editWebsite} />
-				<TextInput label="Phone" name="phone" value={editPhone} />
-				<TextArea label="Notes" name="notes" value={editNotes} />
-				<div class="mt-6 flex justify-end gap-4">
+	<!-- SUPPLIERS -->
+	{#if isSuppliers}
+		<PageHeader title="Suppliers Management" subtitle={totalSuppliers + ' Suppliers'}>
+			<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+				<div class="w-60 md:flex-[3] lg:flex-[4]">
+					<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
+				</div>
+				<div class="flex w-full items-center justify-end gap-2 md:w-auto">
 					<Button
-						onclick={cancelDeletion}
-						variant="secondary"
+						on:click={() => (isSuppliers = true)}
+						variant={isSuppliers ? 'primary' : 'secondary'}
 						size="md"
-						extraStyles="w-full md:w-auto"
+						extraStyles="w-full md:w-auto">Suppliers</Button
 					>
-						{@html '<span class="hidden md:inline">Cancel</span>'}
-					</Button>
-					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">Update Supplier</span>'}
+					<Button
+						on:click={() => (isSuppliers = false)}
+						variant={!isSuppliers ? 'primary' : 'secondary'}
+						size="md"
+						extraStyles="w-full md:w-auto">Manufacturers</Button
+					>
+					<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+						<span class="hidden md:inline">Add Supplier</span>
 					</Button>
 				</div>
-			</form>
-		</Modal>
-	{/if}
+			</div>
+		</PageHeader>
 
-	<!-- DRAWER -->
+		<!-- TABLE -->
+		<Table
+			columns={['name', 'email', 'contactPerson', 'website', 'phone']}
+			items={filteredSuppliers()}
+			onEdit={(item) => openEdit(item)}
+			onDelete={(item) => askDelete(item.id, item.name)}
+		/>
+
+		<!-- MODAL -->
+		{#if isEditing}
+			<Modal title="➕ Edit Supplier" onClose={closeEdit}>
+				<form method="POST" action="?/update">
+					<input type="hidden" name="id" value={editId} />
+					<TextInput label="Name" name="name" value={editName} required />
+					{#if wrongName}
+						<p class="pt-2 text-sm text-red-500">Name can not be the same as another supplier</p>
+					{/if}
+					<TextInput label="Email" name="email" value={editEmail} />
+					<TextInput label="Contact Person" name="contactPerson" value={editContactPerson} />
+					<TextInput label="Website" name="website" value={editWebsite} />
+					<TextInput label="Phone" name="phone" value={editPhone} />
+					<TextArea label="Notes" name="notes" value={editNotes} />
+					<div class="mt-6 flex justify-end gap-4">
+						<Button
+							onclick={cancelDeletion}
+							variant="secondary"
+							size="md"
+							extraStyles="w-full md:w-auto"
+						>
+							{@html '<span class="hidden md:inline">Cancel</span>'}
+						</Button>
+						<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+							{@html '<span class="hidden md:inline">Update Supplier</span>'}
+						</Button>
+					</div>
+				</form>
+			</Modal>
+		{/if}
+
+		<!-- DRAWER -->
 		<Drawer title="➕ Add New Supplier" onClose={closeDrawer} show={showDrawer}>
 			<form onsubmit={handleCreate} class="flex flex-col gap-4">
 				<div>
@@ -362,86 +358,92 @@ import { fade } from 'svelte/transition';
 			</form>
 		</Drawer>
 
-	<ConfirmDialog
-		show={showConfirm}
-		message={`Are you sure you want to delete supplier: ${supplierToDelete}?`}
-		onConfirm={confirmDeletion}
-		onCancel={cancelDeletion}
-	/>
+		<ConfirmDialog
+			show={showConfirm}
+			message={`Are you sure you want to delete supplier: ${supplierToDelete}?`}
+			onConfirm={confirmDeletion}
+			onCancel={cancelDeletion}
+		/>
 	{:else}
+		<!-- MANUFACTURERS -->
 
-
-	<!-- MANUFACTURERS -->
-
-	<PageHeader title="Manufacturers Management" subtitle={totalManufacturers + ' Manufacturers'}>
-		<div class="flex w-full flex-col items-center gap-4 md:flex-row">
-			<div class="w-60 md:flex-[3] lg:flex-[4]">
-				<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
-			</div>
-			<div class="flex w-full items-center justify-end gap-2 md:w-auto">
-				<Button
-					onclick={() => (isSuppliers = true)}
-					variant={isSuppliers ? 'primary' : 'secondary'}
-					size="md"
-					extraStyles="w-full md:w-auto"
-				>Suppliers</Button>
-				<Button
-					onclick={() => (isSuppliers = false)}
-					variant={!isSuppliers ? 'primary' : 'secondary'}
-					size="md"
-					extraStyles="w-full md:w-auto"
-				>Manufacturers</Button>
-				<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">					
-					<span class="hidden md:inline">Add Manufacturer</span>
-				</Button>
-			</div>
-		</div>
-	</PageHeader>
-
-	<!-- TABLE -->
-	<Table
-		columns={['name', 'description']}
-		items={filteredManufacturers()}
-		onEdit={(item) => openEditManufacturer(item)}
-		onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
-	/>
-	
-
-	<!-- MODAL -->
-	{#if isEditingManufacturer}
-		<Modal title="Edit Manufacturer" onClose={closeEditManufacturer}>
-			<form method="POST" action="?/updateManufacturer">
-				<input type="hidden" name="id" value={editIdManufacturer} />
-				<TextInput label="Name" name="name" value={editNameManufacturer} required />
-				{#if wrongNameManufacturer}
-					<p class="pt-2 text-sm text-red-500">Name can not be the same as another manufacturer</p>
-				{/if}
-				<TextArea label="Description" name="description" value={editDescriptionManufacturer} />
-				<div class="mt-6 flex justify-end gap-4">
+		<PageHeader title="Manufacturers Management" subtitle={totalManufacturers + ' Manufacturers'}>
+			<div class="flex w-full flex-col items-center gap-4 md:flex-row">
+				<div class="w-60 md:flex-[3] lg:flex-[4]">
+					<SearchBar bind:search placeholder="Search by name..." extraClasses="w-full" />
+				</div>
+				<div class="flex w-full items-center justify-end gap-2 md:w-auto">
 					<Button
-						onclick={cancelDeletionManufacturer}
-						variant="secondary"
+						onclick={() => (isSuppliers = true)}
+						variant={isSuppliers ? 'primary' : 'secondary'}
 						size="md"
-						extraStyles="w-full md:w-auto"
+						extraStyles="w-full md:w-auto">Suppliers</Button
 					>
-						{@html '<span class="hidden md:inline">Cancel</span>'}
-					</Button>
-					<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-						{@html '<span class="hidden md:inline">Update Manufacturer</span>'}
+					<Button
+						onclick={() => (isSuppliers = false)}
+						variant={!isSuppliers ? 'primary' : 'secondary'}
+						size="md"
+						extraStyles="w-full md:w-auto">Manufacturers</Button
+					>
+					<Button onclick={openDrawer} variant="primary" size="md" extraStyles="w-full md:w-auto">
+						<span class="hidden md:inline">Add Manufacturer</span>
 					</Button>
 				</div>
-			</form>
-		</Modal>
-	{/if}
+			</div>
+		</PageHeader>
 
-	<!-- DRAWER -->
+		<!-- TABLE -->
+		<Table
+			columns={['name', 'description']}
+			items={filteredManufacturers()}
+			onEdit={(item) => openEditManufacturer(item)}
+			onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
+		/>
+
+		<!-- MODAL -->
+		{#if isEditingManufacturer}
+			<Modal title="Edit Manufacturer" onClose={closeEditManufacturer}>
+				<form method="POST" action="?/updateManufacturer">
+					<input type="hidden" name="id" value={editIdManufacturer} />
+					<TextInput label="Name" name="name" value={editNameManufacturer} required />
+					{#if wrongNameManufacturer}
+						<p class="pt-2 text-sm text-red-500">
+							Name can not be the same as another manufacturer
+						</p>
+					{/if}
+					<TextArea label="Description" name="description" value={editDescriptionManufacturer} />
+					<div class="mt-6 flex justify-end gap-4">
+						<Button
+							onclick={cancelDeletionManufacturer}
+							variant="secondary"
+							size="md"
+							extraStyles="w-full md:w-auto"
+						>
+							{@html '<span class="hidden md:inline">Cancel</span>'}
+						</Button>
+						<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+							{@html '<span class="hidden md:inline">Update Manufacturer</span>'}
+						</Button>
+					</div>
+				</form>
+			</Modal>
+		{/if}
+
+		<!-- DRAWER -->
 		<Drawer title="Add New Manufacturer" onClose={closeDrawer} show={showDrawer}>
 			<form onsubmit={handleCreateManufacturer} class="flex flex-col gap-4">
 				<div>
 					<label class="font-semibold">Name</label>
-					<TextInput name="name" placeholder="Enter manufacturer name" extraStyles="w-full" required />
+					<TextInput
+						name="name"
+						placeholder="Enter manufacturer name"
+						extraStyles="w-full"
+						required
+					/>
 					{#if wrongNameManufacturer}
-						<p class="pt-2 text-sm text-red-500">Name can not be the same as another manufacturer</p>
+						<p class="pt-2 text-sm text-red-500">
+							Name can not be the same as another manufacturer
+						</p>
 					{/if}
 				</div>
 
@@ -476,11 +478,11 @@ import { fade } from 'svelte/transition';
 			</form>
 		</Drawer>
 
-	<ConfirmDialog
-		show={showConfirmManufacturer}
-		message={`Are you sure you want to delete manufacturer: ${manufacturerToDelete}?`}
-		onConfirm={confirmDeletionManufacturer}
-		onCancel={cancelDeletionManufacturer}
-	/>
+		<ConfirmDialog
+			show={showConfirmManufacturer}
+			message={`Are you sure you want to delete manufacturer: ${manufacturerToDelete}?`}
+			onConfirm={confirmDeletionManufacturer}
+			onCancel={cancelDeletionManufacturer}
+		/>
 	{/if}
 </section>

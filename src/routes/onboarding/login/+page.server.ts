@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import * as authService from '$lib/server/services/auth.service';
 import { ServiceError } from '$lib/utils/errors/ServiceError';
-import { storeError, getStoredError } from '$lib/stores/error.store'; 
+import { storeError, getStoredError } from '$lib/stores/error.store';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -24,20 +24,20 @@ export const actions: Actions = {
 
 		try {
 			const result = await authService.login(identifier, password, ip, userAgent);
-			
+
 			if (!result) {
-				return fail(400, { 
-					success: false, 
-					error: { 
-						message: 'Invalid credentials', 
-						field: 'identifier' 
-					} 
+				return fail(400, {
+					success: false,
+					error: {
+						message: 'Invalid credentials',
+						field: 'identifier'
+					}
 				});
 			}
 
 			const { session, token } = result;
 			const expires = new Date(session.expiresAt);
-			
+
 			// Set the auth cookie
 			event.cookies.set('auth-session', token, {
 				path: '/',
@@ -64,8 +64,8 @@ export const actions: Actions = {
 				field = error.field || '';
 			}
 
-			return fail(400, { 
-				success: false, 
+			return fail(400, {
+				success: false,
 				error: { message, field },
 				redirect: null
 			});

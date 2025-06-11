@@ -79,13 +79,19 @@
 <section
 	class="flex min-h-screen justify-center px-4 pt-0 pb-4 md:px-8 md:pb-8"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
-	in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}
-	>
+	in:fade={{ duration: 300 }}
+	out:fade={{ duration: 200 }}
+>
 	<div
 		class="w-full max-w-7xl space-y-12 rounded-2xl bg-white px-6 py-6 shadow-xl md:px-10 md:py-8"
 	>
 		<div class="flex items-center justify-between">
-			<button onclick={() => goto('/dashboard/users')} class="text-2xl text-indigo-600 hover:text-indigo-800"> ← </button>
+			<button
+				onclick={() => goto('/dashboard/users')}
+				class="text-2xl text-indigo-600 hover:text-indigo-800"
+			>
+				←
+			</button>
 			<div class="flex gap-4">
 				<button
 					onclick={toggleEdit}
@@ -109,11 +115,10 @@
 		<div class="flex flex-col gap-12 md:flex-row">
 			<div class="flex w-full justify-center md:w-1/3">
 				<div
-					class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md hidden md:block"
+					class="hidden overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 p-12 shadow-md md:block"
 				>
-				
-				<!-- Atribuir imagen de usuario -->
-				<!-- <a href="https://www.freepik.es/icono/usuario_7945130#fromView=search&page=1&position=8&uuid=6165784a-4191-45e9-a686-fe87b81b772e">Icono de adrianadam</a> -->
+					<!-- Atribuir imagen de usuario -->
+					<!-- <a href="https://www.freepik.es/icono/usuario_7945130#fromView=search&page=1&position=8&uuid=6165784a-4191-45e9-a686-fe87b81b772e">Icono de adrianadam</a> -->
 					<img
 						src="/icons/png/userIcon.png"
 						alt="User Avatar"
@@ -123,76 +128,103 @@
 			</div>
 
 			<div class="flex w-full flex-col gap-6 md:w-2/3">
-					{#if isEditing}
+				{#if isEditing}
 					<Modal title="Edit User" onClose={closeDrawer}>
-					<form
-						method="POST"
-						action="?/update"
-						class="space-y-6 rounded-xl bg-gray-50 p-6 shadow-md"
-					>
-						<input type="hidden" name="id" value={id} />
-						<TextInput
-							label="Username"
-							name="username"
-							placeholder="Enter username"
-							value={user.username}
-							required
-						/>
-						<TextInput
-							label="Email"
-							name="email"
-							type="email"
-							placeholder="Enter email"
-							value={user.email}
-							required
-						/>
-						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<Select
-								label="Role"
-								name="role"
-								options={roles}
-								value={user.roleId}
-								onValueChange={(val) => handleRoleChange(val)}
+						<form
+							method="POST"
+							action="?/update"
+							class="space-y-6 rounded-xl bg-gray-50 p-6 shadow-md"
+						>
+							<input type="hidden" name="id" value={id} />
+							<TextInput
+								label="Username"
+								name="username"
+								placeholder="Enter username"
+								value={user.username}
+								required
 							/>
-						</div>
+							<TextInput
+								label="Email"
+								name="email"
+								type="email"
+								placeholder="Enter email"
+								value={user.email}
+								required
+							/>
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<Select
+									label="Role"
+									name="role"
+									options={roles}
+									value={user.roleId}
+									onValueChange={(val) => handleRoleChange(val)}
+								/>
+							</div>
 
-						<div class="mt-6 flex justify-end gap-4">
-							<Button
-								onclick={closeDrawer}
-								variant="secondary"
-								size="md"
-								extraStyles="w-full md:w-auto"
-							>
-								{@html '<span class="hidden md:inline">Cancel</span>'}
-							</Button>
-							<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
-								{@html '<span class="hidden md:inline">Save</span>'}
-							</Button>
-						</div>
-					</form>
-				</Modal>
+							<div class="mt-6 flex justify-end gap-4">
+								<Button
+									onclick={closeDrawer}
+									variant="secondary"
+									size="md"
+									extraStyles="w-full md:w-auto"
+								>
+									{@html '<span class="hidden md:inline">Cancel</span>'}
+								</Button>
+								<Button type="submit" variant="primary" size="md" extraStyles="w-full md:w-auto">
+									{@html '<span class="hidden md:inline">Save</span>'}
+								</Button>
+							</div>
+						</form>
+					</Modal>
 				{/if}
 
 				<h2 class="text-4xl font-bold text-gray-800">{user.username}</h2>
-					<p class="text-2xl text-indigo-600">{user.email}</p>
+				<p class="text-2xl text-indigo-600">{user.email}</p>
 
-					<ShowText label="Role" value={roles.find(role => role.id === user.roleId)?.name || 'Role not found'} />
-					<ShowText label="Created At" value={new Date(user.createdAt).toLocaleDateString()} />
+				<ShowText
+					label="Role"
+					value={roles.find((role) => role.id === user.roleId)?.name || 'Role not found'}
+				/>
+				<ShowText label="Created At" value={new Date(user.createdAt).toLocaleDateString()} />
 			</div>
 		</div>
 
 		<Header title="User History" subtitle={user.username}>
 			<div class="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
-				<Select label="Select History Type" name="historyType" options={historyOptions} value={selectedOption} onValueChange={(val) => selectedOption = val as 'orders' | 'inventory'} />
+				<Select
+					label="Select History Type"
+					name="historyType"
+					options={historyOptions}
+					value={selectedOption}
+					onValueChange={(val) => (selectedOption = val as 'orders' | 'inventory')}
+				/>
 			</div>
 		</Header>
 
-      {#if selectedOption === 'orders'}
-        <Table columns={["orderNumber", "supplierName", "createdAt", "status"]} ifEdit={() => false} ifDelete={() => false} items={data.orders} onRowClick={(item) => goto(`/dashboard/orders/ordersList?id=${item.id}`)}/>
-      {:else if selectedOption === 'inventory'}
-        <Table columns={["id", "productName", "fromLocation", "toLocation", "previousQuantity", "newQuantity" ]} ifEdit={() => false} ifDelete={() => false} items={data.inventoryHistory} onRowClick={(item) => goto(`/dashboard/inventory?id=${item.inventoryId}`)}/>
-      {/if}
-      
+		{#if selectedOption === 'orders'}
+			<Table
+				columns={['orderNumber', 'supplierName', 'createdAt', 'status']}
+				ifEdit={() => false}
+				ifDelete={() => false}
+				items={data.orders}
+				onRowClick={(item) => goto(`/dashboard/orders/ordersList?id=${item.id}`)}
+			/>
+		{:else if selectedOption === 'inventory'}
+			<Table
+				columns={[
+					'id',
+					'productName',
+					'fromLocation',
+					'toLocation',
+					'previousQuantity',
+					'newQuantity'
+				]}
+				ifEdit={() => false}
+				ifDelete={() => false}
+				items={data.inventoryHistory}
+				onRowClick={(item) => goto(`/dashboard/inventory?id=${item.inventoryId}`)}
+			/>
+		{/if}
 	</div>
 </section>
 

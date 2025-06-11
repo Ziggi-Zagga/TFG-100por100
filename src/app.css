@@ -1,7 +1,7 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "@tailwindcss/forms";
 
 body {
-    background: linear-gradient(135deg, #22d3ee 0%, #6366f1 50%, #a21caf 100%);
-    font-family: 'Inter', sans-serif;
+	background: linear-gradient(135deg, #22d3ee 0%, #6366f1 50%, #a21caf 100%);
+	font-family: 'Inter', sans-serif;
 }

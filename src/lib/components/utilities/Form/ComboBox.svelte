@@ -15,8 +15,7 @@
 		filterInternally = true,
 		disabled = false,
 		displayField = 'name',
-		quickSearch = false,
-		
+		quickSearch = false
 	}: {
 		items: any[];
 		onSelect: (item: any) => void;
@@ -34,7 +33,6 @@
 		disabled?: boolean;
 		displayField?: string;
 		quickSearch?: boolean;
-
 	} = $props();
 
 	if (open === undefined) {
@@ -47,7 +45,7 @@
 				? items || []
 				: (items || []).filter((item) =>
 						(item.name || item.title || '').toLowerCase().includes(searchQuery.toLowerCase())
-				  )
+					)
 			: items || []
 	);
 
@@ -70,7 +68,7 @@
 
 <div class="relative flex flex-col gap-1.5">
 	{#if label}
-		<label class="text-sm font-medium tracking-wide text-brand-700" for={name}>
+		<label class="text-brand-700 text-sm font-medium tracking-wide" for={name}>
 			{label}
 			{#if required}
 				<span class="text-coral-500">*</span>
@@ -81,7 +79,7 @@
 		<input
 			type="text"
 			id={name}
-			name={name}
+			{name}
 			bind:value
 			oninput={(e) => {
 				if (onChange) onChange(e.currentTarget.value);
@@ -97,69 +95,74 @@
 					open = false;
 				}, 100);
 			}}
-			class="w-full rounded-xl border border-brand-300 bg-white/50 px-4 py-2.5 font-inter text-brand-700 transition-colors duration-300 placeholder:text-brand-700/50 hover:border-purple-600 focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+			class="border-brand-300 font-inter text-brand-700 placeholder:text-brand-700/50 w-full rounded-xl border bg-white/50 px-4 py-2.5 transition-colors duration-300 hover:border-purple-600 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
 			{placeholder}
 			{required}
 			{disabled}
 		/>
 
 		{#if loading}
-			<div class="absolute right-3 top-1/2 -translate-y-1/2">
-				<div class="h-5 w-5 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"></div>
+			<div class="absolute top-1/2 right-3 -translate-y-1/2">
+				<div
+					class="border-brand-500 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent"
+				></div>
 			</div>
 		{/if}
 
 		{#if open && (items?.length > 0 || searchQuery) && !loading}
-			<div class="absolute z-[101] mt-1 w-full overflow-hidden rounded-xl border border-brand-300 bg-white shadow-lg">
+			<div
+				class="border-brand-300 absolute z-[101] mt-1 w-full overflow-hidden rounded-xl border bg-white shadow-lg"
+			>
 				<ul class="max-h-60 overflow-auto py-1">
 					{#if searchQuery && !filterInternally}
 						<li>
 							<button
 								type="button"
-								class="flex w-full items-center px-4 py-2.5 text-brand-700 transition-colors duration-300 hover:bg-gray-100"
+								class="text-brand-700 flex w-full items-center px-4 py-2.5 transition-colors duration-300 hover:bg-gray-100"
 								onclick={() => {
 									onSelect(searchQuery);
 									open = false;
 								}}
 							>
-								<span class="ml-3 font-inter">Create "{searchQuery}"</span>
+								<span class="font-inter ml-3">Create "{searchQuery}"</span>
 							</button>
 						</li>
 						{#if items.length > 0}
 							<li>
-								<div class="mx-4 my-1 border-t border-brand-200"></div>
+								<div class="border-brand-200 mx-4 my-1 border-t"></div>
 							</li>
 						{/if}
 					{/if}
 
 					{#each filteredItems as item}
-						<li class="w-full flex">
-						<button 
-							type="button"
-							class="w-full text-left px-4 py-2.5 text-brand-700 hover:bg-gray-100 transition-colors duration-300 cursor-pointer flex items-center"
-							onclick={() => handleSelect(item)}
-						>
-							{#if item.images?.[0]}
-								<img
-									src={item.images[0].url}
-									alt={item.name}
-									class="h-8 w-8 rounded-lg object-cover"
-								/>
-							{/if}
-							{#if item.image}
-								<img src={item.image} alt={item.name} class="h-8 w-8 rounded-lg object-cover" />
-							{/if}
-							<span class="ml-3 font-inter">
-								{#if displayField && item[displayField]}
-									{@html item[displayField]}
-								{:else}
-									{item.name || item.title || item.label || item.value || item.id}
+						<li class="flex w-full">
+							<button
+								type="button"
+								class="text-brand-700 flex w-full cursor-pointer items-center px-4 py-2.5 text-left transition-colors duration-300 hover:bg-gray-100"
+								onclick={() => handleSelect(item)}
+							>
+								{#if item.images?.[0]}
+									<img
+										src={item.images[0].url}
+										alt={item.name}
+										class="h-8 w-8 rounded-lg object-cover"
+									/>
 								{/if}
-							</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
-</div>
+								{#if item.image}
+									<img src={item.image} alt={item.name} class="h-8 w-8 rounded-lg object-cover" />
+								{/if}
+								<span class="font-inter ml-3">
+									{#if displayField && item[displayField]}
+										{@html item[displayField]}
+									{:else}
+										{item.name || item.title || item.label || item.value || item.id}
+									{/if}
+								</span>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+	</div>
 </div>
