@@ -1,20 +1,13 @@
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
-import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { getOrdersByUser } from '$lib/server/services/orders.service';
 import { getInventoryHistoryByUserId } from '$lib/server/services/inventoryHistory.service';
+import { deletePermanently, getRoles, getUserById, updateUser } from '$lib/server/services/users.service';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { id } = params;
 
-	const user = await db.query.users.findFirst({
-		where: eq(users.id, id)
-	});
-	if (!user) throw fail(404, { message: 'User not found' });
-
-	const roles = await db.query.roles.findMany();
+	const user = await getUserById(id)
+	const roles = await getRoles()
 	const orders = await getOrdersByUser(id);
 	const inventoryHistory = await getInventoryHistoryByUserId(id);
 
@@ -27,31 +20,25 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request }) => {
+	update: async ({ request, params }) => {
 		const formData = await request.formData();
+		const { id } = params;
 
-		const id = formData.get('id')?.toString() ?? '';
-		const username = formData.get('username')?.toString() ?? '';
-		const email = formData.get('email')?.toString() ?? '';
-		const role = formData.get('role')?.toString() ?? '';
+		const data = {
+		 id : formData.get('id')?.toString() ?? '',
+		 username : formData.get('username')?.toString() ?? '',
+		 email : formData.get('email')?.toString() ?? '',
+		 roleId : formData.get('role')?.toString() ?? '',
+		}
 
-		await db
-			.update(users)
-			.set({
-				username,
-				email,
-				roleId: role
-			})
-			.where(eq(users.id, id));
-
-		return { success: true };
+		await updateUser(id, data)
 	},
 
 	delete: async ({ request }) => {
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString() ?? '';
 
-		await db.delete(users).where(eq(users.id, id));
+		await deletePermanently(id)
 
 		return { success: true };
 	}
