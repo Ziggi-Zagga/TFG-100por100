@@ -2,7 +2,6 @@ import { db } from '.';
 import { roles } from './schema';
 
 export async function initDatabase() {
-	// Inicializar roles si no existen
 	const existingRoles = await db.select().from(roles);
 	const roleIds = existingRoles.map((r) => r.id);
 

@@ -354,6 +354,7 @@
 			</div>
 		</div>
 	</PageHeader>
+	<section class="container p-4">
 	<Table
 		columns={ordersColumns}
 		columnTypes={ordersColumnTypes}
@@ -367,6 +368,7 @@
 		{sortDirection}
 		ifEdit={() => false}
 	/>
+	</section>
 	{#if showDrawer}
 		<CreateOrders {suppliers} {products} onClose={closeDrawer} onSubmit={handleSubmit} />
 	{/if}
@@ -389,4 +391,5 @@
 		}}
 	/>
 	<ToastList {toasts} on:removeToast={(e) => removeToast(e.detail.id)} />
+		
 </main>

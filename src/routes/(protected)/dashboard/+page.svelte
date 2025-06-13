@@ -1,30 +1,38 @@
 <script lang="ts">
 	import MetricCard from '$lib/components/dashboard/MetricCard.svelte';
 	import TopProductsTable from '$lib/components/dashboard/TopProductsTable.svelte';
-	import WelcomeHeader from '$lib/components/dashboard/WelcomeCard.svelte';
+	import PageHeader from '$lib/components/utilities/Header/Header.svelte';
 	import { fade } from 'svelte/transition';
+	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
+	import { formatDate } from '$lib/utils/dateFormat';
 
-	//DATOS
-	// TODOS LOS DATOS ESTAN HARDCODEADOS
-	// pero son facilmente sustituibles no worries
 	export let data;
-	const { userName, unreadAlerts, today, metrics, topProducts, financeByMonth } = data;
+	const { userName, metrics, financeByMonth, productsUnderMinStock } = data;
 
-	//Para medir la altura del grafico
+
 	const maxFinanceValue = Math.max(...financeByMonth.map((m) => Math.max(m.revenue, m.expenses)));
+
+	
+	const todayDate = formatDate(new Date(), 'd MMMM yyyy');
 </script>
 
 <main
-	class="space-y-6 p-6"
+	class="space-y-6 "
 	style="min-height: 100vh; background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
 	in:fade={{ duration: 300 }}
 	out:fade={{ duration: 200 }}
 >
-	<!-- Cabecera bienvenida -->
-	<WelcomeHeader {userName} {unreadAlerts} date={today} />
-
+<PageHeader title={`Welcome ${userName}!`}>
+	<div class="flex w-full flex-col items-center gap-4 md:flex-row py-1.5">
+		<div class="mt-4 md:mt-0 flex items-center gap-2 rounded-full bg-white px-6 py-2 text-sm font-medium shadow transition-transform duration-200 hover:scale-105">
+			<Icon icon="date" size={16} />
+			{todayDate}
+		</div>
+	</div>
+</PageHeader>
+<section class="container mx-auto p-4 ">
 	<!-- Métricas principales -->
-	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
 		{#each metrics as metric}
 			<MetricCard {...metric} />
 		{/each}
@@ -66,6 +74,7 @@
 		</div>
 
 		<!-- Tabla de productos más vendidos -->
-		<TopProductsTable products={topProducts} />
+		<TopProductsTable products={productsUnderMinStock} />
 	</div>
+	</section>
 </main>

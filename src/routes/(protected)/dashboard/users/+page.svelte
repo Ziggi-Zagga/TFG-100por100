@@ -39,6 +39,7 @@
 		</div>
 	</div>
 
+	<div class="p-4">"
 	<!-- TABLE -->
 	<Table
 		columns={['username', 'email', 'role', 'lastLogin']}
@@ -47,4 +48,5 @@
 		ifEdit={() => false}
 		ifDelete={() => false}
 	/>
+	</div>
 </section>

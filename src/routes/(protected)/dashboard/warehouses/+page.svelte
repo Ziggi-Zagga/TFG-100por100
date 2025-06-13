@@ -151,13 +151,13 @@
 		</div>
 	</PageHeader>
 
-	<div class="ml-2 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+	<div class="p-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each filteredWarehouse() as warehouseItem}
 			{@const warehouse = warehouseItem}
 			<div class="group relative">
 				<button
 					onclick={() => handleCardClick(warehouse.id)}
-					class="w-full overflow-hidden rounded-2xl bg-white p-6 text-left shadow-md transition-all hover:bg-gray-50 hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none active:scale-[0.99]"
+					class="w-full overflow-hidden rounded-2xl bg-white p-6 text-left shadow-md transition-all hover:bg-gray-50 hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none active:scale-[0.99] hover:border-2 hover:border-blue-200 border-2 border-transparent"
 					aria-label={`Warehouse ${warehouse.name}`}
 				>
 					<div class="flex flex-col items-center text-center">

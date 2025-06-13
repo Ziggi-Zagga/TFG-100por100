@@ -123,7 +123,8 @@
 			</div>
 		</div>
 	</PageHeader>
-
+	<div class="p-4">
+		
 	<Table
 		columns={['code', 'name', 'price', 'unit', 'material']}
 		items={productsCopy
@@ -142,7 +143,7 @@
 		onEdit={(item) => goToProductDetails(item, '?edit=true')}
 		onDelete={(item) => askDelete(item.id, item.name)}
 	/>
-
+		</div>
 	<Drawer title="Create New Product" onClose={closeDrawer} show={showDrawer}>
 		<form method="POST" action="?/create">
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

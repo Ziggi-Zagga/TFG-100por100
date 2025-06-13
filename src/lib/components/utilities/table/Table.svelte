@@ -24,7 +24,7 @@
 		items?: any[];
 		columnTypes?: {
 			[type: string]: {
-				type: 'input' | 'select' | 'textarea' | 'icon';
+				type: 'input' | 'select' | 'textarea' | 'icon' | 'text';
 				options?: any[];
 				min?: number;
 				max?: number;
@@ -60,7 +60,6 @@
 		onDelete(item);
 	}
 	function formatHeader(header: string): string {
-		// Convertir de camelCase o snake_case a palabras con espacios
 		const result = header
 			.replace(/([A-Z])/g, ' $1')
 			.replace(/_/g, ' ')
@@ -100,10 +99,10 @@
 	}
 </script>
 
-<div class="w-full max-w-screen rounded-2xl bg-white p-6 shadow-lg">
-	<div class="w-full max-w-screen overflow-x-auto">
+<div class="w-full max-w-screen rounded-2xl bg-white p-6 border border-gray-200">
+	<div class="w-full max-w-screen rounded-2xl overflow-x-auto">
 		<div class="w-full max-w-screen">
-			<table class="w-full max-w-screen text-sm text-gray-700">
+			<table class="w-full max-w-screen text-sm rounded-2xl shadow-sm text-gray-700">
 				<colgroup>
 					{#each columns as _}
 						<col class="w-auto max-w-[100px] min-w-[10px]" />
@@ -218,11 +217,17 @@
 													extraStyles={`${columnTypes[col].extraStyles} ${iconData.color}`}
 												/>
 											</div>
+										{:else if columnTypes[col].type === 'text'}
+											<div class="flex h-full w-full items-center justify-center">
+												<span class="truncate {columnTypes[col].extraStyles}">
+													{item[col]}
+												</span>
+											</div>
 										{/if}
 									{:else}
 										<div class="flex h-full w-full items-center justify-center">
 											<span class="truncate text-gray-700">
-												{isDateColumn(col) ? formatDateValue(item[col]) : item[col]}
+												{item[col]}
 											</span>
 										</div>
 									{/if}

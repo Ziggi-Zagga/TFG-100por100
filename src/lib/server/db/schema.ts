@@ -4,9 +4,6 @@ import {
 	integer,
 	boolean,
 	timestamp,
-	serial,
-	decimal,
-	primaryKey,
 	foreignKey
 } from 'drizzle-orm/pg-core';
 
