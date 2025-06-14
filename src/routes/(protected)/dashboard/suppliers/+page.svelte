@@ -393,12 +393,14 @@
 		</PageHeader>
 
 		<!-- TABLE -->
-		<Table
-			columns={['name', 'description']}
-			items={filteredManufacturers()}
-			onEdit={(item) => openEditManufacturer(item)}
-			onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
-		/>
+		<div class="p-4">
+			<Table
+				columns={['name', 'description']}
+				items={filteredManufacturers()}
+				onEdit={(item) => openEditManufacturer(item)}
+				onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
+			/>
+		</div>
 
 		<!-- MODAL -->
 		{#if isEditingManufacturer}
