@@ -38,6 +38,7 @@ export const getRoleById = async (id: string) => {
 export const insertUser = async ({
 	id,
 	username,
+	passwordHash,
 	email,
 	active = true,
 	createdAt,
@@ -47,6 +48,7 @@ export const insertUser = async ({
 	id: string;
 	username: string;
 	email: string;
+	passwordHash: string,
 	active?: boolean;
 	createdAt: number;
 	lastLogin?: number | null;
@@ -55,6 +57,7 @@ export const insertUser = async ({
 	await db.insert(users).values({
 		id,
 		username,
+		passwordHash,
 		email,
 		active,
 		createdAt: new Date(createdAt * 1000),

@@ -36,7 +36,7 @@
 	});
 
 	function toggleEdit() {
-		isEditing = !isEditing;
+		isEditing = true;
 	}
 
 	async function confirmDeletion() {
@@ -65,15 +65,10 @@
 		showConfirm = false;
 	}
 
-	function closeDrawer() {
+	function closeEdit() {
 		isEditing = false;
 	}
 
-	function handleRoleChange(e: Event) {
-		const target = e.target as HTMLSelectElement;
-		const selectedRole = target.value;
-		// Handle role change logic here
-	}
 </script>
 
 <section
@@ -129,7 +124,7 @@
 
 			<div class="flex w-full flex-col gap-6 md:w-2/3">
 				{#if isEditing}
-					<Modal title="Edit User" onClose={closeDrawer}>
+					<Modal title="Edit User" onClose={closeEdit}>
 						<form
 							method="POST"
 							action="?/update"
@@ -157,13 +152,12 @@
 									name="role"
 									options={roles}
 									value={user.roleId}
-									onValueChange={(val) => handleRoleChange(val)}
 								/>
 							</div>
 
 							<div class="mt-6 flex justify-end gap-4">
 								<Button
-									onclick={closeDrawer}
+									onclick={closeEdit}
 									variant="secondary"
 									size="md"
 									extraStyles="w-full md:w-auto"
