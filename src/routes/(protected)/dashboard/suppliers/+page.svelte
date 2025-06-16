@@ -252,13 +252,13 @@
 			</div>
 		</PageHeader>
 		<div class="p-4">
-		<!-- TABLE -->
-		<Table
-			columns={['name', 'email', 'contactPerson', 'website', 'phone']}
-			items={filteredSuppliers()}
-			onEdit={(item) => openEdit(item)}
-			onDelete={(item) => askDelete(item.id, item.name)}
-		/>
+			<!-- TABLE -->
+			<Table
+				columns={['name', 'email', 'contactPerson', 'website', 'phone']}
+				items={filteredSuppliers()}
+				onEdit={(item) => openEdit(item)}
+				onDelete={(item) => askDelete(item.id, item.name)}
+			/>
 		</div>
 		<!-- MODAL -->
 		{#if isEditing}

@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		: await getFullProductsList();
 
 	if (!products) throw fail(404, { message: 'Products not found' });
-	
+
 	const suppliers = await db.query.suppliers.findMany();
 	const manufacturers = await db.query.manufacturers.findMany();
 	const categories = await db.query.categories.findMany();

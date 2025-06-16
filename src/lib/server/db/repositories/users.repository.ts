@@ -48,7 +48,7 @@ export const insertUser = async ({
 	id: string;
 	username: string;
 	email: string;
-	passwordHash: string,
+	passwordHash: string;
 	active?: boolean;
 	createdAt: number;
 	lastLogin?: number | null;

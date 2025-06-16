@@ -1,13 +1,18 @@
 import type { PageServerLoad, Actions } from './$types';
 import { getOrdersByUser } from '$lib/server/services/orders.service';
 import { getInventoryHistoryByUserId } from '$lib/server/services/inventoryHistory.service';
-import { deletePermanently, getRoles, getUserById, updateUser } from '$lib/server/services/users.service';
+import {
+	deletePermanently,
+	getRoles,
+	getUserById,
+	updateUser
+} from '$lib/server/services/users.service';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { id } = params;
 
-	const user = await getUserById(id)
-	const roles = await getRoles()
+	const user = await getUserById(id);
+	const roles = await getRoles();
 	const orders = await getOrdersByUser(id);
 	const inventoryHistory = await getInventoryHistoryByUserId(id);
 
@@ -25,20 +30,20 @@ export const actions: Actions = {
 		const { id } = params;
 
 		const data = {
-		 id : formData.get('id')?.toString() ?? '',
-		 username : formData.get('username')?.toString() ?? '',
-		 email : formData.get('email')?.toString() ?? '',
-		 roleId : formData.get('role')?.toString() ?? '',
-		}
+			id: formData.get('id')?.toString() ?? '',
+			username: formData.get('username')?.toString() ?? '',
+			email: formData.get('email')?.toString() ?? '',
+			roleId: formData.get('role')?.toString() ?? ''
+		};
 
-		await updateUser(id, data)
+		await updateUser(id, data);
 	},
 
 	delete: async ({ request }) => {
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString() ?? '';
 
-		await deletePermanently(id)
+		await deletePermanently(id);
 
 		return { success: true };
 	}

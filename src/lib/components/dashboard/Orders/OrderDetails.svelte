@@ -218,17 +218,15 @@
 								</div>
 							</div>
 						</div>
-						{:else}
-							<div class="py-4 text-center text-sm text-gray-500">
-								No products in this order
-							</div>
-						{/if}
-					</div>
+					{:else}
+						<div class="py-4 text-center text-sm text-gray-500">No products in this order</div>
+					{/if}
 				</div>
 			</div>
-		{/if}
+		</div>
+	{/if}
 
-		<div class="mt-6 flex justify-end space-x-3">
+	<div class="mt-6 flex justify-end space-x-3">
 		<Button variant="secondary" onclick={onClose} size="md">Cerrar</Button>
 	</div>
 </Modal>

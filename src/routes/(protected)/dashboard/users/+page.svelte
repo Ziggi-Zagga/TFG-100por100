@@ -33,20 +33,19 @@
 	<!-- HEADER & SEARCHBAR -->
 	<Header title="Users" subtitle={totalUsers().toString() + ' users'} />
 
-	<div class="mb-1 flex flex-col items-center gap-4 md:flex-row px-4">
+	<div class="mb-1 flex flex-col items-center gap-4 px-4 md:flex-row">
 		<div class="w-full md:flex-1">
 			<SearchBar bind:search placeholder="Search by name, role..." />
 		</div>
 	</div>
 
 	<div class="p-4">
-
-	<Table
-		columns={['username', 'email', 'role', 'lastLogin']}
-		items={filteredUsers()}
-		onRowClick={(item) => goToDetails(item)}
-		ifEdit={() => false}
-		ifDelete={() => false}
-	/>
+		<Table
+			columns={['username', 'email', 'role', 'lastLogin']}
+			items={filteredUsers()}
+			onRowClick={(item) => goToDetails(item)}
+			ifEdit={() => false}
+			ifDelete={() => false}
+		/>
 	</div>
 </section>

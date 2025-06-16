@@ -5,12 +5,9 @@ export const getAllManufacturers = async () => {
 	try {
 		return await repo.getAllManufacturers();
 	} catch (error) {
-		throw new ServiceError(
-			'Failed to fetch manufacturers',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error } }
-		);
+		throw new ServiceError('Failed to fetch manufacturers', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error }
+		});
 	}
 };
 
@@ -30,12 +27,9 @@ export const getManufacturerById = async (id: string) => {
 		return manufacturer;
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to fetch manufacturer',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, manufacturerId: id } }
-		);
+		throw new ServiceError('Failed to fetch manufacturer', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, manufacturerId: id }
+		});
 	}
 };
 
@@ -59,12 +53,9 @@ export const createManufacturer = async ({
 		});
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to create manufacturer',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, name } }
-		);
+		throw new ServiceError('Failed to create manufacturer', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, name }
+		});
 	}
 };
 
@@ -96,12 +87,9 @@ export const updateManufacturer = async (
 		});
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to update manufacturer',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, manufacturerId: id } }
-		);
+		throw new ServiceError('Failed to update manufacturer', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, manufacturerId: id }
+		});
 	}
 };
 
@@ -121,11 +109,8 @@ export const deleteManufacturer = async (id: string) => {
 		return await repo.deleteManufacturer(id);
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to delete manufacturer',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, manufacturerId: id } }
-		);
+		throw new ServiceError('Failed to delete manufacturer', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, manufacturerId: id }
+		});
 	}
 };

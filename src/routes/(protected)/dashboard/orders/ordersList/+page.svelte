@@ -96,7 +96,7 @@
 				{ id: 'cancelled', name: 'Cancelled' }
 			],
 			extraStyles: 'w-full'
-		},		
+		}
 	};
 
 	function openDrawer() {
@@ -337,19 +337,19 @@
 		</div>
 	</PageHeader>
 	<section class="container p-4">
-	<Table
-		columns={ordersColumns}
-		columnTypes={ordersColumnTypes}
-		items={filteredAndSortedOrders()}
-		onRowClick={(item: any) => handleViewOrder(item)}
-		onDelete={confirmDelete}
-		onCellChange={handleStatusChange}
-		onSort={handleSort}
-		sortable={true}
-		{sortColumn}
-		{sortDirection}
-		ifEdit={() => false}
-	/>
+		<Table
+			columns={ordersColumns}
+			columnTypes={ordersColumnTypes}
+			items={filteredAndSortedOrders()}
+			onRowClick={(item: any) => handleViewOrder(item)}
+			onDelete={confirmDelete}
+			onCellChange={handleStatusChange}
+			onSort={handleSort}
+			sortable={true}
+			{sortColumn}
+			{sortDirection}
+			ifEdit={() => false}
+		/>
 	</section>
 	{#if showDrawer}
 		<CreateOrders {suppliers} {products} onClose={closeDrawer} onSubmit={handleSubmit} />
@@ -372,5 +372,4 @@
 		}}
 	/>
 	<ToastList {toasts} on:removeToast={(e) => removeToast(e.detail.id)} />
-		
 </main>

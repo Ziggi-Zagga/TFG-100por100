@@ -7,7 +7,7 @@
 ## Quick Start
 
 1. download PostgreSQL from:
-   
+
 https://www.postgresql.org/download/
 
 2. create a Database :
@@ -23,6 +23,7 @@ CREATE DATABASE kgbBooking;
 CREATE USER kgb_user WITH PASSWORD 'your_secure_password';
 GRANT ALL PRIVILEGES ON DATABASE kgbBooking TO kgb_user;
 ```
+
 3. Install dependencies:
 
 ```bash
@@ -34,6 +35,7 @@ pnpm install
 ```bash
 cp .env.example .env
 ```
+
 5. Edit your .env file:
 
 ```bash
@@ -91,7 +93,7 @@ src/
 - Uses PostgreSQl with Drizzle ORM
 - Schema defined in `src/lib/server/db/schema.ts`
 - Migrations handled automatically with `drizzle-kit`
-- create a local postgress database 
+- create a local postgress database
 
 ## Available Scripts
 

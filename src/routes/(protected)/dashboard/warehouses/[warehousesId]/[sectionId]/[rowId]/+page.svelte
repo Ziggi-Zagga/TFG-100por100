@@ -162,14 +162,14 @@
 			</div>
 
 			{#if filteredGaps.length > 0}
-			<div class="p-4">
-				<Table
-					columns={['name', 'capacity', 'description']}
-					items={filteredGaps}
-					onRowClick={(item) => goToGap(item.id)}
-					onEdit={(item) => handleEdit(item)}
-					onDelete={(item) => promptDelete(item)}
-				/>
+				<div class="p-4">
+					<Table
+						columns={['name', 'capacity', 'description']}
+						items={filteredGaps}
+						onRowClick={(item) => goToGap(item.id)}
+						onEdit={(item) => handleEdit(item)}
+						onDelete={(item) => promptDelete(item)}
+					/>
 				</div>
 			{:else}
 				<div class="py-12 text-center">

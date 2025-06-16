@@ -1,11 +1,4 @@
-import {
-	pgTable,
-	text,
-	integer,
-	boolean,
-	timestamp,
-	foreignKey
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, foreignKey } from 'drizzle-orm/pg-core';
 
 export const roles = pgTable('roles', {
 	id: text('id').primaryKey(),

@@ -99,10 +99,10 @@
 	}
 </script>
 
-<div class="w-full max-w-screen rounded-2xl bg-white p-6 border border-gray-200">
-	<div class="w-full max-w-screen rounded-2xl overflow-x-auto">
+<div class="w-full max-w-screen rounded-2xl border border-gray-200 bg-white p-6">
+	<div class="w-full max-w-screen overflow-x-auto rounded-2xl">
 		<div class="w-full max-w-screen">
-			<table class="w-full max-w-screen text-sm rounded-2xl shadow-sm text-gray-700">
+			<table class="w-full max-w-screen rounded-2xl text-sm text-gray-700 shadow-sm">
 				<colgroup>
 					{#each columns as _}
 						<col class="w-auto max-w-[100px] min-w-[10px]" />

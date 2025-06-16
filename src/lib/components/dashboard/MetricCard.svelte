@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from "../utilities/Icons/Icon.svelte";
-	import { formatCurrency } from "../helpers/currencies";
+	import Icon from '../utilities/Icons/Icon.svelte';
+	import { formatCurrency } from '../helpers/currencies';
 
 	export let title: string;
 	export let value: number | string;
@@ -10,9 +10,9 @@
 
 	const formatValue = (val: number | string): string => {
 		if (typeof val === 'string') return val;
-		
+
 		if (title.toLowerCase().includes('value')) {
-			return formatCurrency(val, 0); 
+			return formatCurrency(val, 0);
 		}
 
 		return val.toLocaleString('es-ES');

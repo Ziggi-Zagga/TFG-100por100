@@ -75,7 +75,6 @@ export const createOrderWithItems = async (orderData: {
 		throw new Error(error);
 	}
 
-
 	for (const [index, item] of orderData.items.entries()) {
 		const product = await db.query.products.findFirst({
 			where: (products, { eq }) => eq(products.id, item.productId)
@@ -92,7 +91,6 @@ export const createOrderWithItems = async (orderData: {
 		}
 	}
 
-	
 	const lastOrderNumber = await orderRepo.getLastOrderNumber();
 	const nextOrderNumber = lastOrderNumber ? Number(lastOrderNumber) + 1 : 1;
 	const orderNumber = `ORD-${nextOrderNumber.toString().padStart(6, '0')}`;
@@ -127,7 +125,6 @@ export const createOrderWithItems = async (orderData: {
 		return orderItem;
 	});
 
-
 	try {
 		await db.transaction(async (tx: any) => {
 			await tx.insert(orders).values(orderToInsert);
@@ -135,7 +132,6 @@ export const createOrderWithItems = async (orderData: {
 				await tx.insert(orderItems).values(itemsToInsert);
 			}
 		});
-
 	} catch (error: unknown) {
 		if (error instanceof Error) {
 			console.error('Error details:', {
@@ -211,7 +207,6 @@ export const updateOrderWithItems = async (
 	if (updates.notes !== undefined) orderUpdates.notes = updates.notes;
 
 	await orderRepo.updateOrder(orderId, orderUpdates);
-
 
 	if (updates.items && updates.items.length > 0) {
 		await orderRepo.deleteOrderItems(orderId);

@@ -6,12 +6,9 @@ export const getUsers = async () => {
 	try {
 		return await repo.getAllUsers();
 	} catch (error) {
-		throw new ServiceError(
-			'Failed to fetch users',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error } }
-		);
+		throw new ServiceError('Failed to fetch users', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error }
+		});
 	}
 };
 
@@ -27,12 +24,9 @@ export const getUserById = async (id: string) => {
 		return user[0];
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to fetch user',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, userId: id } }
-		);
+		throw new ServiceError('Failed to fetch user', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, userId: id }
+		});
 	}
 };
 
@@ -62,7 +56,9 @@ export const createUser = async ({
 			throw new ServiceError('Email is required', ERROR_TYPES.VALIDATION, 400, { field: 'email' });
 		}
 		if (!roleId) {
-			throw new ServiceError('Role ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'roleId' });
+			throw new ServiceError('Role ID is required', ERROR_TYPES.VALIDATION, 400, {
+				field: 'roleId'
+			});
 		}
 
 		const id = crypto.randomUUID();
@@ -86,12 +82,9 @@ export const createUser = async ({
 		};
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to create user',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, username, email } }
-		);
+		throw new ServiceError('Failed to create user', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, username, email }
+		});
 	}
 };
 
@@ -114,12 +107,9 @@ export const updateUser = async (
 		await repo.updateUser(id, data);
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to update user',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, userId: id, updateData: data } }
-		);
+		throw new ServiceError('Failed to update user', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, userId: id, updateData: data }
+		});
 	}
 };
 
@@ -132,12 +122,9 @@ export const deletePermanently = async (id: string) => {
 		await repo.deleteUser(id);
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to delete user',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, userId: id } }
-		);
+		throw new ServiceError('Failed to delete user', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, userId: id }
+		});
 	}
 };
 
@@ -145,12 +132,9 @@ export const getRoles = async () => {
 	try {
 		return await repo.getAllRoles();
 	} catch (error) {
-		throw new ServiceError(
-			'Failed to fetch roles',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error } }
-		);
+		throw new ServiceError('Failed to fetch roles', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error }
+		});
 	}
 };
 
@@ -167,12 +151,9 @@ export const getRoleById = async (id: string) => {
 		return role[0];
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to fetch role',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, roleId: id } }
-		);
+		throw new ServiceError('Failed to fetch role', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, roleId: id }
+		});
 	}
 };
 
@@ -187,7 +168,9 @@ export const createRole = async ({
 }) => {
 	try {
 		if (!name) {
-			throw new ServiceError('Role name is required', ERROR_TYPES.VALIDATION, 400, { field: 'name' });
+			throw new ServiceError('Role name is required', ERROR_TYPES.VALIDATION, 400, {
+				field: 'name'
+			});
 		}
 
 		const id = crypto.randomUUID();
@@ -207,12 +190,9 @@ export const createRole = async ({
 		};
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to create role',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, roleName: name } }
-		);
+		throw new ServiceError('Failed to create role', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, roleName: name }
+		});
 	}
 };
 
@@ -232,12 +212,9 @@ export const updateRole = async (
 		await repo.updateRole(id, data);
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to update role',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, roleId: id, updateData: data } }
-		);
+		throw new ServiceError('Failed to update role', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, roleId: id, updateData: data }
+		});
 	}
 };
 
@@ -250,11 +227,8 @@ export const deleteRole = async (id: string) => {
 		await repo.deleteRole(id);
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to delete role',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, roleId: id } }
-		);
+		throw new ServiceError('Failed to delete role', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, roleId: id }
+		});
 	}
 };

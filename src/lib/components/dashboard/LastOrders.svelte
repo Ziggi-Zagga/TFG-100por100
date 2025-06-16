@@ -63,11 +63,7 @@
 					/></svg
 				>
 			</button>
-			<button
-				onclick={scrollRight}
-				class="rounded p-1 hover:bg-gray-100"
-				aria-label="Scroll right"
-			>
+			<button onclick={scrollRight} class="rounded p-1 hover:bg-gray-100" aria-label="Scroll right">
 				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 					><path
 						d="M9 6l6 6-6 6"

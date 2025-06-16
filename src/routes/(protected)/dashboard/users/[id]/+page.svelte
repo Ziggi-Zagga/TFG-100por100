@@ -68,7 +68,6 @@
 	function closeEdit() {
 		isEditing = false;
 	}
-
 </script>
 
 <section
@@ -147,12 +146,7 @@
 								required
 							/>
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<Select
-									label="Role"
-									name="role"
-									options={roles}
-									value={user.roleId}
-								/>
+								<Select label="Role" name="role" options={roles} value={user.roleId} />
 							</div>
 
 							<div class="mt-6 flex justify-end gap-4">

@@ -171,7 +171,10 @@ interface InventoryOperationResult {
 	error?: string;
 }
 
-export const updateInventoryQuantity = async (inventoryId: string, quantityChange: number): Promise<InventoryOperationResult> => {
+export const updateInventoryQuantity = async (
+	inventoryId: string,
+	quantityChange: number
+): Promise<InventoryOperationResult> => {
 	try {
 		const inventoryItem = await repoGetInventoryById(inventoryId);
 		if (!inventoryItem) {
@@ -183,7 +186,7 @@ export const updateInventoryQuantity = async (inventoryId: string, quantityChang
 
 		const currentQuantity = inventoryItem.quantity || 0;
 		const newQuantity = currentQuantity + quantityChange;
-		
+
 		if (newQuantity < 0) {
 			return {
 				success: false,

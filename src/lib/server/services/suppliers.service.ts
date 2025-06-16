@@ -5,19 +5,18 @@ export const getAllSuppliers = async () => {
 	try {
 		return await repo.getAllSuppliers();
 	} catch (error) {
-		throw new ServiceError(
-			'Failed to fetch suppliers',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error } }
-		);
+		throw new ServiceError('Failed to fetch suppliers', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error }
+		});
 	}
 };
 
 export const getSupplierById = async (id: string) => {
 	try {
 		if (!id) {
-			throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+			throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, {
+				field: 'id'
+			});
 		}
 
 		const supplier = await repo.getSuppliersById(id);
@@ -28,12 +27,9 @@ export const getSupplierById = async (id: string) => {
 		return supplier;
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to fetch supplier',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, supplierId: id } }
-		);
+		throw new ServiceError('Failed to fetch supplier', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, supplierId: id }
+		});
 	}
 };
 
@@ -69,12 +65,9 @@ export const createSupplier = async ({
 		});
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to create supplier',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, name, email } }
-		);
+		throw new ServiceError('Failed to create supplier', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, name, email }
+		});
 	}
 };
 
@@ -98,7 +91,9 @@ export const updateSupplier = async (
 ) => {
 	try {
 		if (!id) {
-			throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+			throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, {
+				field: 'id'
+			});
 		}
 
 		const supplier = await repo.getSuppliersById(id);
@@ -116,19 +111,18 @@ export const updateSupplier = async (
 		});
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to update supplier',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, supplierId: id } }
-		);
+		throw new ServiceError('Failed to update supplier', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, supplierId: id }
+		});
 	}
 };
 
 export const deleteSupplier = async (id: string) => {
 	try {
 		if (!id) {
-			throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'id' });
+			throw new ServiceError('Supplier ID is required', ERROR_TYPES.VALIDATION, 400, {
+				field: 'id'
+			});
 		}
 
 		const supplier = await repo.getSuppliersById(id);
@@ -139,11 +133,8 @@ export const deleteSupplier = async (id: string) => {
 		return await repo.deleteSupplier(id);
 	} catch (error) {
 		if (error instanceof ServiceError) throw error;
-		throw new ServiceError(
-			'Failed to delete supplier',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error as Error, supplierId: id } }
-		);
+		throw new ServiceError('Failed to delete supplier', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error as Error, supplierId: id }
+		});
 	}
 };

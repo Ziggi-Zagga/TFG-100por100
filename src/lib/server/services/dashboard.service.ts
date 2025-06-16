@@ -26,21 +26,26 @@ export const getDashboardStats = async () => {
 		const { inventoryItems } = await getInventoryData();
 
 		const totalStock = inventoryItems.reduce((total, item) => total + (item.quantity || 0), 0);
-		const valueOfStock = inventoryItems.reduce((total, item) => total + (item.price || 0) * (item.quantity || 0), 0);
-		const ProductsUnderStock = inventoryItems.filter(item => item.quantity < (item.minQuantity ?? 0));
+		const valueOfStock = inventoryItems.reduce(
+			(total, item) => total + (item.price || 0) * (item.quantity || 0),
+			0
+		);
+		const ProductsUnderStock = inventoryItems.filter(
+			(item) => item.quantity < (item.minQuantity ?? 0)
+		);
 
-		
 		const allSuppliers = await getAllSuppliers();
 
-		
-		const supplierOrderCounts = orders.reduce((acc, order) => {
-			if (order.supplierId) {
-				acc[order.supplierId] = (acc[order.supplierId] || 0) + 1;
-			}
-			return acc;
-		}, {} as Record<string, number>);
+		const supplierOrderCounts = orders.reduce(
+			(acc, order) => {
+				if (order.supplierId) {
+					acc[order.supplierId] = (acc[order.supplierId] || 0) + 1;
+				}
+				return acc;
+			},
+			{} as Record<string, number>
+		);
 
-	
 		let topSupplier = null;
 		let maxOrders = 0;
 
@@ -61,32 +66,29 @@ export const getDashboardStats = async () => {
 			valueOfStock,
 			ProductsUnderStock,
 			suppliers: allSuppliers,
-			topSupplier: topSupplier ? {
-				id: topSupplier.id,
-				name: topSupplier.name,
-				orderCount: maxOrders
-			} : null
+			topSupplier: topSupplier
+				? {
+						id: topSupplier.id,
+						name: topSupplier.name,
+						orderCount: maxOrders
+					}
+				: null
 		};
 	} catch (error) {
-		throw new ServiceError(
-			'Dashboard statistics could not be loaded',
-			ERROR_TYPES.DATABASE,
-			500,
-			{ details: { originalError: error instanceof Error ? error.message : error } }
-		);
+		throw new ServiceError('Dashboard statistics could not be loaded', ERROR_TYPES.DATABASE, 500, {
+			details: { originalError: error instanceof Error ? error.message : error }
+		});
 	}
 };
 
-
-
 export const getProductsFormated = async (): Promise<FormattedProduct[]> => {
-  const { inventoryItems } = await getInventoryData();
-  
-  return inventoryItems.map(item => ({
-    productName: item.name || 'Sin nombre',
-    inventoryId: item.id,
-    productId: item.productId,
-    location: item.location || 'Sin ubicación',
-    quantity: item.quantity || 0
-  }));
+	const { inventoryItems } = await getInventoryData();
+
+	return inventoryItems.map((item) => ({
+		productName: item.name || 'Sin nombre',
+		inventoryId: item.id,
+		productId: item.productId,
+		location: item.location || 'Sin ubicación',
+		quantity: item.quantity || 0
+	}));
 };

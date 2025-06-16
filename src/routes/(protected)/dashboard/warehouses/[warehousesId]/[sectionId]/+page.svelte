@@ -153,14 +153,14 @@
 			</div>
 
 			{#if filteredRows.length > 0}
-			<div class="p-4">
-				<Table
-					columns={['name', 'location', 'description']}
-					items={filteredRows}
-					onRowClick={(item) => goToRow(item.id)}
-					onEdit={(item) => handleEdit(item)}
-					onDelete={(item) => promptDelete(item)}
-				/>
+				<div class="p-4">
+					<Table
+						columns={['name', 'location', 'description']}
+						items={filteredRows}
+						onRowClick={(item) => goToRow(item.id)}
+						onEdit={(item) => handleEdit(item)}
+						onDelete={(item) => promptDelete(item)}
+					/>
 				</div>
 			{:else}
 				<div class="py-12 text-center">

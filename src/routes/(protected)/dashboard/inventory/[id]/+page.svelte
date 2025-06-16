@@ -158,10 +158,16 @@
 	<div class="flex w-full max-w-screen-xl flex-col gap-6 px-4 py-6 md:flex-row">
 		<div class="w-full space-y-6 rounded-2xl bg-white p-6 shadow-lg md:w-1/2">
 			<Header title={product?.name ?? ''} subtitle="">
-				<button onclick={toggleEdit} class="text-2xl transition hover:scale-110 hover:text-blue-600">
+				<button
+					onclick={toggleEdit}
+					class="text-2xl transition hover:scale-110 hover:text-blue-600"
+				>
 					<Icon icon="edit" size={30} />
 				</button>
-				<button onclick={handleDelete} class="text-2xl transition hover:scale-110 hover:text-red-600">
+				<button
+					onclick={handleDelete}
+					class="text-2xl transition hover:scale-110 hover:text-red-600"
+				>
 					<Icon icon="delete" size={30} />
 				</button>
 			</Header>

@@ -198,15 +198,15 @@
 		</div>
 	</PageHeader>
 
-	<div class="p-4">	
-	<Table
-		columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
-		items={filteredInventory()}
-		onRowClick={(item) => goToInventoryDeatils(item, '')}
-		onEdit={(item) => goToInventoryDeatils(item, '?edit=true')}
-		onDelete={(item) => askDelete(item)}
-	/>
-		</div>
+	<div class="p-4">
+		<Table
+			columns={['code', 'name', 'category', 'quantity', 'supplier', 'location']}
+			items={filteredInventory()}
+			onRowClick={(item) => goToInventoryDeatils(item, '')}
+			onEdit={(item) => goToInventoryDeatils(item, '?edit=true')}
+			onDelete={(item) => askDelete(item)}
+		/>
+	</div>
 	<ProductDrawer title="Add Product to Inventory" onClose={closeDrawer} show={showDrawer}>
 		<form method="POST" action="?/create">
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

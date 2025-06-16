@@ -146,8 +146,7 @@ export async function findSessionByToken(sessionToken: string) {
 				if (await verify(session.sessionHash, sessionToken)) {
 					return session;
 				}
-			}
-			else if (session.sessionHash === sessionToken) {
+			} else if (session.sessionHash === sessionToken) {
 				const hashedToken = await hash(sessionToken);
 				await db
 					.update(userSessions)

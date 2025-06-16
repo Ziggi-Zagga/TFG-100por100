@@ -116,26 +116,25 @@
 		</div>
 	</PageHeader>
 	<div class="p-4">
-		
-	<Table
-		columns={['code', 'name', 'price', 'unit', 'material']}
-		items={productsCopy
-			.filter((p) => {
-				const searchTerm = search.toLowerCase();
-				return (
-					p.name.toLowerCase().includes(searchTerm) ||
-					(p.code ?? '').toLowerCase().includes(searchTerm)
-				);
-			})
-			.map((p) => ({
-				...p,
-				price: formatCurrency(p.price || 0)
-			}))}
-		onRowClick={(item) => goToProductDetails(item, '')}
-		onEdit={(item) => goToProductDetails(item, '?edit=true')}
-		onDelete={(item) => askDelete(item.id, item.name)}
-	/>
-		</div>
+		<Table
+			columns={['code', 'name', 'price', 'unit', 'material']}
+			items={productsCopy
+				.filter((p) => {
+					const searchTerm = search.toLowerCase();
+					return (
+						p.name.toLowerCase().includes(searchTerm) ||
+						(p.code ?? '').toLowerCase().includes(searchTerm)
+					);
+				})
+				.map((p) => ({
+					...p,
+					price: formatCurrency(p.price || 0)
+				}))}
+			onRowClick={(item) => goToProductDetails(item, '')}
+			onEdit={(item) => goToProductDetails(item, '?edit=true')}
+			onDelete={(item) => askDelete(item.id, item.name)}
+		/>
+	</div>
 	<Drawer title="Create New Product" onClose={closeDrawer} show={showDrawer}>
 		<form method="POST" action="?/create">
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
