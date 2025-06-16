@@ -251,7 +251,7 @@
 				</div>
 			</div>
 		</PageHeader>
-
+		<div class="p-4">
 		<!-- TABLE -->
 		<Table
 			columns={['name', 'email', 'contactPerson', 'website', 'phone']}
@@ -259,7 +259,7 @@
 			onEdit={(item) => openEdit(item)}
 			onDelete={(item) => askDelete(item.id, item.name)}
 		/>
-
+		</div>
 		<!-- MODAL -->
 		{#if isEditing}
 			<Modal title="➕ Edit Supplier" onClose={closeEdit}>
@@ -393,12 +393,14 @@
 		</PageHeader>
 
 		<!-- TABLE -->
-		<Table
-			columns={['name', 'description']}
-			items={filteredManufacturers()}
-			onEdit={(item) => openEditManufacturer(item)}
-			onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
-		/>
+		<div class="p-4">
+			<Table
+				columns={['name', 'description']}
+				items={filteredManufacturers()}
+				onEdit={(item) => openEditManufacturer(item)}
+				onDelete={(item) => askDeleteManufacturer(item.id, item.name)}
+			/>
+		</div>
 
 		<!-- MODAL -->
 		{#if isEditingManufacturer}

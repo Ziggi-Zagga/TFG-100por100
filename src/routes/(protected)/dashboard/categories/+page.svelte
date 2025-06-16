@@ -100,14 +100,14 @@
 			</div>
 		</div>
 	</PageHeader>
-
+<div class="p-4">
 	<Table
 		columns={['name', 'description']}
 		items={filteredCategories()}
 		onDelete={(item) => askDelete(item.id, item.name)}
 		onEdit={(item) => openEdit(item)}
 	/>
-
+</div>
 	<Drawer title="Edit Category" onClose={closeEdit} show={isEditing}>
 		<form method="POST" action="?/update">
 			<input type="hidden" name="id" value={editId} />

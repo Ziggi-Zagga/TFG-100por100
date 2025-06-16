@@ -2,55 +2,67 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getDashboardStats } from '$lib/server/services/dashboard.service';
 
+
+
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		throw redirect(302, '/onboarding/login');
 	}
-
 	const userName = locals.user.username;
-
-	const unreadAlerts = 3;
-	const today = new Date().toLocaleDateString('en-GB');
-
-	// Obtener estadísticas del dashboard incluyendo pedidos pendientes
+	
 	const dashboardStats = await getDashboardStats();
+	
 
 	const metrics = [
 		{
-			title: 'Total Incidents',
-			value: 1204,
-			change: '5.2%',
+			title: 'Top Supplier',
+			value: dashboardStats.topSupplier ? 
+				`${dashboardStats.topSupplier.name}` : 
+				'No supplier data',
+			icon: 'truck',
 			color: 'bg-blue-200',
-			route: 'dashboard/incidents'
+			route: '/dashboard/suppliers'
 		},
 		{
-			title: 'Resolved Incidents',
-			value: 984,
-			change: '4.7%',
+			title: 'Total Value of Stock',
+			value: dashboardStats.valueOfStock,
 			color: 'bg-indigo-200',
-			route: 'dashboard/incidents/resolved'
+			route: 'dashboard/products'
 		},
 		{
 			title: 'Products in Stock',
-			value: 3210,
-			change: '1.1%',
+			value: dashboardStats.totalStock,
 			color: 'bg-violet-200',
 			route: 'dashboard/inventory'
 		},
 		{
 			title: 'Pending Orders',
 			value: dashboardStats.pendingOrdersCount,
-			change: '',
 			color: 'bg-purple-200',
-			route: 'dashboard/orders'
+			route: 'dashboard/orders/ordersList'
 		}
 	];
 
-	const topProducts = [
-		{ name: 'Product A', sku: 'A123', sold: 1200, stock: 30 },
-		{ name: 'Product B', sku: 'B456', sold: 950, stock: 12 },
-		{ name: 'Product C', sku: 'C789', sold: 860, stock: 0 }
-	];
+	const productsUnderMinStock = dashboardStats.ProductsUnderStock
+		.filter(item => (item.quantity || 0) < (item.reorderQuantity || 0))
+		.map(item => ({
+			name: item.name,
+			sku: item.code,
+			currentStock: item.quantity || 0,
+			minStock: item.minQuantity || 0,
+			reorderQuantity: item.reorderQuantity || 0,
+			warehouse: item.location || 'N/A'
+		}))
+		.sort((a, b) => (a.currentStock || 0) - (b.currentStock || 0));
+
+	const topProducts = dashboardStats.ProductsUnderStock.map(item => ({
+		name: item.name,
+		sku: item.code,
+		currentStock: item.quantity || 0,
+		minStock: item.minQuantity || 0,
+		reorderQuantity: item.reorderQuantity || 0,
+		warehouse: item.location || 'N/A'
+	}));
 
 	const stockChart = [
 		{ month: 'Jan', stock: 300, incidents: 45 },
@@ -67,24 +79,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		{ month: 'May', revenue: 3200, expenses: 1700 }
 	];
 
-	const lastOrders = [
-		{ id: '#1001', product: 'USB-C Cable', quantity: 2, total: 19.98, status: 'Shipped' },
-		{ id: '#1002', product: 'Laptop Sleeve', quantity: 1, total: 29.99, status: 'Pending' },
-		{ id: '#1003', product: 'Mouse Pad', quantity: 1, total: 7.49, status: 'Cancelled' },
-		{ id: '#1004', product: 'Keyboard', quantity: 1, total: 45.0, status: 'Shipped' },
-		{ id: '#1005', product: 'HDMI Cable', quantity: 3, total: 24.99, status: 'Pending' },
-		{ id: '#1006', product: 'Monitor Stand', quantity: 1, total: 39.95, status: 'Shipped' },
-		{ id: '#1007', product: 'Webcam', quantity: 1, total: 59.99, status: 'Cancelled' },
-		{ id: '#1008', product: 'External SSD', quantity: 1, total: 109.99, status: 'Shipped' }
-	];
 
 	return {
 		userName,
-		unreadAlerts,
-		today,
 		metrics,
 		topProducts,
 		financeByMonth,
-		lastOrders
+		productsUnderMinStock,
 	};
 };

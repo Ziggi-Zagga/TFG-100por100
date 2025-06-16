@@ -13,6 +13,8 @@ export const repoGetInventoryView = async () => {
 			unit: table.products.unit,
 			quantity: table.inventory.quantity,
 			lastCount: table.inventory.lastCount,
+			minQuantity: table.inventory.minQuantity,
+			reorderQuantity: table.inventory.reorderQuantity,
 			location: table.warehouseGaps.name,
 			supplier: table.suppliers.name,
 			category: table.categories.name,
