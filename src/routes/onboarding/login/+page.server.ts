@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import * as authService from '$lib/server/services/auth.service';
 import { ServiceError } from '$lib/utils/errors/ServiceError';
-import { storeError, getStoredError } from '$lib/stores/error.store';
+import { getStoredError } from '$lib/stores/error.store';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -38,7 +38,6 @@ export const actions: Actions = {
 			const { session, token } = result;
 			const expires = new Date(session.expiresAt);
 
-			// Set the auth cookie
 			event.cookies.set('auth-session', token, {
 				path: '/',
 				expires: expires,
@@ -47,7 +46,6 @@ export const actions: Actions = {
 				sameSite: 'lax'
 			});
 
-			// Return success response with redirect
 			return {
 				success: true,
 				redirect: '/dashboard',

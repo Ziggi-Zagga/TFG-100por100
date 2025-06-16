@@ -14,13 +14,11 @@ import type { PageServerLoad, Actions } from './$types';
 export const load: PageServerLoad = async ({ url }) => {
 	const gapId = url.searchParams.get('gapId');
 
-	// Obtener productos según si hay un gapId o no
 	let productsWithGap: ProductWithGapName[] = [];
 	let gapName = null;
 
 	if (gapId) {
 		productsWithGap = await getProductsByGapId(gapId);
-		// Tomar el nombre del gap del primer producto (todos deberían tener el mismo gap)
 		gapName = productsWithGap[0]?.gapName || null;
 	}
 
@@ -29,8 +27,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		: await getFullProductsList();
 
 	if (!products) throw fail(404, { message: 'Products not found' });
-
-	// Obtener datos adicionales necesarios para la UI
+	
 	const suppliers = await db.query.suppliers.findMany();
 	const manufacturers = await db.query.manufacturers.findMany();
 	const categories = await db.query.categories.findMany();

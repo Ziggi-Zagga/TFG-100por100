@@ -1,23 +1,25 @@
 <script lang="ts">
 	import Table from '$lib/components/utilities/table/Table.svelte';
+	import type { FormattedProduct } from '$lib/types/dashboard.types';
 
-	export let products: Array<{
-		name: string;
-		sku: string;
+	interface TableProduct extends FormattedProduct {
 		currentStock: number;
 		minStock: number;
 		reorderQuantity: number;
 		warehouse: string;
-	}> = [];
+		name: string;
+		sku: string;
+	}
 
-	// Define table columns with their types and styles
-	const columns = [
+	export let products: TableProduct[] = [];
+
+	const columns: string[] = [
 		'name',
 		'sku',
 		'currentStock',
 		'minStock',
 		'reorderQuantity',
-		'warehouse',
+		'warehouse'
 	];
 
 	const columnTypes = {
@@ -31,18 +33,25 @@
 		return num.toLocaleString('es-ES');
 	};
 
-	// Prepare data for the table with conditional classes
-	const tableData = products.map(product => {
-		const currentStock = product.currentStock || 0;
-		const minStock = product.minStock || 0;
-		const reorderQuantity = product.reorderQuantity || 0;
-
-		return {
+	const tableData = products.map((product) => {
+		const tableProduct: Record<string, any> = {
 			...product,
-			currentStock: currentStock,
-			minStock: formatNumber(minStock),
-			reorderQuantity: formatNumber(reorderQuantity)
+			id: product.inventoryId || `product-${product.productId || 'unknown'}`,
+			name: product.name || product.productName || 'Unknown Product',
+			sku: product.sku || product.productId || 'N/A',
+			currentStock: product.currentStock || product.quantity || 0,
+			minStock: formatNumber(product.minStock || 0),
+			reorderQuantity: formatNumber(product.reorderQuantity || 0),
+			warehouse: product.warehouse || product.location || 'N/A'
 		};
+
+		for (const col of columns) {
+			if (tableProduct[col] === undefined) {
+				tableProduct[col] = ''; 
+			}
+		}
+
+		return tableProduct as Record<string, any>;
 	});
 
 	function handleRowClick(item: any) {

@@ -2,7 +2,6 @@ import * as repo from '../db/repositories/users.repository';
 import crypto from 'crypto';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 
-// Obtener todos los usuarios activos
 export const getUsers = async () => {
 	try {
 		return await repo.getAllUsers();
@@ -16,7 +15,6 @@ export const getUsers = async () => {
 	}
 };
 
-// Obtener usuario por ID
 export const getUserById = async (id: string) => {
 	try {
 		if (!id) {
@@ -38,7 +36,6 @@ export const getUserById = async (id: string) => {
 	}
 };
 
-// Crear usuario
 export const createUser = async ({
 	username,
 	passwordHash,
@@ -98,7 +95,6 @@ export const createUser = async ({
 	}
 };
 
-// Actualizar usuario
 export const updateUser = async (
 	id: string,
 	data: Partial<{
@@ -127,7 +123,6 @@ export const updateUser = async (
 	}
 };
 
-// Eliminar usuario permanentemente (hard delete)
 export const deletePermanently = async (id: string) => {
 	try {
 		if (!id) {
@@ -146,7 +141,6 @@ export const deletePermanently = async (id: string) => {
 	}
 };
 
-// Obtener todos los roles
 export const getRoles = async () => {
 	try {
 		return await repo.getAllRoles();
@@ -160,7 +154,6 @@ export const getRoles = async () => {
 	}
 };
 
-// Obtener rol por ID
 export const getRoleById = async (id: string) => {
 	try {
 		if (!id) {
@@ -183,7 +176,6 @@ export const getRoleById = async (id: string) => {
 	}
 };
 
-// Crear rol
 export const createRole = async ({
 	name,
 	description,
@@ -224,7 +216,6 @@ export const createRole = async ({
 	}
 };
 
-// Actualizar rol
 export const updateRole = async (
 	id: string,
 	data: Partial<{
@@ -250,7 +241,6 @@ export const updateRole = async (
 	}
 };
 
-// Eliminar rol
 export const deleteRole = async (id: string) => {
 	try {
 		if (!id) {

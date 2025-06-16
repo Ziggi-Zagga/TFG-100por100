@@ -22,7 +22,6 @@
 	let formError = $state('');
 	let errorField = $state('');
 
-	// Handle initial page load with errors
 	$effect(() => {
 		if (form?.error) {
 			formError = form.error.message || 'Invalid credentials';
@@ -32,7 +31,6 @@
 		}
 	});
 
-	// Handle form submission
 	function handleSubmit() {
 		formError = '';
 		errorField = '';

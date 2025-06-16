@@ -136,13 +136,12 @@ export const repoGetProductsByGapId = async (gapId: string) => {
 		.innerJoin(table.warehouseGaps, eq(table.inventory.warehouseGapId, table.warehouseGaps.id))
 		.where(eq(table.inventory.warehouseGapId, gapId));
 
-	// Transform the data to match the expected types
 	return results.map((item) => ({
 		...item,
 		product: {
 			...item.product,
 			price: item.product.price || 0,
-			active: item.product.active ?? true, // Default to true if null
+			active: item.product.active ?? true,
 			description: item.product.description ?? undefined,
 			dimensions: item.product.dimensions ?? undefined,
 			material: item.product.material ?? undefined,

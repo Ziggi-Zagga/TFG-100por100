@@ -19,14 +19,10 @@ export const load: PageServerLoad = async ({ params }) => {
 		if (!warehousesId) return fail(400, { message: 'Missing warehouse ID' });
 		if (!sectionId) return fail(400, { message: 'Missing section ID' });
 		if (!rowId) return fail(400, { message: 'Missing row ID' });
-
-		// Obtener datos de la sección con sus filas
 		const warehouse = await getwarehouseWithSections(warehousesId);
 		const data = await getSectionWithRows(sectionId);
 		const row = await getRowWithGaps(rowId);
 		if (!row.row) return fail(404, { message: 'Row not found' });
-
-		// Devolver los datos en el formato esperado
 		return {
 			warehouse: warehouse.warehouse,
 			sections: warehouse.sections,

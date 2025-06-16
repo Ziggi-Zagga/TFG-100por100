@@ -53,7 +53,7 @@
 			<span>Last orders:</span>
 		</div>
 		<div class="flex gap-2">
-			<button on:click={scrollLeft} class="rounded p-1 hover:bg-gray-100" aria-label="Scroll left">
+			<button onclick={scrollLeft} class="rounded p-1 hover:bg-gray-100" aria-label="Scroll left">
 				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 					><path
 						d="M15 18l-6-6 6-6"
@@ -64,7 +64,7 @@
 				>
 			</button>
 			<button
-				on:click={scrollRight}
+				onclick={scrollRight}
 				class="rounded p-1 hover:bg-gray-100"
 				aria-label="Scroll right"
 			>
@@ -85,7 +85,6 @@
 		class="scrollbar-hide flex gap-3 overflow-x-auto scroll-smooth py-1"
 	>
 		{#each orders as order}
-			<!-- href={`/orders/${order.id}`} -->
 			<a
 				href="#"
 				class="flex min-w-fit transform cursor-pointer flex-nowrap items-center gap-2 rounded-xl bg-gray-50 px-4

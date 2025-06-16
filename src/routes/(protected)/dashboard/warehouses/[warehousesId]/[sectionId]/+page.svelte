@@ -28,7 +28,6 @@
 		addToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 	} | null = null;
 
-	// Update sections when data changes
 	$effect(() => {
 		sections = data.sections || [];
 		warehouse = data.warehouse as warehouseType;
@@ -85,7 +84,6 @@
 				throw new Error('Could not delete section');
 			}
 
-			// Update local state
 			rows = rows.filter((r) => r.id !== rowToDelete!.id);
 			page.data.currentSection!.rows = rows;
 
@@ -155,6 +153,7 @@
 			</div>
 
 			{#if filteredRows.length > 0}
+			<div class="p-4">
 				<Table
 					columns={['name', 'location', 'description']}
 					items={filteredRows}
@@ -162,6 +161,7 @@
 					onEdit={(item) => handleEdit(item)}
 					onDelete={(item) => promptDelete(item)}
 				/>
+				</div>
 			{:else}
 				<div class="py-12 text-center">
 					<div class="mx-auto h-12 w-12 text-gray-400">
@@ -185,7 +185,6 @@
 	</div>
 </section>
 
-<!-- Create Row Drawer -->
 <Drawer title="Create New Row" onClose={closeDrawer} show={showDrawer}>
 	<form
 		method="POST"
@@ -226,7 +225,6 @@
 	</form>
 </Drawer>
 
-<!-- Edit Row Drawer -->
 <Drawer title="Edit Row" onClose={closeEditDrawer} show={showEditDrawer}>
 	<form
 		method="POST"

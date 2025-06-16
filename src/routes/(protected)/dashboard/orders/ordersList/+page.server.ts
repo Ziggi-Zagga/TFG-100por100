@@ -5,11 +5,10 @@ import {
 	getSuppliers,
 	updateOrderWithItems
 } from '$lib/server/services/orders.service';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getAllProducts } from '$lib/server/services/products.service';
 
-// Cargar datos para la página
 export const load: PageServerLoad = async () => {
 	try {
 		const orders = await getOrders();
@@ -33,7 +32,6 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	// Crear una nueva orden
 	create: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const supplierId = formData.get('supplierId')?.toString() ?? '';
@@ -84,7 +82,6 @@ export const actions: Actions = {
 		}
 	},
 
-	// Eliminar una orden
 	delete: async ({ request }) => {
 		const formData = await request.formData();
 		const orderId = formData.get('id')?.toString();
@@ -104,7 +101,6 @@ export const actions: Actions = {
 		}
 	},
 
-	// Actualizar una orden
 	update: async ({ request }) => {
 		const formData = await request.formData();
 		const orderId = formData.get('id')?.toString();

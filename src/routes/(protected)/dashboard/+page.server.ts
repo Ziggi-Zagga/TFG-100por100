@@ -1,8 +1,42 @@
 import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
-import { getDashboardStats } from '$lib/server/services/dashboard.service';
+import type { PageServerLoad, Actions } from './$types';
+import { getDashboardStats, getProductsFormated } from '$lib/server/services/dashboard.service';
+import { updateInventoryQuantity } from '$lib/server/services/inventory.service';
+import { error, fail } from '@sveltejs/kit';
 
+export const actions: Actions = {
+    updateInventory: async ({ request, locals }) => {
+        if (!locals.user) {
+            throw error(401, 'Unauthorized');
+        }
 
+        const data = await request.formData();
+        const inventoryId = data.get('inventoryId');
+        const quantity = Number(data.get('quantity'));
+
+        if (!inventoryId || isNaN(quantity)) {
+            return fail(400, { 
+                success: false,
+                error: 'Datos de entrada inválidos' 
+            });
+        }
+
+        const result = await updateInventoryQuantity(inventoryId.toString(), quantity);
+        
+        if (!result.success) {
+            return fail(400, {
+                success: false,
+                error: result.error || 'Error al actualizar el inventario',
+                message: result.error 
+            });
+        }
+        
+        return { 
+            success: true,
+            message: result.message || 'Operación completada correctamente'
+        };
+    }
+};
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -12,7 +46,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	
 	const dashboardStats = await getDashboardStats();
 	
-
 	const metrics = [
 		{
 			title: 'Top Supplier',
@@ -43,48 +76,43 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	];
 
-	const productsUnderMinStock = dashboardStats.ProductsUnderStock
-		.filter(item => (item.quantity || 0) < (item.reorderQuantity || 0))
-		.map(item => ({
-			name: item.name,
-			sku: item.code,
+	const productsUnderMinStock = (dashboardStats.ProductsUnderStock || [])
+		.filter((item: any) => (item.quantity || 0) < (item.reorderQuantity || 0))
+		.map((item: any) => ({
+			productName: item.name || 'Unknown Product',
+			inventoryId: item.id || '',
+			productId: item.productId || '',
+			location: item.location || 'N/A',
+			quantity: item.quantity || 0,
 			currentStock: item.quantity || 0,
 			minStock: item.minQuantity || 0,
 			reorderQuantity: item.reorderQuantity || 0,
-			warehouse: item.location || 'N/A'
-		}))
-		.sort((a, b) => (a.currentStock || 0) - (b.currentStock || 0));
+			warehouse: item.location || 'N/A',
+			sku: item.code || '',
+			name: item.name || 'Unknown Product'
+		} as const))
+		.sort((a, b) => (a.quantity || 0) - (b.quantity || 0));
 
 	const topProducts = dashboardStats.ProductsUnderStock.map(item => ({
-		name: item.name,
-		sku: item.code,
-		currentStock: item.quantity || 0,
+		productName: item.name,
+		inventoryId: item.id || '',
+		productId: item.productId || '',
+		location: item.location || 'N/A',
+		quantity: item.quantity || 0,
 		minStock: item.minQuantity || 0,
 		reorderQuantity: item.reorderQuantity || 0,
-		warehouse: item.location || 'N/A'
+		warehouse: item.location || 'N/A',
+		currentStock: item.quantity || 0
 	}));
 
-	const stockChart = [
-		{ month: 'Jan', stock: 300, incidents: 45 },
-		{ month: 'Feb', stock: 280, incidents: 50 },
-		{ month: 'Mar', stock: 310, incidents: 32 },
-		{ month: 'Apr', stock: 290, incidents: 29 }
-	];
-
-	const financeByMonth = [
-		{ month: 'Jan', revenue: 4500, expenses: 3900 },
-		{ month: 'Feb', revenue: 2200, expenses: 3400 },
-		{ month: 'Mar', revenue: 5500, expenses: 4800 },
-		{ month: 'Apr', revenue: 2100, expenses: 1500 },
-		{ month: 'May', revenue: 3200, expenses: 1700 }
-	];
-
+	const products = await getProductsFormated();
 
 	return {
+		user: locals.user,
 		userName,
 		metrics,
 		topProducts,
-		financeByMonth,
 		productsUnderMinStock,
+		products
 	};
 };

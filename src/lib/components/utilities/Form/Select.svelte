@@ -29,7 +29,6 @@
 		placeholder?: string;
 	} = $props();
 
-	// Para que no envie "" cuando se selecciona la opción por defecto
 	$effect(() => {
 		if (value === '') value = null;
 		onValueChange?.(value);

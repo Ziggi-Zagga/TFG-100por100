@@ -17,12 +17,9 @@ setInterval(
 	60 * 60 * 1000
 );
 
-// --- Update session expiry ---
 export const updateSessionExpiry = async (token: string, expiryDate: Date): Promise<boolean> => {
 	return (await authRepository.updateSessionExpiry(token, expiryDate)) ?? false;
 };
-
-// --- Validate existing session ---
 export async function validateSession(token: string) {
 	const result = await authRepository.getSessionWithUser(token);
 	if (!result) return { session: null, user: null };
@@ -54,7 +51,6 @@ export async function validateSession(token: string) {
 	return { session, user };
 }
 
-// --- Create session ---
 export async function createSession(
 	token: string,
 	userId: string,
@@ -62,7 +58,7 @@ export async function createSession(
 	userAgent?: string
 ): Promise<userSession | null> {
 	const now = Date.now();
-	const expiresAt = new Date(now + 30 * 24 * 60 * 60 * 1000); // 30 days
+	const expiresAt = new Date(now + 30 * 24 * 60 * 60 * 1000);
 
 	const session = await authRepository.createSession({
 		sessionId: crypto.randomUUID(),
@@ -82,7 +78,6 @@ export async function createSession(
 	return session;
 }
 
-// --- User login ---
 export async function login(
 	identifier: string,
 	password: string,
@@ -151,7 +146,6 @@ export async function login(
 	}
 }
 
-// --- User signup ---
 export async function signup(
 	email: string,
 	username: string,
@@ -198,7 +192,6 @@ export async function signup(
 			return null;
 		}
 
-		// Set session cookie and validate it immediately
 		if (event) {
 			event.cookies.set('auth-session', token, {
 				path: '/',
@@ -208,7 +201,6 @@ export async function signup(
 				sameSite: 'lax'
 			});
 
-			// Set user and session in locals before redirect
 			event.locals.user = user;
 			event.locals.session = session;
 			throw redirect(302, '/dashboard');
@@ -225,7 +217,6 @@ export async function signup(
 	}
 }
 
-// --- Password hashing and verification ---
 export async function hash(password: string): Promise<string> {
 	return await argon2.hash(password, {
 		type: argon2.argon2id,

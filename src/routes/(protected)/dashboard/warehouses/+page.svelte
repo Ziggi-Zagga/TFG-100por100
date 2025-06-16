@@ -93,10 +93,8 @@
 				throw new Error(errorMessage);
 			}
 
-			// Actualizar estado local reactivo
 			warehouses = warehouses.filter((w: any) => w.id !== warehouseToDelete!.id);
 
-			// También actualizar page.data para mantener consistencia
 			page.data.warehouse = warehouses;
 
 			showSuccess(`Warehouse "${warehouseToDelete.name}" deleted successfully`);
@@ -128,7 +126,6 @@
 	}
 </script>
 
-<!-- Main Content Section -->
 <section
 	class="min-h-screen w-full"
 	style="background-image: linear-gradient(to bottom, #f9fafb, #f9fafb, #e0f2fe, #f0e3fd);"
@@ -197,7 +194,6 @@
 	</div>
 </section>
 
-<!-- Drawer de creación -->
 <Drawer title="Create New warehouse" onClose={closeDrawer} show={showDrawer}>
 	<form
 		method="POST"
@@ -207,7 +203,7 @@
 				console.log('Enhanced result:', result);
 
 				if (result.type === 'success' && result.data?.success) {
-					// El warehouse ya está en result.data.warehouse
+				
 					const newWarehouse = result.data.warehouse;
 					if (newWarehouse) {
 						warehouses = [...warehouses, newWarehouse];
@@ -216,7 +212,7 @@
 
 					showSuccess('Warehouse created successfully');
 					closeDrawer();
-					await update(); // Actualiza page.data automáticamente
+					await update(); 
 				} else if (result.type === 'failure') {
 					const errorMessage = result.data?.message || 'Could not create warehouse';
 					showError(String(errorMessage));
@@ -250,7 +246,6 @@
 	</form>
 </Drawer>
 
-<!-- Drawer de edición -->
 <Drawer title="Edit warehouse" onClose={closeEditDrawer} show={showEditDrawer}>
 	<form
 		method="POST"
@@ -270,7 +265,6 @@
 					const description =
 						formData.get('description')?.toString() || editingwarehouse!.description;
 
-					// Actualizar estado local reactivo
 					warehouses = warehouses.map((w: any) =>
 						w.id === editingwarehouse!.id
 							? { ...w, name, location, description, updatedAt: new Date().toISOString() }

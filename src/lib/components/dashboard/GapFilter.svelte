@@ -3,7 +3,6 @@
 	import { quadInOut } from 'svelte/easing';
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 
-	// Definir las props usando $props()
 	const {
 		gapName = '',
 		onClose = () => {},
@@ -14,10 +13,8 @@
 		class?: string;
 	}>();
 
-	// Estado reactivo
 	let isExpanded = $state(false);
 
-	// Expandir el filtro después de que se monte el componente
 	$effect(() => {
 		const timer = setTimeout(() => {
 			isExpanded = true;
@@ -34,7 +31,6 @@
 
 		isClosing = true;
 		isExpanded = false;
-		// Esperar a que termine la animación antes de cerrar
 		setTimeout(() => {
 			onClose();
 		}, 300);
@@ -42,7 +38,6 @@
 </script>
 
 <div class="flex items-center {className}">
-	<!-- Contenedor principal con forma de óvalo -->
 	<div
 		class="flex h-10 items-center overflow-hidden rounded-full border border-gray-200 bg-white shadow-sm"
 		style="width: {isExpanded ? 'auto' : '2.5rem'}; padding: 0 {isExpanded
@@ -51,14 +46,12 @@
 		in:slide|local={{ duration: 300, easing: quadInOut, axis: 'x' }}
 		out:slide|local={{ duration: 250, easing: quadInOut, axis: 'x' }}
 	>
-		<!-- Ícono -->
 		<div class="-mr-2 flex h-12 w-12 flex-shrink-0 items-center justify-center">
 			{#if isExpanded}
 				<Icon icon="gap" size={20} extraStyles="text-gray-600 hover:text-red-500" />
 			{/if}
 		</div>
 
-		<!-- Texto -->
 		{#if isExpanded}
 			<div
 				class="overflow-hidden whitespace-nowrap"
@@ -69,7 +62,6 @@
 			</div>
 		{/if}
 
-		<!-- Botón de cierre -->
 		{#if isExpanded}
 			<button
 				onclick={handleClose}
@@ -83,14 +75,12 @@
 </div>
 
 <style>
-	/* Transiciones suaves */
 	.transition-all {
 		transition-property: all;
 		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 		transition-duration: 300ms;
 	}
 
-	/* Asegurar que el contenedor no se desborde */
 	.overflow-hidden {
 		overflow: hidden;
 	}

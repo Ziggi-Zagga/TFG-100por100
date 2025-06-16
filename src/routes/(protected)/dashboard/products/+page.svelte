@@ -16,36 +16,28 @@
 	import type { PageData } from './$types';
 	import { fade } from 'svelte/transition';
 
-	// Get props
 	const { data } = $props<{ data: PageData }>();
 
-	// State
 	let productsCopy = $state<Product[]>(data.products || []);
 	let suppliers = $state<Supplier[]>(data.suppliers || []);
 	let manufacturers = $state<Manufacturer[]>(data.manufacturers || []);
 	let categories = $state<Category[]>(data.categories || []);
 
-	// Check if filtering by gap
 	let isFilteredByGap = $state(!!data.gapId);
 
-	// Function to clear gap filter
 	function clearGapFilter() {
-		// Redirigir a la página de productos sin parámetros
 		window.location.href = '/dashboard/products';
 	}
 
-	// UI state
 	let showDrawer = $state(false);
 	let search = $state('');
 
-	// Total products count
 	const totalProducts = $derived(productsCopy.length);
 
 	let selectedSupplier = $state<Supplier | null>(null);
 	let selectedManufacturer = $state<Manufacturer | null>(null);
 	let selectedCategory = $state<Category | null>(null);
 
-	// Confirm dialog state
 	let showConfirm = $state(false);
 	let productToDelete = $state<string | null>(null);
 	let productIdToDelete = $state<string | null>(null);

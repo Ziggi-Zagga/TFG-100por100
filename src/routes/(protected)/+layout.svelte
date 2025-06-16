@@ -7,7 +7,6 @@
 	import { cubicOut } from 'svelte/easing';
 	import ChatWidget from '$lib/components/utilities/ChatWidget/ChatWidget.svelte';
 
-	// Estado para controlar cuando la animación de apertura ha terminado
 	let isSidebarOpen = $state(true);
 	let isTransitioning = $state(false);
 	let openInventoryMenu = $state(false);
@@ -16,16 +15,13 @@
 	let showLoading = $state(false);
 	let loadingTimer: NodeJS.Timeout;
 
-	// Manejar el estado de carga de la página
 	$effect(() => {
 		if ($navigating) {
-			// Mostrar el loading solo si la navegación tarda más de 100ms
 			loadingTimer = setTimeout(() => {
 				showLoading = true;
 			}, 100);
 			isPageLoaded = false;
 		} else {
-			// Limpiar el timer y ocultar el loading
 			clearTimeout(loadingTimer);
 			showLoading = false;
 			const timer = setTimeout(() => {
@@ -37,9 +33,7 @@
 		return () => clearTimeout(loadingTimer);
 	});
 
-	// Función para verificar si una ruta está activa
 	function isActive(href: string) {
-		// Si es la ruta de inventory, verificar todas las subrutas relacionadas
 		if (href === '/dashboard/inventory') {
 			return ['/dashboard/inventory', '/dashboard/products', '/dashboard/categories'].some(
 				(route) => $page.url.pathname.startsWith(route)
@@ -48,7 +42,6 @@
 		return $page.url.pathname.startsWith(href);
 	}
 
-	// Función para verificar si un ítem del submenú está activo
 	function isSubmenuActive(href: string) {
 		return (
 			$page.url.pathname === href ||
@@ -63,22 +56,18 @@
 		children: any;
 	}>();
 	let collapsed = $state(false);
-	// Toggle sidebar with animation control
 	async function toggleSidebar() {
 		if (isTransitioning) return;
 		isTransitioning = true;
 
 		if (!collapsed) {
-			// Si se está cerrando, ocultar el texto primero
 			isSidebarOpen = false;
-			// Esperar a que termine la animación de desvanecimiento
 			await new Promise((resolve) => setTimeout(resolve, 150));
 		}
 
 		collapsed = !collapsed;
 
 		if (!collapsed) {
-			// Si se está abriendo, esperar a que el menú se expanda antes de mostrar el texto
 			await new Promise((resolve) => setTimeout(resolve, 300));
 			isSidebarOpen = true;
 		}
@@ -99,12 +88,10 @@
 		}
 	}
 
-	// Cerrar menú al hacer clic fuera, pero no en los enlaces del menú
 	function handleClickOutside(event: MouseEvent) {
-		if (typeof window === 'undefined') return; // No ejecutar en el servidor
+		if (typeof window === 'undefined') return;
 
 		if (inventoryMenuRef) {
-			// Verificar si el clic fue en un enlace dentro del menú
 			const target = event.target as HTMLElement;
 			const isClickOnMenuLink = target.closest
 				? target.closest(
@@ -112,14 +99,12 @@
 					)
 				: null;
 
-			// Solo cerrar si el clic no fue en un enlace del menú
 			if (!isClickOnMenuLink && inventoryMenuRef && !inventoryMenuRef.contains(target)) {
 				openInventoryMenu = false;
 			}
 		}
 	}
 
-	// Cerrar menú solo cuando se navega fuera de las rutas de inventario
 	const unsubscribe = page.subscribe(($page) => {
 		const currentPath = $page.url.pathname;
 		const isInventoryRoute = [
@@ -133,7 +118,6 @@
 		}
 	});
 
-	// Limpiar eventos al desmontar
 	onDestroy(() => {
 		if (typeof document !== 'undefined') {
 			document.removeEventListener('click', handleClickOutside);
@@ -141,12 +125,10 @@
 		unsubscribe();
 	});
 
-	// Agregar evento de clic fuera del menú solo en el navegador
 	import { browser } from '$app/environment';
 
 	onMount(() => {
 		if (browser) {
-			// Usamos setTimeout para asegurarnos de que el menú se cierre después de la navegación
 			setTimeout(() => {
 				if (typeof document !== 'undefined') {
 					document.addEventListener('click', handleClickOutside);
@@ -166,12 +148,10 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 -->
 
 <div class="flex h-screen bg-gray-100 text-gray-800">
-	<!-- Sidebar -->
 	<aside
 		class="relative flex h-full flex-col overflow-hidden rounded-2xl border-r border-gray-200 bg-white shadow-xl"
 		style={`width: ${collapsed ? '4.5rem' : '14rem'}; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);`}
 	>
-		<!-- Header con logo y título que funciona como botón de menú -->
 		<div class="px-4 py-4">
 			<div
 				onclick={(e) => {
@@ -200,9 +180,7 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 			</div>
 		</div>
 
-		<!-- Contenedor principal del menú con scroll -->
 		<div class="flex-1 overflow-y-auto">
-			<!-- Main Menu -->
 			<div class="mt-2">
 				<div
 					class="overflow-hidden px-4 text-xs tracking-wider text-gray-400 uppercase"
@@ -211,7 +189,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 					style="display: {!collapsed ? 'block' : 'none'}"
 				></div>
 				<nav class="flex flex-col gap-1">
-					<!-- Dashboard -->
 					<a
 						href="/dashboard"
 						class={`flex cursor-pointer items-center rounded-md px-4 py-2 transition ${$page.url.pathname === '/dashboard' ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`}
@@ -220,7 +197,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 						{#if !collapsed}<span class="ml-3 text-sm font-medium">Dashboard</span>{/if}
 					</a>
 
-					<!-- Menú de Inventory -->
 					<div bind:this={inventoryMenuRef} class="relative">
 						<button
 							type="button"
@@ -240,7 +216,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 							{/if}
 						</button>
 
-						<!-- Submenú desplegable -->
 						{#if openInventoryMenu && !collapsed}
 							<div id="inventory-submenu" class="mt-1 ml-8 space-y-1">
 								<a
@@ -274,7 +249,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 						{/if}
 					</div>
 
-					<!-- Suppliers -->
 					<a
 						href="/dashboard/suppliers"
 						class={`flex items-center rounded-md px-4 py-2 transition ${isActive('/dashboard/suppliers') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`}
@@ -284,7 +258,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 						{#if !collapsed}<span class="ml-3 text-sm font-medium">Suppliers</span>{/if}
 					</a>
 
-					<!-- Orders (enlace directo) -->
 					<a
 						href="/dashboard/orders/ordersList"
 						class={`flex items-center rounded-md px-4 py-2 transition ${isActive('/dashboard/orders') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-100 hover:text-blue-700'}`}
@@ -315,13 +288,8 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 			</div>
 		</div>
 
-		<!-- Sección fija en la parte inferior -->
 		<div class="mt-auto border-t border-gray-200">
-			<!-- Settings -->
 			<div class="py-2">
-				<!--
-        <div class={`text-xs text-gray-400 px-4 uppercase tracking-wider ${collapsed ? 'hidden' : ''}`}>Settings</div>
-        -->
 				<nav class="mt-1 flex flex-col gap-1">
 					<a
 						href="/dashboard/users"
@@ -340,7 +308,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 				</nav>
 			</div>
 
-			<!-- Logout -->
 			<form method="POST" action="/logout" class="w-full">
 				<button
 					type="submit"
@@ -353,7 +320,6 @@ PARA AÑADIR UNO NUEVO COPIA ESTO Y SUSTITUYE LO QUE ESTA ENTRE []
 		</div>
 	</aside>
 
-	<!-- Main Content -->
 	<main class="relative flex-1 overflow-y-auto rounded-2xl pl-2">
 		{#if isPageLoaded}
 			<div in:fade={{ duration: 300 }}>

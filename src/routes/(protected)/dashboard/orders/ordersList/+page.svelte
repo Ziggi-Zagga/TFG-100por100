@@ -23,12 +23,9 @@
 	let showDeleteDialog = $state(false);
 	let orderToDelete: { id: string; orderNumber: string } | null = $state(null);
 
-	// Toast state
 	let toasts = $state<Array<{ id: string; message: string; type: 'success' | 'error' | 'info' }>>(
 		[]
 	);
-
-	// Helper functions for showing toasts
 	function showSuccess(message: string) {
 		const id = crypto.randomUUID();
 		toasts = [...toasts, { id, message, type: 'success' }];
@@ -45,7 +42,6 @@
 		toasts = toasts.filter((t) => t.id !== id);
 	}
 
-	// Estados para la ordenación
 	let sortColumn = $state<string | null>('orderDate');
 	let sortDirection = $state<'asc' | 'desc'>('desc');
 
@@ -100,7 +96,7 @@
 				{ id: 'cancelled', name: 'Cancelled' }
 			],
 			extraStyles: 'w-full'
-		}
+		},		
 	};
 
 	function openDrawer() {
@@ -163,7 +159,6 @@
 	const filteredAndSortedOrders = $derived(() => {
 		let result = [...orders];
 
-		// Aplicar búsqueda
 		if (search) {
 			const searchTerm = search.toLowerCase();
 			result = result.filter(
@@ -173,21 +168,17 @@
 			);
 		}
 
-		// Aplicar ordenación
 		if (sortColumn) {
 			result.sort((a, b) => {
 				let aValue = a[sortColumn as keyof typeof a];
 				let bValue = b[sortColumn as keyof typeof b];
 
-				// Manejar valores nulos o indefinidos
 				if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? -1 : 1;
 				if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? 1 : -1;
 
-				// Convertir a string para comparación
 				aValue = String(aValue).toLowerCase();
 				bValue = String(bValue).toLowerCase();
 
-				// Ordenar según la dirección
 				if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
 				if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
 				return 0;
@@ -199,10 +190,8 @@
 
 	async function handleSort(column: string) {
 		if (sortColumn === column) {
-			// Cambiar dirección si se hace clic en la misma columna
 			sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
 		} else {
-			// Ordenar por nueva columna en orden ascendente
 			sortColumn = column;
 			sortDirection = 'asc';
 		}
@@ -224,12 +213,12 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Error al actualizar el estado del pedido');
+				throw new Error('Error updating order status');
 			}
 
 			const result = await response.json();
 			if (result.error) {
-				const errorMessage = result.message || 'Error al actualizar el pedido';
+				const errorMessage = result.message || 'Error updating order status';
 				showError(errorMessage);
 				throw new Error(errorMessage);
 			}
@@ -247,13 +236,11 @@
 		}
 	}
 
-	// Open delete confirmation dialog
 	function confirmDelete(order: { id: string; orderNumber: string }) {
 		orderToDelete = order;
 		showDeleteDialog = true;
 	}
 
-	// Handle confirmed deletion
 	async function handleDelete() {
 		if (!orderToDelete) return;
 
@@ -267,9 +254,7 @@
 			});
 
 			if (response.ok) {
-				// Update the orders list by removing the deleted order
 				orders = orders.filter((order) => order.id !== orderToDelete?.id);
-				// Show success toast
 				showSuccess('Order deleted successfully');
 			} else {
 				const result = await response.json();
@@ -291,7 +276,6 @@
 		try {
 			const formData = new FormData();
 
-			// Add all form fields to formData
 			Object.entries(orderData).forEach(([key, value]) => {
 				if (key === 'items') {
 					formData.set('items', JSON.stringify(value));
@@ -300,7 +284,6 @@
 				}
 			});
 
-			// Add the current user ID to the form data
 			if (data.user?.id) {
 				formData.set('userId', data.user.id);
 			}
@@ -316,7 +299,6 @@
 					throw new Error(result.message || 'Error creating order');
 				}
 
-				// Refresh the page to show the new order
 				window.location.reload();
 			} else {
 				const errorData = await response.json().catch(() => ({}));
@@ -380,7 +362,6 @@
 			onClose={onCloseDrawerDetails}
 		/>
 	{/if}
-	<!-- Delete Confirmation Dialog -->
 	<ConfirmDialog
 		show={showDeleteDialog}
 		message={`Are you sure you want to delete order #${orderToDelete?.orderNumber || ''}? This action cannot be undone.`}

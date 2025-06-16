@@ -2,6 +2,7 @@ import { getAllOrders } from '$lib/server/db/repositories/orders.repository';
 import { getAllSuppliers } from '$lib/server/db/repositories/supplier.repository';
 import { getInventoryData } from '$lib/server/services/inventory.service';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
+import type { FormattedProduct } from '$lib/types/dashboard.types';
 
 export const getDashboardStats = async () => {
 	try {
@@ -28,10 +29,10 @@ export const getDashboardStats = async () => {
 		const valueOfStock = inventoryItems.reduce((total, item) => total + (item.price || 0) * (item.quantity || 0), 0);
 		const ProductsUnderStock = inventoryItems.filter(item => item.quantity < (item.minQuantity ?? 0));
 
-		// Obtener todos los proveedores
+		
 		const allSuppliers = await getAllSuppliers();
 
-		// Contar pedidos por proveedor
+		
 		const supplierOrderCounts = orders.reduce((acc, order) => {
 			if (order.supplierId) {
 				acc[order.supplierId] = (acc[order.supplierId] || 0) + 1;
@@ -39,7 +40,7 @@ export const getDashboardStats = async () => {
 			return acc;
 		}, {} as Record<string, number>);
 
-		// Encontrar el proveedor con más pedidos
+	
 		let topSupplier = null;
 		let maxOrders = 0;
 
@@ -74,4 +75,18 @@ export const getDashboardStats = async () => {
 			{ details: { originalError: error instanceof Error ? error.message : error } }
 		);
 	}
+};
+
+
+
+export const getProductsFormated = async (): Promise<FormattedProduct[]> => {
+  const { inventoryItems } = await getInventoryData();
+  
+  return inventoryItems.map(item => ({
+    productName: item.name || 'Sin nombre',
+    inventoryId: item.id,
+    productId: item.productId,
+    location: item.location || 'Sin ubicación',
+    quantity: item.quantity || 0
+  }));
 };

@@ -104,7 +104,6 @@ export const insertProduct = async ({
 			categoryId: categoryId || undefined
 		};
 
-		// Añadir campos de auditoría solo si existen en el esquema
 		const withTimestamps = {
 			...productData,
 			...(createdAt && { createdAt }),

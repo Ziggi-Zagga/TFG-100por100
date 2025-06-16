@@ -10,7 +10,7 @@
 	import ConfirmDialog from '$lib/components/utilities/ConfirmDialog/ConfirmDialog.svelte';
 	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
 	import { page } from '$app/state';
-	import type { warehouse as warehouseType, Section, Row, Gap } from '$lib/types/warehouse.types';
+	import type { warehouse as warehouseType, Row, Gap } from '$lib/types/warehouse.types';
 	import TextArea from '$lib/components/utilities/Form/TextArea.svelte';
 	import { fade } from 'svelte/transition';
 
@@ -29,7 +29,6 @@
 		addToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 	} | null = null;
 
-	// Update sections when data changes
 	$effect(() => {
 		sections = data.sections || [];
 		warehouse = data.warehouse as warehouseType;
@@ -87,7 +86,6 @@
 				throw new Error('Could not delete section');
 			}
 
-			// Update local state
 			gaps = gaps.filter((g) => g.id !== gapToDelete!.id);
 			page.data.row.gaps = gaps;
 
@@ -164,6 +162,7 @@
 			</div>
 
 			{#if filteredGaps.length > 0}
+			<div class="p-4">
 				<Table
 					columns={['name', 'capacity', 'description']}
 					items={filteredGaps}
@@ -171,6 +170,7 @@
 					onEdit={(item) => handleEdit(item)}
 					onDelete={(item) => promptDelete(item)}
 				/>
+				</div>
 			{:else}
 				<div class="py-12 text-center">
 					<div class="mx-auto h-12 w-12 text-gray-400">
@@ -194,7 +194,6 @@
 	</div>
 </section>
 
-<!-- Create Row Drawer -->
 <Drawer title="Create New Gap" onClose={closeDrawer} show={showDrawer}>
 	<form
 		method="POST"
@@ -235,7 +234,6 @@
 	</form>
 </Drawer>
 
-<!-- Edit Row Drawer -->
 <Drawer title="Edit Gap" onClose={closeEditDrawer} show={showEditDrawer}>
 	<form
 		method="POST"
@@ -253,16 +251,12 @@
 					const capacity = Number(formData.get('capacity')) || null;
 					const description = formData.get('description')?.toString() || '';
 
-					// Actualizar el estado local de gaps
 					gaps = gaps.map((gap) =>
 						gap.id === editingGap?.id ? { ...gap, name, capacity, description } : gap
 					);
 
-					// No es necesario actualizar page.data directamente
-					// SvelteKit manejará la actualización con el resultado del servidor
-					showSuccess('Gap actualizado correctamente');
+					showSuccess('Gap updated successfully');
 					closeEditDrawer();
-					// Esperar a que se complete la actualización
 					await update();
 				} else if (result.type === 'failure') {
 					const errorMessage = result.data?.message || 'Failed to update gap';

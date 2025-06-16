@@ -2,12 +2,10 @@ import * as repo from '../db/repositories/inventoryHistory.repository';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 import crypto from 'crypto';
 
-// Get inventory history view
 export const getInventoryHistory = async () => {
 	return await repo.repoGetInventoryHistoryView();
 };
 
-// Get inventory history by inventory ID
 export const getInventoryHistoryByInventoryId = async (inventoryId: string) => {
 	if (!inventoryId) {
 		throw new ServiceError('Inventory ID is required', ERROR_TYPES.VALIDATION, 400, {
@@ -17,7 +15,6 @@ export const getInventoryHistoryByInventoryId = async (inventoryId: string) => {
 	return await repo.repoGetInventoryHistoryByInventoryId(inventoryId);
 };
 
-// Get inventory history by user ID
 export const getInventoryHistoryByUserId = async (userId: string) => {
 	if (!userId) {
 		throw new ServiceError('User ID is required', ERROR_TYPES.VALIDATION, 400, { field: 'userId' });
@@ -25,7 +22,6 @@ export const getInventoryHistoryByUserId = async (userId: string) => {
 	return await repo.repoGetInventoryHistoryByUserId(userId);
 };
 
-// Create inventory history record
 export const createInventoryHistory = async ({
 	id,
 	productId,

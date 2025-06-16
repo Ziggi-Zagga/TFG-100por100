@@ -130,7 +130,7 @@
 
 	async function confirmDeletion() {
 		const formData = new FormData();
-		formData.append('id', product.id);
+		formData.append('id', product?.id ?? '');
 
 		const res = await fetch('/dashboard/inventory?/delete', {
 			method: 'POST',
@@ -157,13 +157,13 @@
 >
 	<div class="flex w-full max-w-screen-xl flex-col gap-6 px-4 py-6 md:flex-row">
 		<div class="w-full space-y-6 rounded-2xl bg-white p-6 shadow-lg md:w-1/2">
-			<Header title={product.name} subtitle="">
-				<Button onclick={toggleEdit} variant="secondary" size="md" extraStyles="w-full md:w-auto">
-					<Icon icon="edit" size={20} />
-				</Button>
-				<Button onclick={handleDelete} variant="secondary" size="md" extraStyles="w-full md:w-auto">
-					<Icon icon="delete" size={20} />
-				</Button>
+			<Header title={product?.name ?? ''} subtitle="">
+				<button onclick={toggleEdit} class="text-2xl transition hover:scale-110 hover:text-blue-600">
+					<Icon icon="edit" size={30} />
+				</button>
+				<button onclick={handleDelete} class="text-2xl transition hover:scale-110 hover:text-red-600">
+					<Icon icon="delete" size={30} />
+				</button>
 			</Header>
 			<div>
 				<Header title="Stock Information" subtitle="" extraStyles="compact" />
@@ -316,7 +316,7 @@
 
 	<ConfirmDialog
 		show={showConfirm}
-		message={`Are you sure you want to eliminate inventory: ${product.name}?`}
+		message={`Are you sure you want to eliminate inventory: ${product?.name}?`}
 		onConfirm={confirmDeletion}
 		onCancel={cancelDeletion}
 	/>

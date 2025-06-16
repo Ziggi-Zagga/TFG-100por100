@@ -1,4 +1,3 @@
-<!-- ToastList.svelte -->
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import Toast from './Toast.svelte';

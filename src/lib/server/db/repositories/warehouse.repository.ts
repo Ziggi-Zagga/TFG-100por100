@@ -225,7 +225,6 @@ export const updateRow = async (id: string, data: Partial<typeof warehouseRows.$
 		updatedAt: new Date()
 	};
 
-	// Asegurarse de que los campos opcionales se manejen correctamente
 	if ('location' in data) {
 		updateData.location = data.location ?? null;
 	}

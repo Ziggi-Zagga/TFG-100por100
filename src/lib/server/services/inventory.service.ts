@@ -165,6 +165,73 @@ export const getInventoryHistoryByInventoryId = async (inventoryId: string) => {
 	return await repoGetInventoryHistoryByInventoryId(inventoryId);
 };
 
+interface InventoryOperationResult {
+	success: boolean;
+	message?: string;
+	error?: string;
+}
+
+export const updateInventoryQuantity = async (inventoryId: string, quantityChange: number): Promise<InventoryOperationResult> => {
+	try {
+		const inventoryItem = await repoGetInventoryById(inventoryId);
+		if (!inventoryItem) {
+			return {
+				success: false,
+				error: 'No se encontró el producto en el inventario'
+			};
+		}
+
+		const currentQuantity = inventoryItem.quantity || 0;
+		const newQuantity = currentQuantity + quantityChange;
+		
+		if (newQuantity < 0) {
+			return {
+				success: false,
+				error: `Stock insuficiente. Stock actual: ${currentQuantity}`
+			};
+		}
+
+		try {
+			await repoUpdateInventoryItem({
+				id: inventoryId,
+				stock: newQuantity,
+				minQuantity: inventoryItem.minQuantity || 0,
+				reorderQuantity: inventoryItem.reorderQuantity || 0,
+				warehouseGapId: inventoryItem.warehouseGapId,
+				lastCount: new Date(),
+				updatedAt: new Date()
+			});
+
+			await createInventoryHistoryEntry({
+				id: crypto.randomUUID(),
+				productId: inventoryItem.productId,
+				inventoryId: inventoryId,
+				fromGapId: inventoryItem.warehouseGapId,
+				previousQuantity: currentQuantity,
+				newQuantity: newQuantity,
+				quantityChanged: quantityChange,
+				notes: 'Ajuste de inventario',
+				createdAt: new Date()
+			});
+
+			const action = quantityChange < 0 ? 'quitado' : 'añadido';
+			return {
+				success: true,
+				message: `Se han ${action} ${Math.abs(quantityChange)} unidades correctamente`
+			};
+		} catch (error) {
+			console.error('Error al actualizar el inventario:', error);
+			return {
+				success: false,
+				error: 'Error al actualizar el inventario. Por favor, inténtalo de nuevo.'
+			};
+		}
+	} catch (error) {
+		console.error('Error updating inventory quantity:', error);
+		throw error;
+	}
+};
+
 export interface ProductWithGapName {
 	product: Product;
 	gapName: string;

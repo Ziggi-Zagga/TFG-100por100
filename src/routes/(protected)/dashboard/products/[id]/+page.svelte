@@ -77,7 +77,6 @@
 		isEditing = false;
 	}
 
-	// TABLES DISPLAY
 	let selectedOption = $state<'orders' | 'inventory'>('orders');
 
 	const historyOptions = [
@@ -101,13 +100,13 @@
 				<div class="flex gap-4">
 					<button
 						onclick={toggleEdit}
-						class="text-2xl text-yellow-500 transition hover:scale-110 hover:text-yellow-600"
+						class="text-2xl transition hover:scale-110 hover:text-blue-600"
 					>
 						<Icon icon="edit" size={30} />
 					</button>
 					<button
 						onclick={handleDelete}
-						class="text-2xl text-red-500 transition hover:scale-110 hover:text-red-600"
+						class="text-2xl transition hover:scale-110 hover:text-red-600"
 					>
 						<Icon icon="delete" size={30} />
 					</button>
@@ -129,7 +128,7 @@
 
 				<div class="flex w-full flex-col gap-6 md:w-2/3">
 					{#if isEditing}
-						<Modal title="➕ Edit Product" onClose={closeDrawer}>
+						<Modal title="Edit Product" onClose={closeDrawer}>
 							<form method="POST" action="?/update" class="mt-4 space-y-6 p-6">
 								<input type="hidden" name="id" value={product.id} />
 								<TextInput

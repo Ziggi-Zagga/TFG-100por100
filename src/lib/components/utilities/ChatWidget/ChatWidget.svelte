@@ -72,7 +72,6 @@
 	});
 </script>
 
-<!-- Botón flotante -->
 <div class="fixed right-6 bottom-6 z-50">
 	<button
 		onclick={toggleChat}
@@ -83,7 +82,6 @@
 	</button>
 </div>
 
-<!-- Chat Box -->
 {#if isOpen}
 	<div
 		bind:this={chatRef}
@@ -91,7 +89,6 @@
 			scale-100 transform-gpu flex-col overflow-hidden
 			rounded-2xl border border-gray-200 bg-white shadow-2xl transition-all duration-500 ease-in-out"
 	>
-		<!-- Header -->
 		<div
 			class="flex items-center justify-between rounded-xl bg-gradient-to-r from-blue-100 to-purple-100 px-4 py-3 text-black shadow-md"
 		>
@@ -117,7 +114,6 @@
 			</div>
 		</div>
 
-		<!-- Chat body -->
 		<div class="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-4 text-sm" bind:this={chatScrollRef}>
 			{#if !hasStarted}
 				<p class="text-center text-gray-400">
@@ -136,7 +132,6 @@
 			{/if}
 		</div>
 
-		<!-- Input -->
 		<div class="flex items-center gap-2 border-t border-gray-200 bg-white p-3">
 			<div class="flex-grow">
 				<TextInput bind:value={inputText} placeholder="Write your message..." />

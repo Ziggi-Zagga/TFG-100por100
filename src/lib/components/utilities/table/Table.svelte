@@ -220,14 +220,14 @@
 										{:else if columnTypes[col].type === 'text'}
 											<div class="flex h-full w-full items-center justify-center">
 												<span class="truncate {columnTypes[col].extraStyles}">
-													{item[col]}
+													{isDateColumn(col) ? formatDateValue(item[col]) : item[col]}
 												</span>
 											</div>
 										{/if}
 									{:else}
 										<div class="flex h-full w-full items-center justify-center">
 											<span class="truncate text-gray-700">
-												{item[col]}
+												{isDateColumn(col) ? formatDateValue(item[col]) : item[col]}
 											</span>
 										</div>
 									{/if}

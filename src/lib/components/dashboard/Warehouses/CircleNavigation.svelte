@@ -92,18 +92,13 @@
 		const currentIndex = viewOrder.indexOf(currentView);
 		const targetIndex = viewOrder.indexOf(circleView);
 
-		// Only allow navigation forward in sequence or back to previous steps
 		if (targetIndex <= currentIndex + 1) {
-			// Start animation
 			isAnimating = true;
 			animatingElement = event.currentTarget as HTMLElement;
 
-			// Execute handler after a small delay to allow animation
 			setTimeout(() => {
 				handler();
 				dispatch('navigate', { view: circleView });
-
-				// Reset animation after completion
 				setTimeout(() => {
 					isAnimating = false;
 					if (animatingElement) {
@@ -115,22 +110,18 @@
 		}
 	}
 
-	// Update line width based on current view
 	function updateLineWidth(newView: ViewType, oldView: ViewType) {
 		const newPosition = viewPositions[newView];
 		const oldPosition = viewPositions[oldView];
 
-		// Determine animation direction
 		const isMovingForward = viewOrder.indexOf(newView) > viewOrder.indexOf(oldView);
 
 		if (isMovingForward) {
-			// Move forward: animate from current to new position
 			lineWidth.set(newPosition, {
 				duration: 600,
 				easing: cubicOut
 			});
 		} else {
-			// Move backward: animate from current to new position
 			lineWidth.set(newPosition, {
 				duration: 600,
 				easing: cubicOut
@@ -138,7 +129,6 @@
 		}
 	}
 
-	// Update line width when currentView changes
 	$effect(() => {
 		if (previousView !== currentView) {
 			updateLineWidth(currentView, previousView as ViewType);
@@ -146,15 +136,12 @@
 		}
 	});
 
-	// Initialize on mount
 	$effect(() => {
-		// Set initial position without animation on first load
 		const initialPosition = viewPositions[currentView];
 		lineWidth = tweened(initialPosition, { duration: 0 });
 		previousView = currentView;
 	});
 
-	// Get click handler for a view
 	function getClickHandler(view: ViewType): (() => void) | undefined {
 		if (view === currentView) return undefined;
 		return () => onNavigate(view);
@@ -165,15 +152,12 @@
 	class="z-50 mb-6 h-22 transform border-b-2 border-gray-200 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] transition-all duration-500 ease-in-out"
 >
 	<div class="relative flex h-full items-center justify-between px-8">
-		<!-- Contenedor de círculos conectados -->
 		<div class="relative flex items-center">
-			<!-- Línea conectora animada con tweened -->
 			<div
 				class="absolute top-1/2 left-12 h-2 -translate-y-1/2 transform rounded-full bg-gradient-to-r from-blue-400 to-blue-500 shadow-sm transition-all duration-500"
 				style="width: {$lineWidth}px"
 			></div>
 
-			<!-- Warehouse Circle -->
 			<button
 				onclick={(e) => handleCircleClick('warehouses', getClickHandler('warehouses'), e)}
 				class="relative flex h-15 w-15 items-center justify-center rounded-full {getCircleStyles(
@@ -192,7 +176,6 @@
 				/>
 			</button>
 
-			<!-- Sections Circle -->
 			<button
 				onclick={(e) => handleCircleClick('sections', getClickHandler('sections'), e)}
 				class="relative ml-16 flex h-15 w-15 items-center justify-center rounded-full {getCircleStyles(
@@ -215,7 +198,6 @@
 				/>
 			</button>
 
-			<!-- Rows Circle -->
 			<button
 				onclick={(e) => handleCircleClick('rows', getClickHandler('rows'), e)}
 				class="relative ml-16 flex h-15 w-15 items-center justify-center rounded-full {getCircleStyles(
@@ -234,7 +216,6 @@
 				<img src="/icons/svg/rows.svg" alt="rows" class="s-9hKDif2IaRv- h-10 w-10 text-white" />
 			</button>
 
-			<!-- Gaps Circle -->
 			<button
 				onclick={(e) => handleCircleClick('gaps', getClickHandler('gaps'), e)}
 				class="relative ml-16 flex h-15 w-15 items-center justify-center rounded-full {getCircleStyles(

@@ -1,19 +1,74 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
 	import MetricCard from '$lib/components/dashboard/MetricCard.svelte';
 	import TopProductsTable from '$lib/components/dashboard/TopProductsTable.svelte';
 	import PageHeader from '$lib/components/utilities/Header/Header.svelte';
-	import { fade } from 'svelte/transition';
 	import Icon from '$lib/components/utilities/Icons/Icon.svelte';
 	import { formatDate } from '$lib/utils/dateFormat';
+	import FormManageinventory from '$lib/components/dashboard/FormManageinventory.svelte';
+	import ToastList from '$lib/components/utilities/Toast/ToastList.svelte';
 
-	export let data;
-	const { userName, metrics, financeByMonth, productsUnderMinStock } = data;
+	let toastList: any; 
 
+		
+	const { data } = $props();
+	let { userName, metrics, productsUnderMinStock, products } = $derived(data);
 
-	const maxFinanceValue = Math.max(...financeByMonth.map((m) => Math.max(m.revenue, m.expenses)));
-
-	
 	const todayDate = formatDate(new Date(), 'd MMMM yyyy');
+	let isSubmitting = $state(false);
+
+	async function handleUpdateInventory({ inventoryId, quantity }: { inventoryId: string; quantity: number }): Promise<{ success: boolean; error?: string }> {
+		try {
+			isSubmitting = true;
+			
+			const formData = new FormData();
+			formData.append('inventoryId', inventoryId);
+			formData.append('quantity', quantity.toString());
+
+			try {
+				const response = await fetch('?/updateInventory', {
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json'
+					},
+					body: formData
+				});
+
+				const result = await response.json();
+
+				if (!response.ok) {
+					if (result.error) {
+						throw new Error(result.error);
+					}
+					throw new Error('Error al actualizar el inventario');
+				}
+
+				if (toastList && result.message) {
+					toastList.addToast(result.message, 'success');
+				}
+				
+				setTimeout(() => {
+					window.location.reload();
+				}, 1500);
+				
+				return { success: true };
+			} catch (error) {
+				console.error('Error en la petición:', error);
+				throw error; 
+			}
+		} catch (error) {
+			console.error('Error updating inventory:', error);
+			const message = error instanceof Error ? error.message : 'failed to update inventory';
+			
+			if (toastList) {
+				toastList.addToast(message, 'error');
+			}
+			
+			return { success: false, error: message };
+		} finally {
+			isSubmitting = false;
+		}
+	}
 </script>
 
 <main
@@ -22,6 +77,8 @@
 	in:fade={{ duration: 300 }}
 	out:fade={{ duration: 200 }}
 >
+	
+	<ToastList bind:this={toastList} />
 <PageHeader title={`Welcome ${userName}!`}>
 	<div class="flex w-full flex-col items-center gap-4 md:flex-row py-1.5">
 		<div class="mt-4 md:mt-0 flex items-center gap-2 rounded-full bg-white px-6 py-2 text-sm font-medium shadow transition-transform duration-200 hover:scale-105">
@@ -31,50 +88,29 @@
 	</div>
 </PageHeader>
 <section class="container mx-auto p-4 ">
-	<!-- Métricas principales -->
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
 		{#each metrics as metric}
 			<MetricCard {...metric} />
 		{/each}
 	</div>
 
-	<!-- Sección dividida: gráfico de ingresos/gastos y productos más vendidos -->
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-		<!-- Gráfico de ingresos vs gastos por mes -->
-		<div class="rounded-2xl bg-white p-6 shadow">
-			<h2 class="mb-4 text-lg font-semibold">Revenue vs Expenses (Monthly)</h2>
-			<br />
-			<div class="flex h-64 items-end gap-6">
-				{#each financeByMonth as item}
-					<div class="flex w-12 flex-col items-center">
-						<div class="flex h-full items-end gap-1">
-							<div
-								class="w-4 rounded-t bg-indigo-300"
-								style={`height: ${(item.revenue / maxFinanceValue) * 256}px`}
-								title={`Revenue: $${item.revenue}`}
-							></div>
-							<div
-								class="w-4 rounded-t bg-indigo-500"
-								style={`height: ${(item.expenses / maxFinanceValue) * 256}px`}
-								title={`Expenses: $${item.expenses}`}
-							></div>
-						</div>
-						<div class="mt-1 text-xs text-gray-600">{item.month}</div>
-					</div>
-				{/each}
-			</div>
-			<div class="mt-4 flex justify-center gap-6 text-sm text-gray-600">
-				<div class="flex items-center gap-1">
-					<span class="inline-block h-2 w-4 rounded bg-indigo-300"></span> Revenue
-				</div>
-				<div class="flex items-center gap-1">
-					<span class="inline-block h-2 w-4 rounded bg-indigo-500"></span> Expenses
-				</div>
-			</div>
-		</div>
+		
+		<FormManageinventory 
+			{products} 
+			onUpdate={handleUpdateInventory}
+		/>
+		
 
-		<!-- Tabla de productos más vendidos -->
-		<TopProductsTable products={productsUnderMinStock} />
+		<TopProductsTable products={productsUnderMinStock.map(p => ({
+			...p,
+			currentStock: p.currentStock || p.quantity || 0,
+			minStock: p.minStock || 0,
+			reorderQuantity: p.reorderQuantity || 0,
+			warehouse: p.warehouse || p.location || 'N/A',
+			name: p.name || p.productName || 'Unknown Product',
+			sku: p.sku || p.productId || 'N/A'
+		}))} />
 	</div>
 	</section>
 </main>

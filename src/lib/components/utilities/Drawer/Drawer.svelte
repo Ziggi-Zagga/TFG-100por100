@@ -22,7 +22,6 @@
 </script>
 
 {#if show}
-	<!-- Fondo oscuro con animación de fade -->
 	<div
 		class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
 		transition:fade={{ duration: 200 }}
@@ -33,7 +32,6 @@
 		aria-label="Close drawer"
 	></div>
 
-	<!-- Drawer con animación de slide -->
 	<div
 		class="fixed top-0 right-0 z-50 h-full w-full max-w-xl overflow-y-auto bg-white shadow-xl"
 		in:fly={{ x: '100%', duration: 300, easing: cubicOut }}
@@ -41,7 +39,6 @@
 		style="will-change: transform;"
 	>
 		<div class="relative flex min-h-full flex-col">
-			<!-- Encabezado -->
 			<div class="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-4">
 				<div class="flex items-center justify-between">
 					<h2 class="text-lg font-semibold text-gray-900">{title}</h2>
@@ -62,7 +59,6 @@
 				</div>
 			</div>
 
-			<!-- Contenido -->
 			<div class="flex-1 p-6">
 				{@render children?.()}
 			</div>

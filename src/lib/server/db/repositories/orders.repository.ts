@@ -45,7 +45,6 @@ export const getOrderWithItems = async (orderId: string) => {
 		.leftJoin(products, eq(orderItems.productId, products.id))
 		.where(eq(orderItems.orderId, orderId));
 
-	// Formatear los ítems para incluir la información del producto
 	const formattedItems = items.map((item) => ({
 		...item,
 		code: item.code || 'N/A',
@@ -58,7 +57,7 @@ export const getOrderWithItems = async (orderId: string) => {
 	return {
 		...order,
 		items: formattedItems,
-		products: formattedItems // Mantener compatibilidad con el código existente
+		products: formattedItems
 	};
 };
 
@@ -117,7 +116,6 @@ export const getLastOrderNumber = async () => {
 	return result[0]?.orderNumber;
 };
 
-// Obtener órdenes con información de proveedor y usuario
 export const getOrdersWithDetails = async () => {
 	return await db
 		.select({
@@ -140,7 +138,6 @@ export const getOrdersWithDetails = async () => {
 		.orderBy(desc(orders.createdAt));
 };
 
-// Obtener órdenes de un usuario específico
 export const getOrdersByUser = async (userId: string) => {
 	const ordersResult = await db
 		.select({
@@ -175,7 +172,6 @@ export const getOrdersByUser = async (userId: string) => {
 		.leftJoin(products, eq(orderItems.productId, products.id))
 		.where(inArray(orderItems.orderId, orderIds));
 
-	// Agrupar los items por orderId
 	const itemsByOrderId = new Map<string, (typeof itemsResult)[number][]>();
 	itemsResult.forEach((item) => {
 		if (!itemsByOrderId.has(item.orderId)) {
@@ -184,7 +180,6 @@ export const getOrdersByUser = async (userId: string) => {
 		itemsByOrderId.get(item.orderId)?.push(item);
 	});
 
-	// Combinar los resultados
 	return ordersResult.map((order) => ({
 		...order,
 		items: itemsByOrderId.get(order.id) || []

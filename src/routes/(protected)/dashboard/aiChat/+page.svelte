@@ -66,7 +66,6 @@
 		<div
 			class="flex h-full w-full flex-grow flex-col justify-between rounded-2xl bg-white p-8 shadow-xl"
 		>
-			<!-- Cabecera del asistente -->
 			<div class="mb-4 flex items-start justify-between">
 				<div class="flex items-center gap-4">
 					<div class="flex h-12 w-12 items-center justify-center rounded-full bg-white">
@@ -84,7 +83,6 @@
 				<button class="text-sm text-gray-500 hover:text-red-600">Close conversation ✖</button>
 			</div>
 
-			<!-- Centro -->
 			{#if !hasStarted}
 				<div class="flex flex-grow flex-col items-center justify-center text-center">
 					<div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white">
@@ -109,7 +107,6 @@
 				</div>
 			{/if}
 
-			<!-- Footer -->
 			<div>
 				{#if !hasStarted}
 					<div class="mb-4 flex flex-wrap justify-center gap-3">
