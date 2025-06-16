@@ -7,7 +7,6 @@ export const getAllUsers = async () => {
 		.select({
 			id: users.id,
 			username: users.username,
-			passwordHash: users.passwordHash,
 			email: users.email,
 			lastLogin: users.lastLogin,
 			role: roles.name
@@ -22,7 +21,6 @@ export const getUserById = async (id: string) => {
 		.select({
 			id: users.id,
 			username: users.username,
-			passwordHash: users.passwordHash,
 			email: users.email,
 			active: users.active,
 			createdAt: users.createdAt,
@@ -40,7 +38,6 @@ export const getRoleById = async (id: string) => {
 export const insertUser = async ({
 	id,
 	username,
-	passwordHash,
 	email,
 	active = true,
 	createdAt,
@@ -49,7 +46,6 @@ export const insertUser = async ({
 }: {
 	id: string;
 	username: string;
-	passwordHash: string;
 	email: string;
 	active?: boolean;
 	createdAt: number;
@@ -59,7 +55,6 @@ export const insertUser = async ({
 	await db.insert(users).values({
 		id,
 		username,
-		passwordHash,
 		email,
 		active,
 		createdAt: new Date(createdAt * 1000),
@@ -72,7 +67,6 @@ export const updateUser = async (
 	id: string,
 	data: Partial<{
 		username: string;
-		passwordHash: string;
 		email: string;
 		active: boolean;
 		lastLogin: number;
