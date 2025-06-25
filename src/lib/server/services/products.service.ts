@@ -192,3 +192,8 @@ export const updateProduct = async ({
 
 	return { id };
 };
+
+export const deleteOrderItemFromProductId = async (productId: string) => {
+	await orders.deleteOrderItemFromProductId(productId);
+};
+

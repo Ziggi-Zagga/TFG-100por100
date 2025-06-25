@@ -254,3 +254,8 @@ export const getOrdersByUser = async (userId: string) => {
 	}
 	return await orderRepo.getOrdersByUser(userId);
 };
+
+export const deleteOrderItemFromProductId = async (productId: string) => {
+	await orderRepo.deleteOrderItemFromProductId(productId);
+};
+

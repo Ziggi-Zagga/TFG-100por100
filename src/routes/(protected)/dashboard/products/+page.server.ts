@@ -2,7 +2,8 @@ import { db } from '$lib/server/db';
 import {
 	getFullProductsList,
 	createProduct,
-	deleteProductById
+	deleteProductById,
+	deleteOrderItemFromProductId
 } from '$lib/server/services/products.service';
 import {
 	getProductsByGapId,
@@ -83,6 +84,7 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing product ID' });
 
 		try {
+			await deleteOrderItemFromProductId(id);
 			await deleteProductById(id);
 			return { success: true };
 		} catch (error) {

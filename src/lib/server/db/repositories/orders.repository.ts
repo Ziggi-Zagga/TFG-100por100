@@ -86,6 +86,10 @@ export const deleteOrderItems = async (orderId: string) => {
 	await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
 };
 
+export const deleteOrderItemFromProductId = async (productId: string) => {
+	await db.delete(orderItems).where(eq(orderItems.productId, productId));
+};
+
 export const removeOrderItemsByOrderId = deleteOrderItems;
 
 export const updateOrder = async (
