@@ -67,7 +67,7 @@
 				disabled && 'bg-gray-100'
 			)}
 		>
-			<option value="">-- Select an option --</option>
+			<option value="" disabled>-- Select an option --</option>
 			{#each options as option}
 				<option value={option.id}>{option.name}</option>
 			{/each}
