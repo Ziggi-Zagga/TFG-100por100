@@ -3,7 +3,8 @@ import type { Actions, PageServerLoad } from './$types';
 import {
 	getInventoryData,
 	createInventoryEntry,
-	deleteInventoryEntry
+	deleteInventoryEntry,
+	deleteInventoryHistoryEntryByInventoryId
 } from '$lib/server/services/inventory.service';
 import { basicErrorHandler } from '$lib/utils/errors/errors';
 
@@ -45,6 +46,7 @@ export const actions: Actions = {
 			const formData = await request.formData();
 			const id = formData.get('id')?.toString() ?? '';
 
+			await deleteInventoryHistoryEntryByInventoryId(id);
 			await deleteInventoryEntry(id);
 
 			return redirect(303, '/dashboard/inventory');

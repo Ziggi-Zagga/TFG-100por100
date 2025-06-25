@@ -143,3 +143,7 @@ export const repoInsertInventoryHistory = async ({
 		createdAt: createdAt ?? new Date()
 	};
 };
+
+export const repoDeleteInventoryHistoryByInventoryId = async (inventoryId: string) => {
+	await db.delete(table.inventoryHistory).where(eq(table.inventoryHistory.inventoryId, inventoryId));
+};

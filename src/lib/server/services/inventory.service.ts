@@ -18,6 +18,7 @@ import type { Product } from '$lib/types/products.types';
 import { ServiceError, ERROR_TYPES } from '$lib/utils/errors/ServiceError';
 import { getFullProductsList, repoGetProductById } from '../db/repositories/products.repository';
 import {
+	repoDeleteInventoryHistoryByInventoryId,
 	repoGetInventoryHistoryByInventoryId,
 	repoGetInventoryHistoryView,
 	repoInsertInventoryHistory
@@ -299,3 +300,8 @@ export const createInventoryHistoryEntry = async ({
 		createdAt
 	});
 };
+
+export const deleteInventoryHistoryEntryByInventoryId = async (inventoryId: string) => {
+	await repoDeleteInventoryHistoryByInventoryId(inventoryId);
+};
+
