@@ -2,10 +2,6 @@ import type { Handle } from '@sveltejs/kit';
 import * as authService from '$lib/server/services/auth.service';
 import type { SafeUser } from '$lib/types/auth.types';
 
-const sessionCookieName = 'auth-session';
-
-const CORS_ORIGIN = 'http://localhost:5173';
-const ALLOWED_FILE_TYPES = 'image/*, application/pdf';
 
 const PUBLIC_ROUTES: string[] = [
 	'/api',

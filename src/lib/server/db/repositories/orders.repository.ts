@@ -106,14 +106,12 @@ export const getLastOrderNumber = async () => {
 	const result = await db
 		.select({
 			orderNumber: orders.orderNumber,
-			num: sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`
+			num: sql<number>`CAST(${orders.orderNumber} AS INTEGER)`
 		})
 		.from(orders)
-		.orderBy(desc(sql<number>`CAST(SUBSTR(${orders.orderNumber}, 5) AS INTEGER)`))
+		.orderBy(desc(sql<number>`CAST(${orders.orderNumber} AS INTEGER)`))
 		.limit(1);
-
-	console.log('Último número de orden encontrado:', result[0]?.orderNumber);
-	return result[0]?.orderNumber;
+	return result[0]?.orderNumber ? result[0].orderNumber : null;
 };
 
 export const getOrdersWithDetails = async () => {

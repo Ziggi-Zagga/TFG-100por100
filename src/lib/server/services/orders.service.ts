@@ -92,8 +92,8 @@ export const createOrderWithItems = async (orderData: {
 	}
 
 	const lastOrderNumber = await orderRepo.getLastOrderNumber();
-	const nextOrderNumber = lastOrderNumber ? Number(lastOrderNumber) + 1 : 1;
-	const orderNumber = `ORD-${nextOrderNumber.toString().padStart(6, '0')}`;
+	const nextNumber = lastOrderNumber ? (parseInt(lastOrderNumber, 10) + 1) : 1;
+	const orderNumber = nextNumber.toString().padStart(6, '0');
 
 	const orderId = crypto.randomUUID();
 	const orderToInsert = {
