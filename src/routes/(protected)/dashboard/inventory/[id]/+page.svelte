@@ -202,7 +202,7 @@
 	</div>
 
 	{#if isEditing}
-		<Modal title="➕ Edit Inventory" onClose={toggleEdit}>
+		<Modal title="Edit Inventory" onClose={toggleEdit}>
 			<form method="POST" action="?/update" class="p-6">
 				<Header title="Product Information" subtitle="" extraStyles="compact" />
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
